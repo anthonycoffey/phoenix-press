@@ -1,0 +1,173 @@
+<?php
+
+namespace Literati\Example;
+
+use Literati\Example\Blocks;
+use Literati\Example\Meta;
+
+/**
+ * Main plugin class.
+ */
+class Plugin {
+  /**
+   * Plugin version.
+   */
+  private $version = '1.0.0';
+
+  /**
+   * The single instance of the class.
+   */
+  protected static $_instance = null;
+
+  /**
+   * Main LITERATI_EXAMPLE instance. Ensures only one instance is loaded or can be loaded'.
+   */
+  public static function instance() {
+    if (is_null(self::$_instance)) {
+      self::$_instance = new self();
+    }
+    return self::$_instance;
+  }
+
+  /**
+   * Cloning is forbidden.
+   */
+  public function __clone() {
+    _doing_it_wrong(
+      __FUNCTION__,
+      esc_html__('Foul!', 'literati-example'),
+      '1.0.0'
+    );
+  }
+
+  /**
+   * Unserializing instances of this class is forbidden.
+   */
+  public function __wakeup() {
+    _doing_it_wrong(
+      __FUNCTION__,
+      esc_html__('Foul!', 'literati-example'),
+      '1.0.0'
+    );
+  }
+
+  /**
+   * Construct
+   */
+  protected function __construct() {
+    // Entry point.
+    $this->initialize_plugin();
+  }
+
+  /**
+   * Get Plugin URL
+   */
+  public function get_plugin_url() {
+    return untrailingslashit(plugins_url('/', __DIR__));
+  }
+
+  /**
+   * Get Plugin Path
+   */
+  public function get_plugin_path() {
+    return untrailingslashit(plugin_dir_path(__DIR__));
+  }
+
+  /**
+   * Get Plugin Basename
+   */
+  public function get_plugin_basename() {
+    return plugin_basename(__DIR__);
+  }
+
+  /**
+   * Get Plugin Version
+   */
+  public function get_plugin_version($base = false, $version = '') {
+    $version = $version ? $version : $this->version;
+
+    if ($base) {
+      $version_parts = explode('-', $version);
+      $version = count($version_parts) > 1 ? $version_parts[0] : $version;
+    }
+
+    return $version;
+  }
+
+  /**
+   * Define constants
+   */
+  protected function maybe_define_constant($name, $value) {
+    if (!defined($name)) {
+      define($name, $value);
+    }
+  }
+
+  /**
+   * Indicates whether the plugin is fully initialized.
+   */
+  public function is_plugin_initialized() {
+    return null !== $this->get_plugin_version();
+  }
+
+  /**
+   * Initialize
+   */
+  public function initialize_plugin() {
+    $this->define_constants();
+
+    $this->includes();
+  }
+
+  /**
+   * Constants.
+   */
+  public function define_constants() {
+    $this->maybe_define_constant('LITERATI_EXAMPLE_VERSION', $this->version);
+    $this->maybe_define_constant(
+      'LITERATI_EXAMPLE_ABSPATH',
+      trailingslashit(plugin_dir_path(__DIR__))
+    );
+  }
+
+  /**
+   * Includes.
+   */
+  public function includes() {
+    Blocks::init();
+    Meta::init();
+    // add_action('wp_enqueue_scripts', [$this, 'enqueue_scripts']);
+    // add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts']);
+    // add_action('enqueue_block_editor_assets', [$this, 'enqueue_scripts']);
+  }
+
+  /**
+   * Enqueue scripts and styles.
+   */
+  public function enqueue_scripts() {
+
+  
+    // // Enqueue scripts and styles
+    // wp_enqueue_script(
+    //   'literati-owl-carousel-script',
+    //   $this->get_plugin_url() . '/includes/owl.carousel.min.js',
+    //   ['jquery'],
+    //   $this->get_plugin_version(true),
+    //   true
+    // );
+ 
+    // wp_enqueue_style(
+    //   'literati-owl-carousel-styles',
+    //   $this->get_plugin_url() . '/includes/assets/owl.carousel.min.css',
+    //   [],
+    //   $this->get_plugin_version(true)
+    // );
+  }
+
+  /**
+   * Uninstall methods
+   */
+  public static function uninstall() {
+    // Uninstall
+  }
+}

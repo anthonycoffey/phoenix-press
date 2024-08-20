@@ -1,0 +1,17 @@
+{
+  "name": "literati/example",
+  "type": "wordpress-plugin",
+  "autoload": {
+    "psr-4": {
+      "Literati\\Example\\": "./includes"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Literati\\Example\\Tests\\": "./tests"
+    }
+  },
+  "require": {
+    "php": "^8.0"
+  }
+}
