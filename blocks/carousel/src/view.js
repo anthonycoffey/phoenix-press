@@ -1,7 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import Slider from "react-slick";
-import "./editor.scss";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import "./view.scss";
 
 document.addEventListener("DOMContentLoaded", () => {
   const carouselElements = document.querySelectorAll(
@@ -9,7 +11,6 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   carouselElements.forEach((element) => {
-    // Get the transition time and promotions data
     const transitionTime =
       parseInt(element.getAttribute("data-transition-time"), 10) || 5;
     const promotions = JSON.parse(
@@ -17,38 +18,55 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     const sliderSettings = {
+      arrows: true,
+      centerMode: true,
       dots: false,
-      infinite: true,
       speed: 500,
       slidesToShow: 1,
       slidesToScroll: 1,
       autoplay: true,
       autoplaySpeed: transitionTime * 1000,
-      arrows: true,
     };
 
-    // Render the carousel using ReactDOM
     ReactDOM.render(
-      <Slider {...sliderSettings}>
-        {promotions.map((promotion, index) => (
-          <div key={index}>
-            <h2>{promotion.header}</h2>
-            <p>{promotion.text}</p>
-            {promotion.image && (
-              <img
-                src={promotion.image}
-                alt={promotion.title}
-                style={{ maxWidth: "100%", height: "auto" }}
-              />
-            )}
-            {promotion.button && (
-              <a href={promotion.button} className="button">
-                READ MORE
-              </a>
-            )}
+      <>
+        <Slider {...sliderSettings}>
+          {promotions.map((promotion, index) => (
+            <div key={index}>
+              <div className="card">
+                <div className="image">
+                  {promotion.image && (
+                    <img src={promotion.image} alt={promotion.title} />
+                  )}
+                </div>
+
+                <div className="content">
+                  <h2>{promotion.header}</h2>
+                  <p>{promotion.text}</p>
+
+                  {promotion.button && (
+                    <a href={promotion.button} className="button">
+                      READ MORE
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </Slider>
+        {/* <div class="wp-block-literati-example-carousel__controls">
+          <div class="prev">
+            <button onClick={() => sliderRef.current.slickPrev()}>
+              <span class="dashicons dashicons-arrow-left-alt2"></span>
+            </button>
           </div>
-        ))}
-      </Slider>,
+          <div class="next">
+            <button onClick={() => sliderRef.current.slickNext()}>
+              <span class="dashicons dashicons-arrow-right-alt2"></span>
+            </button>
+          </div>
+        </div> */}
+      </>,
       element,
     );
   });
