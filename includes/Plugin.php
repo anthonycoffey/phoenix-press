@@ -136,32 +136,6 @@ class Plugin {
   public function includes() {
     Blocks::init();
     Meta::init();
-    // add_action('wp_enqueue_scripts', [$this, 'enqueue_scripts']);
-    // add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts']);
-    // add_action('enqueue_block_editor_assets', [$this, 'enqueue_scripts']);
-  }
-
-  /**
-   * Enqueue scripts and styles.
-   */
-  public function enqueue_scripts() {
-
-  
-    // // Enqueue scripts and styles
-    // wp_enqueue_script(
-    //   'literati-owl-carousel-script',
-    //   $this->get_plugin_url() . '/includes/owl.carousel.min.js',
-    //   ['jquery'],
-    //   $this->get_plugin_version(true),
-    //   true
-    // );
- 
-    // wp_enqueue_style(
-    //   'literati-owl-carousel-styles',
-    //   $this->get_plugin_url() . '/includes/assets/owl.carousel.min.css',
-    //   [],
-    //   $this->get_plugin_version(true)
-    // );
   }
 
   /**

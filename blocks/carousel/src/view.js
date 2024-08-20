@@ -18,14 +18,15 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     const sliderSettings = {
-      arrows: true,
       centerMode: true,
       dots: false,
+      infinite: true,
       speed: 500,
       slidesToShow: 1,
       slidesToScroll: 1,
       autoplay: true,
       autoplaySpeed: transitionTime * 1000,
+      arrows: true,
     };
 
     ReactDOM.render(
@@ -54,18 +55,6 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
           ))}
         </Slider>
-        {/* <div class="wp-block-literati-example-carousel__controls">
-          <div class="prev">
-            <button onClick={() => sliderRef.current.slickPrev()}>
-              <span class="dashicons dashicons-arrow-left-alt2"></span>
-            </button>
-          </div>
-          <div class="next">
-            <button onClick={() => sliderRef.current.slickNext()}>
-              <span class="dashicons dashicons-arrow-right-alt2"></span>
-            </button>
-          </div>
-        </div> */}
       </>,
       element,
     );

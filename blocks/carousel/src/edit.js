@@ -10,7 +10,6 @@ import "./editor.scss";
 export default function Edit({ attributes, setAttributes }) {
   const { transitionTime = 5 } = attributes;
 
-  // Fetch published promotions
   const promotions = useSelect((select) => {
     return select("core").getEntityRecords("postType", "promotion", {
       status: "publish",
@@ -19,17 +18,15 @@ export default function Edit({ attributes, setAttributes }) {
     });
   }, []);
 
-  // Slider settings with adjusted speed and autoplay speed
   const sliderSettings = {
     centerMode: true,
-
     dots: false,
     infinite: true,
-    speed: 500, // Duration of the transition effect (in milliseconds)
+    speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
     autoplay: true,
-    autoplaySpeed: transitionTime * 1000, // Time between slides (in milliseconds)
+    autoplaySpeed: transitionTime * 1000,
     arrows: true,
   };
 
