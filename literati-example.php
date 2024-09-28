@@ -1,17 +1,17 @@
 <?php
 /*
- * Plugin Name: Literati Example
- * Plugin URI: https://github.com/literatibooks/literati-wp-example
+ * Plugin Name: Phoenix Lead Form Plugin
+ * Plugin URI: https://github.com/
  * Description:
  * Version: 1.0.0
- * Author: Literati
- * Author URI: https://literati.com/
+ * Author: Anthony Coffey
+ * Author URI: https://coffey.codes/
  *
- * Text Domain: literati-example
+ * Text Domain: phoenix-leads-plugin
  *
  */
 
-use Literati\Example\Plugin;
+use Phoenix\Leads\Plugin;
 
 // Exit if accessed directly.
 if (!defined('ABSPATH')) {
@@ -25,7 +25,7 @@ add_action(
       include __DIR__ . '/vendor/autoload.php';
     }
 
-    LITERATI_EXAMPLE();
+    phoenixLeads();
   },
   9
 );
@@ -33,6 +33,6 @@ add_action(
 /**
  * Returns the main instance of the plugin to prevent the need to use globals.
  */
-function LITERATI_EXAMPLE() {
+function phoenixLeads() {
   return Plugin::instance();
 }

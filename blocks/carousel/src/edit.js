@@ -1,18 +1,18 @@
-import { __ } from "@wordpress/i18n";
-import { useBlockProps, InspectorControls } from "@wordpress/block-editor";
-import { PanelBody, RangeControl } from "@wordpress/components";
-import { useSelect } from "@wordpress/data";
-import Slider from "react-slick";
-import "slick-carousel/slick/slick.scss";
-import "slick-carousel/slick/slick-theme.scss";
-import "./editor.scss";
+import { __ } from '@wordpress/i18n';
+import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
+import { PanelBody, RangeControl } from '@wordpress/components';
+import { useSelect } from '@wordpress/data';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.scss';
+import 'slick-carousel/slick/slick-theme.scss';
+import './editor.scss';
 
 export default function Edit({ attributes, setAttributes }) {
   const { transitionTime = 5 } = attributes;
 
   const promotions = useSelect((select) => {
-    return select("core").getEntityRecords("postType", "promotion", {
-      status: "publish",
+    return select('core').getEntityRecords('postType', 'promotion', {
+      status: 'publish',
       _embed: true,
       per_page: -1,
     });
@@ -33,9 +33,12 @@ export default function Edit({ attributes, setAttributes }) {
   return (
     <div {...useBlockProps()}>
       <InspectorControls>
-        <PanelBody title={__("Settings", "literati-example-carousel")}>
+        <PanelBody title={__('Settings', 'phoenix-leads-plugin-carousel')}>
           <RangeControl
-            label={__("Transition Time (seconds)", "literati-example-carousel")}
+            label={__(
+              'Transition Time (seconds)',
+              'phoenix-leads-plugin-carousel'
+            )}
             value={transitionTime}
             onChange={(value) => setAttributes({ transitionTime: value })}
             min={1}
@@ -43,7 +46,7 @@ export default function Edit({ attributes, setAttributes }) {
           />
         </PanelBody>
       </InspectorControls>
-      <div className="wp-block-literati-example-carousel">
+      <div className="wp-block-phoenix-leads-plugin-carousel">
         {promotions && promotions.length > 0 ? (
           <Slider {...sliderSettings}>
             {promotions.map((promotion) => (
@@ -72,7 +75,7 @@ export default function Edit({ attributes, setAttributes }) {
             ))}
           </Slider>
         ) : (
-          <p>{__("No promotions found", "literati-example-carousel")}</p>
+          <p>{__('No promotions found', 'phoenix-leads-plugin-carousel')}</p>
         )}
       </div>
     </div>

@@ -1,6 +1,6 @@
 <?php
 
-namespace Literati\Example;
+namespace Phoenix\Leads;
 
 /**
  * Blocks class.
@@ -18,6 +18,6 @@ class Blocks {
    */
   public static function register_blocks() {
     // Register the Carousel
-    register_block_type( LITERATI_EXAMPLE_ABSPATH. 'blocks/carousel/build' );
+    register_block_type( phoenixLeads_ABSPATH. 'blocks/carousel/build' );
   }
 }

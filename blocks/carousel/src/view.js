@@ -1,20 +1,20 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import Slider from "react-slick";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
-import "./view.scss";
+import React from 'react';
+import ReactDOM from 'react-dom';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
+import './view.scss';
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener('DOMContentLoaded', () => {
   const carouselElements = document.querySelectorAll(
-    ".wp-block-literati-example-carousel",
+    '.wp-block-phoenix-leads-plugin-carousel'
   );
 
   carouselElements.forEach((element) => {
     const transitionTime =
-      parseInt(element.getAttribute("data-transition-time"), 10) || 5;
+      parseInt(element.getAttribute('data-transition-time'), 10) || 5;
     const promotions = JSON.parse(
-      element.getAttribute("data-promotions") || "[]",
+      element.getAttribute('data-promotions') || '[]'
     );
 
     const sliderSettings = {
@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ))}
         </Slider>
       </>,
-      element,
+      element
     );
   });
 });

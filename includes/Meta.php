@@ -1,6 +1,6 @@
 <?php
 
-namespace Literati\Example;
+namespace Phoenix\Leads;
 
 /**
  * Meta class.
@@ -105,9 +105,9 @@ class Meta {
           <input type="url" name="promotion_button" id="promotion_button" value="<?php echo esc_attr($button); ?>" class="widefat">
       </p>
       <p>
-        <label for="promotion_image"><?php _e('Select Image', 'literati-example-carousel'); ?></label>
+        <label for="promotion_image"><?php _e('Select Image', 'phoenix-leads-plugin-carousel'); ?></label>
         <select name="promotion_image" id="promotion_image" class="widefat">
-            <option value=""><?php _e('Select an image', 'literati-example-carousel'); ?></option>
+            <option value=""><?php _e('Select an image', 'phoenix-leads-plugin-carousel'); ?></option>
             <?php foreach ($images as $image) : ?>
                 <option value="<?php echo esc_url($image->guid); ?>" <?php selected($selected_image, $image->guid); ?>>
                     <?php echo esc_html(get_the_title($image->ID)); ?>

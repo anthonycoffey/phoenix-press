@@ -1,9 +1,9 @@
 <?php
 
-namespace Literati\Example;
+namespace Phoenix\Leads;
 
-use Literati\Example\Blocks;
-use Literati\Example\Meta;
+use Phoenix\Leads\Blocks;
+use Phoenix\Leads\Meta;
 
 /**
  * Main plugin class.
@@ -20,7 +20,7 @@ class Plugin {
   protected static $_instance = null;
 
   /**
-   * Main LITERATI_EXAMPLE instance. Ensures only one instance is loaded or can be loaded'.
+   * Main phoenixLeads instance. Ensures only one instance is loaded or can be loaded'.
    */
   public static function instance() {
     if (is_null(self::$_instance)) {
@@ -35,7 +35,7 @@ class Plugin {
   public function __clone() {
     _doing_it_wrong(
       __FUNCTION__,
-      esc_html__('Foul!', 'literati-example'),
+      esc_html__('Foul!', 'phoenix-leads-plugin'),
       '1.0.0'
     );
   }
@@ -46,7 +46,7 @@ class Plugin {
   public function __wakeup() {
     _doing_it_wrong(
       __FUNCTION__,
-      esc_html__('Foul!', 'literati-example'),
+      esc_html__('Foul!', 'phoenix-leads-plugin'),
       '1.0.0'
     );
   }
@@ -123,9 +123,9 @@ class Plugin {
    * Constants.
    */
   public function define_constants() {
-    $this->maybe_define_constant('LITERATI_EXAMPLE_VERSION', $this->version);
+    $this->maybe_define_constant('phoenixLeads_VERSION', $this->version);
     $this->maybe_define_constant(
-      'LITERATI_EXAMPLE_ABSPATH',
+      'phoenixLeads_ABSPATH',
       trailingslashit(plugin_dir_path(__DIR__))
     );
   }

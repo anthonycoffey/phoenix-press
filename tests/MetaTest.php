@@ -1,8 +1,8 @@
 <?php
 
-namespace Literati\Example\Tests;
+namespace Phoenix\Leads\Tests;
 
-use Literati\Example\Meta;
+use Phoenix\Leads\Meta;
 use WP_Mock\Tools\TestCase as TestCase;
 use WP_Mock;
 

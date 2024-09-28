@@ -1,9 +1,9 @@
 <?php
 
-namespace Literati\Example\Tests;
+namespace Phoenix\Leads\Tests;
 
-use Literati\Example\Plugin;
-use Literati\Example\Meta;
+use Phoenix\Leads\Plugin;
+use Phoenix\Leads\Meta;
 use WP_Mock\Tools\TestCase as TestCase;
 use WP_Mock;
 
@@ -26,7 +26,7 @@ final class PluginTest extends TestCase {
     WP_Mock::userFunction('get_option', [
       'return' => function ($key) {
         switch ($key) {
-          case 'LITERATI_EXAMPLE_VERSION':
+          case 'phoenixLeads_VERSION':
             return null;
         }
       },

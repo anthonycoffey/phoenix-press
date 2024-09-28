@@ -1,14 +1,14 @@
 {
-  "name": "literati/example",
+  "name": "phoenix/leads",
   "type": "wordpress-plugin",
   "autoload": {
     "psr-4": {
-      "Literati\\Example\\": "./includes"
+      "Phoenix\\Leads\\": "./includes"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Literati\\Example\\Tests\\": "./tests"
+      "Phoenix\\Leads\\Tests\\": "./tests"
     }
   },
   "require": {
