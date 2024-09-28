@@ -7,7 +7,8 @@ use Phoenix\Press\Meta;
 /**
  * Main plugin class.
  */
-class Plugin {
+class Plugin
+{
   /**
    * Plugin version.
    */
@@ -21,7 +22,8 @@ class Plugin {
   /**
    * Main instance. Ensures only one instance is loaded or can be loaded'.
    */
-  public static function instance() {
+  public static function instance()
+  {
     if (is_null(self::$_instance)) {
       self::$_instance = new self();
     }
@@ -31,7 +33,8 @@ class Plugin {
   /**
    * Cloning is forbidden.
    */
-  public function __clone() {
+  public function __clone()
+  {
     _doing_it_wrong(
       __FUNCTION__,
       esc_html__('Foul!', 'phoenix-press'),
@@ -42,7 +45,8 @@ class Plugin {
   /**
    * Unserializing instances of this class is forbidden.
    */
-  public function __wakeup() {
+  public function __wakeup()
+  {
     _doing_it_wrong(
       __FUNCTION__,
       esc_html__('Foul!', 'phoenix-press'),
@@ -53,7 +57,8 @@ class Plugin {
   /**
    * Construct
    */
-  protected function __construct() {
+  protected function __construct()
+  {
     // Entry point.
     $this->initialize_plugin();
   }
@@ -61,33 +66,37 @@ class Plugin {
   /**
    * Get Plugin URL
    */
-  public function get_plugin_url() {
+  public function get_plugin_url()
+  {
     return untrailingslashit(plugins_url('/', __DIR__));
   }
 
   /**
    * Get Plugin Path
    */
-  public function get_plugin_path() {
+  public function get_plugin_path()
+  {
     return untrailingslashit(plugin_dir_path(__DIR__));
   }
 
   /**
    * Get Plugin Basename
    */
-  public function get_plugin_basename() {
+  public function get_plugin_basename()
+  {
     return plugin_basename(__DIR__);
   }
 
   /**
    * Get Plugin Version
    */
-  public function get_plugin_version($base = false, $version = '') {
+  public function get_plugin_version($base = false, $version = '')
+  {
     $version = $version ? $version : $this->version;
 
     if ($base) {
       $version_parts = explode('-', $version);
-      $version = count($version_parts) > 1 ? $version_parts[0] : $version;
+      $version = count($version_parts) > 1 ? $version_parts[ 0 ] : $version;
     }
 
     return $version;
@@ -96,7 +105,8 @@ class Plugin {
   /**
    * Define constants
    */
-  protected function maybe_define_constant($name, $value) {
+  protected function maybe_define_constant($name, $value)
+  {
     if (!defined($name)) {
       define($name, $value);
     }
@@ -105,14 +115,16 @@ class Plugin {
   /**
    * Indicates whether the plugin is fully initialized.
    */
-  public function is_plugin_initialized() {
+  public function is_plugin_initialized()
+  {
     return null !== $this->get_plugin_version();
   }
 
   /**
    * Initialize
    */
-  public function initialize_plugin() {
+  public function initialize_plugin()
+  {
     $this->define_constants();
 
     $this->includes();
@@ -121,25 +133,32 @@ class Plugin {
   /**
    * Constants.
    */
-  public function define_constants() {
+  public function define_constants()
+  {
     $this->maybe_define_constant('PHOENIX_PRESS_VERSION', $this->version);
     $this->maybe_define_constant(
       'PHOENIX_PRESS_ABSPATH',
       trailingslashit(plugin_dir_path(__DIR__))
+    );
+    $this->maybe_define_constant(
+      'PHOENIX_PRESS_API',
+      'https://phoenix-staging-data.herokuapp.com'
     );
   }
 
   /**
    * Includes.
    */
-  public function includes() {
+  public function includes()
+  {
     Meta::init();
   }
 
   /**
    * Uninstall methods
    */
-  public static function uninstall() {
+  public static function uninstall()
+  {
     // Uninstall
   }
 }
