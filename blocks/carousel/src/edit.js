@@ -33,12 +33,9 @@ export default function Edit({ attributes, setAttributes }) {
   return (
     <div {...useBlockProps()}>
       <InspectorControls>
-        <PanelBody title={__('Settings', 'phoenix-leads-plugin-carousel')}>
+        <PanelBody title={__('Settings', 'phoenix-press-carousel')}>
           <RangeControl
-            label={__(
-              'Transition Time (seconds)',
-              'phoenix-leads-plugin-carousel'
-            )}
+            label={__('Transition Time (seconds)', 'phoenix-press-carousel')}
             value={transitionTime}
             onChange={(value) => setAttributes({ transitionTime: value })}
             min={1}
@@ -46,7 +43,7 @@ export default function Edit({ attributes, setAttributes }) {
           />
         </PanelBody>
       </InspectorControls>
-      <div className="wp-block-phoenix-leads-plugin-carousel">
+      <div className="wp-block-phoenix-press-carousel">
         {promotions && promotions.length > 0 ? (
           <Slider {...sliderSettings}>
             {promotions.map((promotion) => (
@@ -75,7 +72,7 @@ export default function Edit({ attributes, setAttributes }) {
             ))}
           </Slider>
         ) : (
-          <p>{__('No promotions found', 'phoenix-leads-plugin-carousel')}</p>
+          <p>{__('No promotions found', 'phoenix-press-carousel')}</p>
         )}
       </div>
     </div>

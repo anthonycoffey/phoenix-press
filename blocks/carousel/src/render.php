@@ -13,7 +13,7 @@ $promotions = get_posts( array(
 ) );
 
 if ( empty( $promotions ) ) {
-    echo '<p>' . esc_html__( 'No promotions found', 'phoenix-leads-plugin-carousel' ) . '</p>';
+    echo '<p>' . esc_html__( 'No promotions found', 'phoenix-press-carousel' ) . '</p>';
     return;
 }
 
@@ -29,5 +29,5 @@ $promotions_data = array_map(function($promotion) {
 $promotions_json = wp_json_encode($promotions_data);
 ?>
 
-<div class="wp-block-phoenix-leads-plugin-carousel" data-transition-time="<?php echo esc_attr( $transition_time ); ?>" data-promotions="<?php echo esc_attr($promotions_json); ?>">
+<div class="wp-block-phoenix-press-carousel" data-transition-time="<?php echo esc_attr( $transition_time ); ?>" data-promotions="<?php echo esc_attr($promotions_json); ?>">
 </div>

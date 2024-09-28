@@ -1,9 +1,9 @@
 <?php
 
-namespace Phoenix\Leads\Tests;
+namespace Phoenix\Press\Tests;
 
-use Phoenix\Leads\Plugin;
-use Phoenix\Leads\Meta;
+use Phoenix\Press\Plugin;
+use Phoenix\Press\Meta;
 use WP_Mock\Tools\TestCase as TestCase;
 use WP_Mock;
 
@@ -26,7 +26,7 @@ final class PluginTest extends TestCase {
     WP_Mock::userFunction('get_option', [
       'return' => function ($key) {
         switch ($key) {
-          case 'phoenixLeads_VERSION':
+          case 'PHOENIX_PRESS_VERSION':
             return null;
         }
       },

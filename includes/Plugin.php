@@ -1,9 +1,8 @@
 <?php
 
-namespace Phoenix\Leads;
+namespace Phoenix\Press;
 
-use Phoenix\Leads\Blocks;
-use Phoenix\Leads\Meta;
+use Phoenix\Press\Meta;
 
 /**
  * Main plugin class.
@@ -20,7 +19,7 @@ class Plugin {
   protected static $_instance = null;
 
   /**
-   * Main phoenixLeads instance. Ensures only one instance is loaded or can be loaded'.
+   * Main instance. Ensures only one instance is loaded or can be loaded'.
    */
   public static function instance() {
     if (is_null(self::$_instance)) {
@@ -35,7 +34,7 @@ class Plugin {
   public function __clone() {
     _doing_it_wrong(
       __FUNCTION__,
-      esc_html__('Foul!', 'phoenix-leads-plugin'),
+      esc_html__('Foul!', 'phoenix-press'),
       '1.0.0'
     );
   }
@@ -46,7 +45,7 @@ class Plugin {
   public function __wakeup() {
     _doing_it_wrong(
       __FUNCTION__,
-      esc_html__('Foul!', 'phoenix-leads-plugin'),
+      esc_html__('Foul!', 'phoenix-press'),
       '1.0.0'
     );
   }
@@ -123,9 +122,9 @@ class Plugin {
    * Constants.
    */
   public function define_constants() {
-    $this->maybe_define_constant('phoenixLeads_VERSION', $this->version);
+    $this->maybe_define_constant('PHOENIX_PRESS_VERSION', $this->version);
     $this->maybe_define_constant(
-      'phoenixLeads_ABSPATH',
+      'PHOENIX_PRESS_ABSPATH',
       trailingslashit(plugin_dir_path(__DIR__))
     );
   }
@@ -134,7 +133,6 @@ class Plugin {
    * Includes.
    */
   public function includes() {
-    Blocks::init();
     Meta::init();
   }
 

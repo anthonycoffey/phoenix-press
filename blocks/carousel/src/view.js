@@ -7,7 +7,7 @@ import './view.scss';
 
 document.addEventListener('DOMContentLoaded', () => {
   const carouselElements = document.querySelectorAll(
-    '.wp-block-phoenix-leads-plugin-carousel'
+    '.wp-block-phoenix-press-carousel'
   );
 
   carouselElements.forEach((element) => {

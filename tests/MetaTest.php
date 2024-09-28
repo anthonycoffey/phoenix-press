@@ -1,8 +1,8 @@
 <?php
 
-namespace Phoenix\Leads\Tests;
+namespace Phoenix\Press\Tests;
 
-use Phoenix\Leads\Meta;
+use Phoenix\Press\Meta;
 use WP_Mock\Tools\TestCase as TestCase;
 use WP_Mock;
 

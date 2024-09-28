@@ -1,17 +1,17 @@
 <?php
 /*
- * Plugin Name: Phoenix Lead Form Plugin
+ * Plugin Name: PhoenixPress
  * Plugin URI: https://github.com/
  * Description:
  * Version: 1.0.0
  * Author: Anthony Coffey
  * Author URI: https://coffey.codes/
  *
- * Text Domain: phoenix-leads-plugin
+ * Text Domain: phoenix-press
  *
  */
 
-use Phoenix\Leads\Plugin;
+use Phoenix\Press\Plugin;
 
 // Exit if accessed directly.
 if (!defined('ABSPATH')) {
@@ -25,7 +25,7 @@ add_action(
       include __DIR__ . '/vendor/autoload.php';
     }
 
-    phoenixLeads();
+    PHOENIX_PRESS();
   },
   9
 );
@@ -33,6 +33,6 @@ add_action(
 /**
  * Returns the main instance of the plugin to prevent the need to use globals.
  */
-function phoenixLeads() {
+function PHOENIX_PRESS() {
   return Plugin::instance();
 }
