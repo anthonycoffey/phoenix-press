@@ -1,14 +1,14 @@
 {
-  "name": "phoenix/leads",
+  "name": "phoenix/press",
   "type": "wordpress-plugin",
   "autoload": {
     "psr-4": {
-      "Phoenix\\Leads\\": "./includes"
+      "Phoenix\\Press\\": "./includes"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Phoenix\\Leads\\Tests\\": "./tests"
+      "Phoenix\\Press\\Tests\\": "./tests"
     }
   },
   "require": {
