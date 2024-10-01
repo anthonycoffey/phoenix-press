@@ -75,6 +75,7 @@ const PhoenixForm = () => {
 
   return (
     <>
+      {/*<pre>{JSON.stringify(questions, null, 2)}</pre>*/}
       <button
         onClick={toggleFormVisibility}
         style={{
@@ -116,8 +117,6 @@ const PhoenixForm = () => {
                   <Prompt question={currentQuestion} />
                   <Answer
                     question={currentQuestion}
-                    // handleInputChange={handleInputChange}
-                    // handleDateChange={handleDateChange}
                     selectedDate={selectedDate}
                   />
                 </Stack>

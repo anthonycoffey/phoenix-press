@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { TextField, Stack, IconButton, CircularProgress } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import { useLoadScript } from "@react-google-maps/api";
+import { GlobalStateContext } from "../state";
 
-// Helper function to extract address details
 const getAddressObject = (address_components) => {
   const obj = {};
   if (!address_components) return obj;
+  console.log(address_components);
 
   const number = address_components.find((c) =>
     c.types.includes("street_number"),
@@ -34,18 +35,19 @@ const getAddressObject = (address_components) => {
   return obj;
 };
 
-export default function AddressAutoComplete({ input, onChange }) {
-  const [loadingLocation, setLoadingLocation] = useState(false);
-  const autocompleteRef = useRef(null); // Ref for the TextField
-  const inputRef = useRef(null); // Ref for the Autocomplete
+const libraries = ["places"];
 
-  // Load Google Maps API
+export default function AddressAutoComplete({ input }) {
+  const [loadingLocation, setLoadingLocation] = useState(false);
+  const inputRef = useRef(null); // Ref for the Autocomplete
+  const { questions, currentQuestionIndex, setQuestions } =
+    useContext(GlobalStateContext); // Access global state
+
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: "YOUR_API_KEY", // Replace with your API key
-    libraries: ["places"],
+    googleMapsApiKey: data?.gmapsApiKey,
+    libraries,
   });
 
-  // Hook: Initialize Autocomplete once Google Maps API is loaded
   useEffect(() => {
     if (!inputRef.current || !window.google) return;
 
@@ -55,7 +57,7 @@ export default function AddressAutoComplete({ input, onChange }) {
     autocomplete.addListener("place_changed", () => {
       const place = autocomplete.getPlace();
       const addressObj = getAddressObject(place.address_components);
-      onChange(addressObj);
+      handleInputChange(addressObj);
     });
 
     // Cleanup
@@ -64,7 +66,6 @@ export default function AddressAutoComplete({ input, onChange }) {
     };
   }, [isLoaded]);
 
-  // Function: Handle geolocation and reverse geocoding for the GPS button
   const handleUseGps = () => {
     if (!navigator.geolocation) {
       console.error("Geolocation is not supported by your browser.");
@@ -85,7 +86,7 @@ export default function AddressAutoComplete({ input, onChange }) {
               const addressObj = getAddressObject(
                 results[0].address_components,
               );
-              onChange(addressObj);
+              handleInputChange(addressObj);
             } else {
               console.error("Geocoder failed due to: " + status);
             }
@@ -99,6 +100,23 @@ export default function AddressAutoComplete({ input, onChange }) {
     );
   };
 
+  const handleInputChange = (event) => {
+    console.log({ event });
+    const updatedQuestions = [...questions];
+    const currentInput = updatedQuestions[currentQuestionIndex].inputs.find(
+      (input) => input.name === "location",
+    );
+
+    if (event.nativeEvent instanceof Event) {
+      currentInput.value = event.target.value;
+    } else {
+      currentInput.obj = event;
+      currentInput.value = `${event.address_1}, ${event.city}, ${event.state} ${event.zipcode}`;
+    }
+
+    setQuestions(updatedQuestions);
+  };
+
   if (loadError) {
     return <div>Error loading maps</div>;
   }
@@ -107,15 +125,13 @@ export default function AddressAutoComplete({ input, onChange }) {
     return <div>Loading...</div>;
   }
 
-  // Component JSX
   return (
-    <Stack spacing={2} direction="row">
-      {/* TextField with ref for Autocomplete */}
+    <Stack spacing={2} direction="row" sx={{ marginBottom: "5px" }}>
       <TextField
         label={input.label}
         name={input.name}
         value={input.value}
-        onChange={onChange}
+        onChange={handleInputChange}
         variant="outlined"
         margin="normal"
         fullWidth
@@ -124,7 +140,6 @@ export default function AddressAutoComplete({ input, onChange }) {
           endAdornment: loadingLocation ? <CircularProgress size={20} /> : null,
         }}
       />
-      {/* GPS Button */}
       <IconButton
         variant="contained"
         aria-label="Use my location"

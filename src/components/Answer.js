@@ -26,6 +26,7 @@ const Answer = ({ question }) => {
   };
 
   const handleInputChange = (event) => {
+    console.log({ event });
     const { name, value } = event.target;
     const updatedQuestions = [...questions];
     const currentInput = updatedQuestions[currentQuestionIndex].inputs.find(
@@ -54,13 +55,7 @@ const Answer = ({ question }) => {
         }
 
         if (input.type === "geo") {
-          return (
-            <AddressAutoComplete
-              input={input}
-              onChange={handleInputChange}
-              key={index}
-            />
-          );
+          return <AddressAutoComplete input={input} key={index} />;
         }
 
         if (input.type === "datetime") {
