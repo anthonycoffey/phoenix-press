@@ -6,3 +6,4 @@ node_modules
 .DS_Store
 build
 phoenix-press.zip
+.idea
