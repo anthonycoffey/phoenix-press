@@ -5,8 +5,8 @@
   "author": "Anthony Coffey",
   "license": "MIT",
   "scripts": {
-    "build": "wp-scripts build --webpack-src-dir=src/ --output-path=build/",
-    "start": "wp-scripts start --webpack-src-dir=src/ --output-path=build/"
+    "build": "wp-scripts build --config ./webpack.config.js",
+    "start": "NODE_ENV=development wp-scripts start --config ./webpack.config.js"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
@@ -14,11 +14,25 @@
     "@babel/preset-react": "^7.24.7",
     "@wordpress/scripts": "^27.6.0",
     "babel-loader": "^9.2.1",
+    "css-loader": "^7.1.2",
+    "prettier": "^3.3.3",
+    "sass": "^1.79.4",
+    "sass-loader": "^16.0.2",
+    "style-loader": "^4.0.0",
     "webpack": "^5.95.0",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.1.0"
   },
   "dependencies": {
+    "@date-io/date-fns": "^3.0.0",
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@mui/icons-material": "^6.1.1",
+    "@mui/material": "^6.1.1",
+    "@mui/x-date-pickers": "^6.20.2",
+    "@react-google-maps/api": "^2.19.3",
+    "axios": "^1.7.7",
+    "date-fns": "^2.30.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   }

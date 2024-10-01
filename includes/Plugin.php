@@ -142,7 +142,7 @@ class Plugin
     );
     $this->maybe_define_constant(
       'PHOENIX_PRESS_API',
-      'https://phoenix-staging-data.herokuapp.com'
+      'https://phoenix-staging-data-3d6054f8c3ef.herokuapp.com'
     );
   }
 
