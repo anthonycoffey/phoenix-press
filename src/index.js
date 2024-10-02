@@ -68,6 +68,7 @@ const PhoenixForm = () => {
   const handleNewStart = () => {
     localStorage.removeItem("formData"); // Clear saved data
     setQuestions(questionData);
+    setCurrentQuestionIndex(0);
     setShowModal(false);
   };
 
@@ -113,7 +114,6 @@ const PhoenixForm = () => {
 
   return (
     <>
-      {/*<pre>{JSON.stringify(questions, null, 2)}</pre>*/}
       <button
         onClick={toggleFormVisibility}
         style={{
@@ -197,7 +197,7 @@ const PhoenixForm = () => {
                   />
                 </Stack>
               </CardContent>
-              <CardActions sx={{ justifyContent: "flex-end" }}>
+              <CardActions sx={{ justifyContent: "space-between" }}>
                 {currentQuestionIndex > 0 && (
                   <Button
                     variant="contained"
