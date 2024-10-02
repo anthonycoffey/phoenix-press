@@ -13,6 +13,7 @@ export const GlobalStateProvider = ({ children }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [services, setServices] = useState(null);
+  const [errors, setErrors] = useState({});
 
   // Save to localStorage whenever questions change
   useEffect(() => {
@@ -69,6 +70,8 @@ export const GlobalStateProvider = ({ children }) => {
         setIsFormVisible,
         services,
         setServices,
+        errors,
+        setErrors,
       }}
     >
       {children}

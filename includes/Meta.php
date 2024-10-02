@@ -50,7 +50,9 @@ class Meta
 
   public static function get_form_data($request)
   {
-    $response = wp_remote_get(PHOENIX_API . "/services?limit=all");
+    $api_url = get_option("phoenix_api_url", PHOENIX_API);
+
+    $response = wp_remote_get($api_url . "/services?limit=all");
     $body = wp_remote_retrieve_body($response);
 
     return new \WP_REST_Response(json_decode($body), 200);
@@ -112,6 +114,7 @@ settings_fields("phoenix_press_options");
   public static function register_settings()
   {
     register_setting("phoenix_press_options", "phoenix_gmaps_api_key");
+    register_setting("phoenix_press_options", "phoenix_api_url");
 
     add_settings_section(
       "phoenix_press_main_section", // Section ID
@@ -127,6 +130,15 @@ settings_fields("phoenix_press_options");
       "phoenix-press", // Page slug
       "phoenix_press_main_section" // Section ID
     );
+
+    add_settings_field(
+      "phoenix_api_url", // Field ID
+      "Phoenix API URL", // Field label
+      [ __CLASS__, "phoenix_api_url_field_callback" ], // Callback to render the input
+      "phoenix-press", // Page slug
+      "phoenix_press_main_section" // Section ID
+    );
+
   }
 
   // Callback to render the input field for the Google Maps API key
@@ -137,4 +149,14 @@ settings_fields("phoenix_press_options");
     esc_attr($apiKey) .
       '" size="50" />';
   }
+
+  public static function phoenix_api_url_field_callback()
+  {
+    $apiUrl = get_option("phoenix_api_url", PHOENIX_API);
+    echo '<input type="text" id="phoenix_api_url" name="phoenix_api_url" value="' .
+    esc_attr($apiUrl) .
+      '" size="50" /><br />';
+    echo '<label for="phoenix_api_url"><b>default endpoint: </b>' . PHOENIX_API . '</label><br />';
+  }
+
 }

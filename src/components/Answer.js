@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { TextField, Stack, TextareaAutosize } from '@mui/material';
+import { TextField, Stack } from '@mui/material';
 import { DatePicker, TimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { GlobalStateContext } from '../state';
