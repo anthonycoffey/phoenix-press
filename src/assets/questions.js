@@ -69,13 +69,6 @@ const options = [
     prompt: "Please provide your car details",
     inputs: [
       {
-        name: "car_year",
-        type: "text",
-        label: "Car Year",
-        value: "",
-        optional: true,
-      },
-      {
         name: "car_make",
         type: "text",
         label: "Car Make",
@@ -86,6 +79,13 @@ const options = [
         type: "text",
         label: "Car Model",
         value: "",
+      },
+      {
+        name: "car_year",
+        type: "text",
+        label: "Car Year",
+        value: "",
+        optional: true,
       },
       {
         name: "car_color",

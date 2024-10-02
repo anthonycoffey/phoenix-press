@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { TextField, Stack } from "@mui/material";
+import { TextField, Stack, TextareaAutosize } from "@mui/material";
 import {
   DatePicker,
   TimePicker,
@@ -8,6 +8,8 @@ import {
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { GlobalStateContext } from "../state";
 import AddressAutoComplete from "./AddressAutoComplete";
+import ServiceSelect from "./ServiceSelect";
+import PhoneField from "./PhoneField";
 
 const Answer = ({ question }) => {
   const {
@@ -26,7 +28,6 @@ const Answer = ({ question }) => {
   };
 
   const handleInputChange = (event) => {
-    console.log({ event });
     const { name, value } = event.target;
     const updatedQuestions = [...questions];
     const currentInput = updatedQuestions[currentQuestionIndex].inputs.find(
@@ -39,7 +40,17 @@ const Answer = ({ question }) => {
   return (
     <>
       {question.inputs.map((input, index) => {
-        if (input.type === "tel" || input.type === "text") {
+        if (input.type === "tel") {
+          return (
+            <PhoneField
+              input={input}
+              key={index}
+              onChange={handleInputChange}
+            />
+          );
+        }
+
+        if (input.type === "text") {
           return (
             <TextField
               key={index}
@@ -56,6 +67,27 @@ const Answer = ({ question }) => {
 
         if (input.type === "geo") {
           return <AddressAutoComplete input={input} key={index} />;
+        }
+
+        if (input.type === "select") {
+          return <ServiceSelect input={input} key={index} />;
+        }
+
+        if (input.type === "textarea") {
+          return (
+            <TextField
+              key={index}
+              label={input.label}
+              name={input.name}
+              value={input.value}
+              onChange={handleInputChange}
+              fullWidth
+              multiline
+              rows={2}
+              variant="outlined"
+              margin="normal"
+            />
+          );
         }
 
         if (input.type === "datetime") {

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import {
   Button,
@@ -8,17 +8,22 @@ import {
   Avatar,
   CircularProgress,
   Stack,
+  Modal,
+  Box,
+  Typography,
 } from "@mui/material";
 import Prompt from "./components/Prompt";
 import Answer from "./components/Answer";
 import axios from "axios";
 import "./styles.sass";
+import questionData from "./assets/questions";
 
 import { GlobalStateContext, GlobalStateProvider } from "./state"; // Import context
 
 const PhoenixForm = () => {
   const {
     questions,
+    setQuestions,
     currentQuestionIndex,
     setCurrentQuestionIndex,
     loading,
@@ -28,8 +33,43 @@ const PhoenixForm = () => {
     selectedDate,
     isFormVisible,
     setIsFormVisible,
-    services,
-  } = useContext(GlobalStateContext); // Access global state
+  } = useContext(GlobalStateContext);
+
+  const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    if (isFormVisible) {
+      const savedData = localStorage.getItem("formData");
+      if (savedData) {
+        const formData = JSON.parse(savedData);
+
+        // Check if any input has a non-empty value
+        const hasFilledField = formData.some((question) =>
+          question.inputs.some(
+            (input) => input.value && input.value.trim() !== "",
+          ),
+        );
+
+        if (hasFilledField) {
+          setShowModal(true);
+        }
+      }
+    }
+  }, [isFormVisible]);
+
+  const handleContinue = () => {
+    const savedData = localStorage.getItem("formData");
+    if (savedData) {
+      setQuestions(JSON.parse(savedData));
+    }
+    setShowModal(false);
+  };
+
+  const handleNewStart = () => {
+    localStorage.removeItem("formData"); // Clear saved data
+    setQuestions(questionData);
+    setShowModal(false);
+  };
 
   const toggleFormVisibility = () => {
     setIsFormVisible(!isFormVisible); // Toggle form visibility
@@ -71,8 +111,6 @@ const PhoenixForm = () => {
     );
   }
 
-  console.log({ services });
-
   return (
     <>
       {/*<pre>{JSON.stringify(questions, null, 2)}</pre>*/}
@@ -105,6 +143,44 @@ const PhoenixForm = () => {
           <path d="M448 0H64C28.7 0 0 28.7 0 64v288c0 35.3 28.7 64 64 64h96v84c0 9.8 11.2 15.5 19.1 9.7L304 416h144c35.3 0 64-28.7 64-64V64c0-35.3-28.7-64-64-64z" />
         </svg>
       </button>
+
+      <Modal open={showModal} onClose={() => setShowModal(false)}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            width: "80%",
+            transform: "translate(-50%, -50%)", // Centering the modal
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+          }}
+        >
+          <Typography variant="h6">Continue existing submission?</Typography>
+          <Typography variant="body1">
+            It looks like you started this form before. Would you like to pick
+            up where you left off?
+          </Typography>
+          <Box display="flex" justifyContent="space-between" mt={2}>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={handleNewStart}
+            >
+              Start Over
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleContinue}
+            >
+              Continue
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
 
       {isFormVisible && (
         <Card className="phoenix-form">

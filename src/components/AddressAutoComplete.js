@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
-import { TextField, Stack, IconButton, CircularProgress } from "@mui/material";
+import { TextField, Stack, Button, CircularProgress } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import { useLoadScript } from "@react-google-maps/api";
 import { GlobalStateContext } from "../state";
@@ -7,7 +7,6 @@ import { GlobalStateContext } from "../state";
 const getAddressObject = (address_components) => {
   const obj = {};
   if (!address_components) return obj;
-  console.log(address_components);
 
   const number = address_components.find((c) =>
     c.types.includes("street_number"),
@@ -44,7 +43,7 @@ export default function AddressAutoComplete({ input }) {
     useContext(GlobalStateContext); // Access global state
 
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: data?.gmapsApiKey,
+    googleMapsApiKey: LOCALIZED?.GMAPS_API_KEY,
     libraries,
   });
 
@@ -101,7 +100,6 @@ export default function AddressAutoComplete({ input }) {
   };
 
   const handleInputChange = (event) => {
-    console.log({ event });
     const updatedQuestions = [...questions];
     const currentInput = updatedQuestions[currentQuestionIndex].inputs.find(
       (input) => input.name === "location",
@@ -126,7 +124,7 @@ export default function AddressAutoComplete({ input }) {
   }
 
   return (
-    <Stack spacing={2} direction="row" sx={{ marginBottom: "5px" }}>
+    <Stack spacing={2} direction="column" sx={{ marginTop: "1rem" }}>
       <TextField
         label={input.label}
         name={input.name}
@@ -140,7 +138,7 @@ export default function AddressAutoComplete({ input }) {
           endAdornment: loadingLocation ? <CircularProgress size={20} /> : null,
         }}
       />
-      <IconButton
+      <Button
         variant="contained"
         aria-label="Use my location"
         color="primary"
@@ -148,7 +146,8 @@ export default function AddressAutoComplete({ input }) {
         disabled={loadingLocation}
       >
         {loadingLocation ? <CircularProgress size={20} /> : <LocationOnIcon />}
-      </IconButton>
+        Use My Current Location
+      </Button>
     </Stack>
   );
 }
