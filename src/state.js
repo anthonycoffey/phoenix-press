@@ -1,10 +1,10 @@
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useEffect, useState } from 'react';
 export const GlobalStateContext = createContext();
-import questionData from "../assets/questions";
+import questionData from './utils/questions';
 
 export const GlobalStateProvider = ({ children }) => {
   const [questions, setQuestions] = useState(() => {
-    const savedData = localStorage.getItem("formData");
+    const savedData = localStorage.getItem('formData');
     return savedData ? JSON.parse(savedData) : questionData;
   });
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -17,23 +17,23 @@ export const GlobalStateProvider = ({ children }) => {
   // Save to localStorage whenever questions change
   useEffect(() => {
     if (questions) {
-      localStorage.setItem("formData", JSON.stringify(questions));
+      localStorage.setItem('formData', JSON.stringify(questions));
     }
   }, [questions]);
 
   useEffect(() => {
     setLoading(true);
-    fetch(LOCALIZED.API_URL + "/get-form-data", {
-      method: "GET",
+    fetch(LOCALIZED.API_URL + '/get-form-data', {
+      method: 'GET',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
     })
       .then((response) => response.json())
       .then((response) => {
         let { data } = response;
         if (!data) {
-          return new Error("No data found in response");
+          return new Error('No data found in response');
         } else {
           const services = data
             ?.filter((service) => !service?.isDefault && !service?.isInternal)
@@ -47,7 +47,7 @@ export const GlobalStateProvider = ({ children }) => {
         }
       })
       .catch((error) => {
-        console.error("Error fetching form data:", error);
+        console.error('Error fetching form data:', error);
         setLoading(false);
       });
   }, []);

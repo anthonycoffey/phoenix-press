@@ -1,11 +1,6 @@
-import {
-  FormControl,
-  FormControlLabel,
-  FormGroup,
-  Checkbox,
-} from "@mui/material";
-import { useContext, useState } from "react";
-import { GlobalStateContext } from "../state";
+import { FormControl, FormControlLabel, FormGroup, Checkbox } from '@mui/material';
+import { useContext, useState } from 'react';
+import { GlobalStateContext } from '../state';
 
 export default function ServiceSelect({ input }) {
   const { services } = useContext(GlobalStateContext); // Access global state
@@ -13,9 +8,7 @@ export default function ServiceSelect({ input }) {
 
   const handleCheckboxChange = (event) => {
     const { value, checked } = event.target;
-    setSelectedServices((prev) =>
-      checked ? [...prev, value] : prev.filter((service) => service !== value),
-    );
+    setSelectedServices((prev) => (checked ? [...prev, value] : prev.filter((service) => service !== value)));
   };
 
   return (

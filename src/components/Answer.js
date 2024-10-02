@@ -1,24 +1,15 @@
-import React, { useContext } from "react";
-import { TextField, Stack, TextareaAutosize } from "@mui/material";
-import {
-  DatePicker,
-  TimePicker,
-  LocalizationProvider,
-} from "@mui/x-date-pickers";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { GlobalStateContext } from "../state";
-import AddressAutoComplete from "./AddressAutoComplete";
-import ServiceSelect from "./ServiceSelect";
-import PhoneField from "./PhoneField";
+import React, { useContext } from 'react';
+import { TextField, Stack, TextareaAutosize } from '@mui/material';
+import { DatePicker, TimePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { GlobalStateContext } from '../state';
+import AddressAutoComplete from './AddressAutoComplete';
+import ServiceSelect from './ServiceSelect';
+import PhoneField from './PhoneField';
 
 const Answer = ({ question }) => {
-  const {
-    questions,
-    setQuestions,
-    currentQuestionIndex,
-    selectedDate,
-    setSelectedDate,
-  } = useContext(GlobalStateContext);
+  const { questions, setQuestions, currentQuestionIndex, selectedDate, setSelectedDate } =
+    useContext(GlobalStateContext);
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
@@ -30,9 +21,7 @@ const Answer = ({ question }) => {
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     const updatedQuestions = [...questions];
-    const currentInput = updatedQuestions[currentQuestionIndex].inputs.find(
-      (input) => input.name === name,
-    );
+    const currentInput = updatedQuestions[currentQuestionIndex].inputs.find((input) => input.name === name);
     currentInput.value = value;
     setQuestions(updatedQuestions);
   };
@@ -40,17 +29,11 @@ const Answer = ({ question }) => {
   return (
     <>
       {question.inputs.map((input, index) => {
-        if (input.type === "tel") {
-          return (
-            <PhoneField
-              input={input}
-              key={index}
-              onChange={handleInputChange}
-            />
-          );
+        if (input.type === 'tel') {
+          return <PhoneField input={input} key={index} onChange={handleInputChange} />;
         }
 
-        if (input.type === "text") {
+        if (input.type === 'text') {
           return (
             <TextField
               key={index}
@@ -65,15 +48,15 @@ const Answer = ({ question }) => {
           );
         }
 
-        if (input.type === "geo") {
+        if (input.type === 'geo') {
           return <AddressAutoComplete input={input} key={index} />;
         }
 
-        if (input.type === "select") {
+        if (input.type === 'select') {
           return <ServiceSelect input={input} key={index} />;
         }
 
-        if (input.type === "textarea") {
+        if (input.type === 'textarea') {
           return (
             <TextField
               key={index}
@@ -90,10 +73,10 @@ const Answer = ({ question }) => {
           );
         }
 
-        if (input.type === "datetime") {
+        if (input.type === 'datetime') {
           return (
             <LocalizationProvider dateAdapter={AdapterDateFns} key={index}>
-              <Stack direction="row" spacing={2} style={{ marginTop: "1rem" }}>
+              <Stack direction="row" spacing={2} style={{ marginTop: '1rem' }}>
                 <DatePicker
                   label="Select Date"
                   value={selectedDate}
@@ -101,12 +84,7 @@ const Answer = ({ question }) => {
                   disablePast
                   fullWidth
                 />
-                <TimePicker
-                  label="Select Time"
-                  value={selectedDate}
-                  onChange={handleDateChange}
-                  fullWidth
-                />
+                <TimePicker label="Select Time" value={selectedDate} onChange={handleDateChange} fullWidth />
               </Stack>
             </LocalizationProvider>
           );

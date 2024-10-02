@@ -140,8 +140,9 @@ class Plugin
       'PHOENIX_PRESS_ABSPATH',
       trailingslashit(plugin_dir_path(__DIR__))
     );
+
     $this->maybe_define_constant(
-      'PHOENIX_PRESS_API',
+      'PHOENIX_API',
       'https://phoenix-staging-data-3d6054f8c3ef.herokuapp.com'
     );
   }

@@ -1,46 +1,32 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
-import { TextField, Stack, Button, CircularProgress } from "@mui/material";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
-import { useLoadScript } from "@react-google-maps/api";
-import { GlobalStateContext } from "../state";
+import React, { useState, useEffect, useRef, useContext } from 'react';
+import { TextField, Stack, Button, CircularProgress } from '@mui/material';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import { useLoadScript } from '@react-google-maps/api';
+import { GlobalStateContext } from '../state';
 
 const getAddressObject = (address_components) => {
   const obj = {};
   if (!address_components) return obj;
 
-  const number = address_components.find((c) =>
-    c.types.includes("street_number"),
-  )?.long_name;
+  const number = address_components.find((c) => c.types.includes('street_number'))?.long_name;
 
-  const street = address_components.find((c) =>
-    c.types.includes("route"),
-  )?.short_name;
+  const street = address_components.find((c) => c.types.includes('route'))?.short_name;
 
-  obj.address_1 = number && street ? `${number} ${street}` : "";
-  obj.city =
-    address_components.find((c) => c.types.includes("locality"))?.long_name ||
-    "";
-  obj.state =
-    address_components.find((c) =>
-      c.types.includes("administrative_area_level_1"),
-    )?.short_name || "";
-  obj.country =
-    address_components.find((c) => c.types.includes("country"))?.short_name ||
-    "";
-  obj.zipcode =
-    address_components.find((c) => c.types.includes("postal_code"))
-      ?.long_name || "";
+  obj.address_1 = number && street ? `${number} ${street}` : '';
+  obj.city = address_components.find((c) => c.types.includes('locality'))?.long_name || '';
+  obj.state = address_components.find((c) => c.types.includes('administrative_area_level_1'))?.short_name || '';
+  obj.country = address_components.find((c) => c.types.includes('country'))?.short_name || '';
+  obj.zipcode = address_components.find((c) => c.types.includes('postal_code'))?.long_name || '';
 
   return obj;
 };
 
-const libraries = ["places"];
+const libraries = ['places'];
 
 export default function AddressAutoComplete({ input }) {
   const [loadingLocation, setLoadingLocation] = useState(false);
   const inputRef = useRef(null); // Ref for the Autocomplete
-  const { questions, currentQuestionIndex, setQuestions } =
-    useContext(GlobalStateContext); // Access global state
+  const { questions, currentQuestionIndex, setQuestions } = useContext(GlobalStateContext); // Access global state
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: LOCALIZED?.GMAPS_API_KEY,
@@ -50,10 +36,8 @@ export default function AddressAutoComplete({ input }) {
   useEffect(() => {
     if (!inputRef.current || !window.google) return;
 
-    const autocomplete = new window.google.maps.places.Autocomplete(
-      inputRef.current,
-    );
-    autocomplete.addListener("place_changed", () => {
+    const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current);
+    autocomplete.addListener('place_changed', () => {
       const place = autocomplete.getPlace();
       const addressObj = getAddressObject(place.address_components);
       handleInputChange(addressObj);
@@ -67,7 +51,7 @@ export default function AddressAutoComplete({ input }) {
 
   const handleUseGps = () => {
     if (!navigator.geolocation) {
-      console.error("Geolocation is not supported by your browser.");
+      console.error('Geolocation is not supported by your browser.');
       return;
     }
 
@@ -77,33 +61,26 @@ export default function AddressAutoComplete({ input }) {
         const { latitude, longitude } = pos.coords;
         const geocoder = new window.google.maps.Geocoder();
 
-        geocoder.geocode(
-          { location: { lat: latitude, lng: longitude } },
-          (results, status) => {
-            setLoadingLocation(false);
-            if (status === "OK" && results[0]) {
-              const addressObj = getAddressObject(
-                results[0].address_components,
-              );
-              handleInputChange(addressObj);
-            } else {
-              console.error("Geocoder failed due to: " + status);
-            }
-          },
-        );
+        geocoder.geocode({ location: { lat: latitude, lng: longitude } }, (results, status) => {
+          setLoadingLocation(false);
+          if (status === 'OK' && results[0]) {
+            const addressObj = getAddressObject(results[0].address_components);
+            handleInputChange(addressObj);
+          } else {
+            console.error('Geocoder failed due to: ' + status);
+          }
+        });
       },
       (err) => {
         setLoadingLocation(false);
-        console.error("Error in getting geolocation: ", err);
-      },
+        console.error('Error in getting geolocation: ', err);
+      }
     );
   };
 
   const handleInputChange = (event) => {
     const updatedQuestions = [...questions];
-    const currentInput = updatedQuestions[currentQuestionIndex].inputs.find(
-      (input) => input.name === "location",
-    );
+    const currentInput = updatedQuestions[currentQuestionIndex].inputs.find((input) => input.name === 'location');
 
     if (event.nativeEvent instanceof Event) {
       currentInput.value = event.target.value;
@@ -124,7 +101,7 @@ export default function AddressAutoComplete({ input }) {
   }
 
   return (
-    <Stack spacing={2} direction="column" sx={{ marginTop: "1rem" }}>
+    <Stack spacing={2} direction="column" sx={{ marginTop: '1rem' }}>
       <TextField
         label={input.label}
         name={input.name}

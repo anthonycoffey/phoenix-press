@@ -38,17 +38,19 @@ class Meta
     register_rest_route("phoenix-press/v1", "/get-form-data", [
       "methods" => "GET",
       "callback" => [ __CLASS__, "get_form_data" ],
+      "permission_callback" => '__return_true',
      ]);
 
-    register_rest_route("phoenix-press/v1", "/submit-lead", [
+    register_rest_route("phoenix-press/v1", "/submit-lead-form", [
       "methods" => "POST",
       "callback" => [ __CLASS__, "submit_lead" ],
+      "permission_callback" => '__return_true',
      ]);
   }
 
   public static function get_form_data($request)
   {
-    $response = wp_remote_get(PHOENIX_PRESS_API . "/services?limit=all");
+    $response = wp_remote_get(PHOENIX_API . "/services?limit=all");
     $body = wp_remote_retrieve_body($response);
 
     return new \WP_REST_Response(json_decode($body), 200);
@@ -57,9 +59,10 @@ class Meta
   public static function submit_lead($request)
   {
     $data = $request->get_json_params();
+    var_dump($data);
 
-    $response = wp_remote_post(PHOENIX_PRESS_API . "/submit", [
-      "body" => json_encode($data),
+    $response = wp_remote_post(PHOENIX_API . "/form-submission?schedule=2", [
+      "body" => $data,
       "headers" => [ "Content-Type" => "application/json" ],
      ]);
 

@@ -1,24 +1,12 @@
-import React, { useContext, useState, useEffect } from "react";
-import { createRoot } from "react-dom/client";
-import {
-  Button,
-  Card,
-  CardContent,
-  CardActions,
-  Avatar,
-  CircularProgress,
-  Stack,
-  Modal,
-  Box,
-  Typography,
-} from "@mui/material";
-import Prompt from "./components/Prompt";
-import Answer from "./components/Answer";
-import axios from "axios";
-import "./styles.sass";
-import questionData from "./assets/questions";
+import React, { useContext, useState, useEffect } from 'react';
+import { createRoot } from 'react-dom/client';
+import { Button, Card, CardContent, CardActions, CircularProgress, Stack, Modal, Box, Typography } from '@mui/material';
+import Prompt from './components/Prompt';
+import Answer from './components/Answer';
+import './styles.sass';
+import questionData from './utils/questions';
 
-import { GlobalStateContext, GlobalStateProvider } from "./state"; // Import context
+import { GlobalStateContext, GlobalStateProvider } from './state.js'; // Import context
 
 const PhoenixForm = () => {
   const {
@@ -39,15 +27,13 @@ const PhoenixForm = () => {
 
   useEffect(() => {
     if (isFormVisible) {
-      const savedData = localStorage.getItem("formData");
+      const savedData = localStorage.getItem('formData');
       if (savedData) {
         const formData = JSON.parse(savedData);
 
         // Check if any input has a non-empty value
         const hasFilledField = formData.some((question) =>
-          question.inputs.some(
-            (input) => input.value && input.value.trim() !== "",
-          ),
+          question.inputs.some((input) => input.value && input.value.trim() !== '')
         );
 
         if (hasFilledField) {
@@ -58,7 +44,7 @@ const PhoenixForm = () => {
   }, [isFormVisible]);
 
   const handleContinue = () => {
-    const savedData = localStorage.getItem("formData");
+    const savedData = localStorage.getItem('formData');
     if (savedData) {
       setQuestions(JSON.parse(savedData));
     }
@@ -66,7 +52,7 @@ const PhoenixForm = () => {
   };
 
   const handleNewStart = () => {
-    localStorage.removeItem("formData"); // Clear saved data
+    localStorage.removeItem('formData'); // Clear saved data
     setQuestions(questionData);
     setCurrentQuestionIndex(0);
     setShowModal(false);
@@ -85,14 +71,28 @@ const PhoenixForm = () => {
         question.inputs.map((input) => ({
           name: input.name,
           value: input.value,
-        })),
+        }))
       );
+
+      const completed = currentQuestionIndex + 1 === questions.length;
+      const source = window.location.href;
+      console.log({ submission, completed, source });
       try {
-        // todo: replace with correct submission endpoint and test
-        await axios.post("/api/submit", { submission });
-        setSubmitted(true);
+        fetch(
+          LOCALIZED.API_URL + '/submit-lead-form',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          },
+          { submission, completed, source }
+        ).then((response) => {
+          console.log('Response:', response);
+          setSubmitted(true);
+        });
       } catch (error) {
-        console.error("Error submitting the form", error);
+        console.error('There was an error', error);
       } finally {
         setLoading(false);
       }
@@ -103,32 +103,23 @@ const PhoenixForm = () => {
 
   const currentQuestion = questions[currentQuestionIndex];
 
-  if (submitted) {
-    return (
-      <div className="submitted-container">
-        <Avatar alt="Success" src="/success-icon.png" />
-        <h4>Submitted Successfully</h4>
-      </div>
-    );
-  }
-
   return (
     <>
       <button
         onClick={toggleFormVisibility}
         style={{
-          position: "fixed",
-          bottom: "20px",
-          right: "20px",
-          width: "60px",
-          height: "60px",
-          borderRadius: "50%",
-          backgroundColor: "#4395ce",
-          border: "none",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          cursor: "pointer",
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          width: '60px',
+          height: '60px',
+          borderRadius: '50%',
+          backgroundColor: '#4395ce',
+          border: 'none',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          cursor: 'pointer',
         }}
         aria-label="Show Lead Form"
       >
@@ -147,12 +138,12 @@ const PhoenixForm = () => {
       <Modal open={showModal} onClose={() => setShowModal(false)}>
         <Box
           sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            width: "80%",
-            transform: "translate(-50%, -50%)", // Centering the modal
-            bgcolor: "background.paper",
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            width: '80%',
+            transform: 'translate(-50%, -50%)', // Centering the modal
+            bgcolor: 'background.paper',
             boxShadow: 24,
             p: 4,
             borderRadius: 2,
@@ -160,22 +151,13 @@ const PhoenixForm = () => {
         >
           <Typography variant="h6">Continue existing submission?</Typography>
           <Typography variant="body1">
-            It looks like you started this form before. Would you like to pick
-            up where you left off?
+            It looks like you started this form before. Would you like to pick up where you left off?
           </Typography>
           <Box display="flex" justifyContent="space-between" mt={2}>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={handleNewStart}
-            >
+            <Button variant="outlined" color="secondary" onClick={handleNewStart}>
               Start Over
             </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleContinue}
-            >
+            <Button variant="contained" color="primary" onClick={handleContinue}>
               Continue
             </Button>
           </Box>
@@ -188,37 +170,34 @@ const PhoenixForm = () => {
             <CircularProgress />
           ) : (
             <>
-              <CardContent>
-                <Stack space={2}>
-                  <Prompt question={currentQuestion} />
-                  <Answer
-                    question={currentQuestion}
-                    selectedDate={selectedDate}
-                  />
-                </Stack>
-              </CardContent>
-              <CardActions sx={{ justifyContent: "space-between" }}>
-                {currentQuestionIndex > 0 && (
-                  <Button
-                    variant="contained"
-                    onClick={() =>
-                      setCurrentQuestionIndex(currentQuestionIndex - 1)
-                    }
-                  >
-                    Back
-                  </Button>
-                )}
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleSubmit}
-                  disabled={loading}
-                >
-                  {currentQuestionIndex + 1 === questions.length
-                    ? "Submit"
-                    : "Next"}
-                </Button>
-              </CardActions>
+              {submitted && (
+                <CardContent>
+                  <Stack space={2}>
+                    <Prompt question={{ prompt: 'Thank you for your submission! We will contact you shortly.' }} />
+                  </Stack>
+                </CardContent>
+              )}
+
+              {!submitted && (
+                <>
+                  <CardContent>
+                    <Stack space={2}>
+                      <Prompt question={currentQuestion} />
+                      <Answer question={currentQuestion} selectedDate={selectedDate} />
+                    </Stack>
+                  </CardContent>
+                  <CardActions sx={{ justifyContent: 'space-between' }}>
+                    {currentQuestionIndex > 0 && (
+                      <Button variant="contained" onClick={() => setCurrentQuestionIndex(currentQuestionIndex - 1)}>
+                        Back
+                      </Button>
+                    )}
+                    <Button variant="contained" color="primary" onClick={handleSubmit} disabled={loading}>
+                      {currentQuestionIndex + 1 === questions.length ? 'Submit' : 'Next'}
+                    </Button>
+                  </CardActions>
+                </>
+              )}
             </>
           )}
         </Card>
@@ -227,10 +206,10 @@ const PhoenixForm = () => {
   );
 };
 
-const rootElement = document.getElementById("phoenix-form-root");
+const rootElement = document.getElementById('phoenix-form-root');
 const root = createRoot(rootElement);
 root.render(
   <GlobalStateProvider>
     <PhoenixForm />
-  </GlobalStateProvider>,
+  </GlobalStateProvider>
 );

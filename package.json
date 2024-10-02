@@ -5,9 +5,20 @@
   "author": "Anthony Coffey",
   "license": "MIT",
   "scripts": {
-    "build": "wp-scripts build --config ./webpack.config.js",
-    "start": "NODE_ENV=development wp-scripts start --config ./webpack.config.js"
+    "build": "NODE_ENV=production wp-scripts build --config ./webpack.config.js",
+    "start": "NODE_ENV=development wp-scripts start --config ./webpack.config.js",
+    "lint": "prettier --write .",
+    "lint:check": "prettier --check ."
   },
+  "entry": {
+    "index": "./src/index.js"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ],
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@babel/preset-env": "^7.25.4",
@@ -32,6 +43,7 @@
     "@mui/x-date-pickers": "^6.20.2",
     "@react-google-maps/api": "^2.19.3",
     "axios": "^1.7.7",
+    "core-js": "^3.38.1",
     "date-fns": "^2.30.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
