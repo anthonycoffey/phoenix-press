@@ -6,5 +6,11 @@ node_modules
 .DS_Store
 build
 phoenix-press.zip
-.idea
+# Default ignored files
+/shelf/
+/workspace.xml
+# Editor-based HTTP Client requests
+/httpRequests/
+.idea/
+
 .env*
