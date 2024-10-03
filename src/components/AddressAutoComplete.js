@@ -24,9 +24,9 @@ const getAddressObject = (address_components) => {
 const libraries = ['places'];
 
 export default function AddressAutoComplete({ input }) {
+  const { questions, currentQuestionIndex, setQuestions, errors, setErrors } = useContext(GlobalStateContext); // Access global state
   const [loadingLocation, setLoadingLocation] = useState(false);
   const inputRef = useRef(null); // Ref for the Autocomplete
-  const { questions, currentQuestionIndex, setQuestions } = useContext(GlobalStateContext); // Access global state
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: LOCALIZED?.GMAPS_API_KEY,
@@ -90,6 +90,13 @@ export default function AddressAutoComplete({ input }) {
     }
 
     setQuestions(updatedQuestions);
+
+    const errorMessage = validateLocation(currentInput);
+    setErrors({ ...errors, [currentInput.name]: errorMessage });
+  };
+
+  const validateLocation = (input) => {
+    if (!input.optional) return !input.value.trim() ? 'This field is required' : '';
   };
 
   if (loadError) {
@@ -114,6 +121,8 @@ export default function AddressAutoComplete({ input }) {
         InputProps={{
           endAdornment: loadingLocation ? <CircularProgress size={20} /> : null,
         }}
+        error={!!errors[input.name]}
+        helperText={errors[input.name]}
       />
       <Button
         variant="contained"

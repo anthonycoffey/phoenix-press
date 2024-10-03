@@ -9,8 +9,8 @@ class Meta
     add_action("wp_enqueue_scripts", [ __CLASS__, "enqueue_scripts" ]);
     add_action("rest_api_init", [ __CLASS__, "register_rest_routes" ]);
     add_action("wp_footer", [ __CLASS__, "lead_form" ]);
-    add_action("admin_menu", [ __CLASS__, "add_settings_page" ]); // Add settings page
-    add_action("admin_init", [ __CLASS__, "register_settings" ]); // Register settings
+    add_action("admin_menu", [ __CLASS__, "add_settings_page" ]);
+    add_action("admin_init", [ __CLASS__, "register_settings" ]);
   }
 
   public static function enqueue_scripts()
@@ -50,8 +50,8 @@ class Meta
 
   public static function get_form_data($request)
   {
-    $api_url = get_option("phoenix_api_url", PHOENIX_API);
-
+    $setting = get_option("phoenix_api_url");
+    $api_url = $setting ? $setting : PHOENIX_API;
     $response = wp_remote_get($api_url . "/services?limit=all");
     $body = wp_remote_retrieve_body($response);
 
@@ -60,16 +60,22 @@ class Meta
 
   public static function submit_lead($request)
   {
-    $data = $request->get_json_params();
-    var_dump($data);
+    $setting = get_option("phoenix_api_url");
+    $api_url = $setting ? $setting : PHOENIX_API;
 
-    $response = wp_remote_post(PHOENIX_API . "/form-submission?schedule=2", [
-      "body" => $data,
+    $data = $request->get_json_params();
+
+    if (empty($data)) {
+      return new \WP_REST_Response([ "error" => "Invalid JSON data" ], 400);
+    }
+
+    $response = wp_remote_post($api_url . "/form-submission?schedule=2", [
+      "body" => wp_json_encode($data),
       "headers" => [ "Content-Type" => "application/json" ],
      ]);
 
     if (is_wp_error($response)) {
-      return new \WP_REST_Response([ "error" => "Failed to submit" ], 400);
+      return new \WP_REST_Response([ "error" => "Failed to submit" ], 500);
     }
 
     return new \WP_REST_Response(
@@ -101,16 +107,15 @@ class Meta
             <h1>Phoenix Press Settings</h1>
             <form method="post" action="options.php">
                 <?php
-settings_fields("phoenix_press_options");
-    do_settings_sections("phoenix-press");
-    submit_button();
-    ?>
+                  settings_fields("phoenix_press_options");
+                  do_settings_sections("phoenix-press");
+                  submit_button();
+                ?>
             </form>
         </div>
-        <?php
+    <?php
 }
 
-  // Register settings for the plugin
   public static function register_settings()
   {
     register_setting("phoenix_press_options", "phoenix_gmaps_api_key");
@@ -141,7 +146,6 @@ settings_fields("phoenix_press_options");
 
   }
 
-  // Callback to render the input field for the Google Maps API key
   public static function gmaps_api_key_field_callback()
   {
     $apiKey = get_option("phoenix_gmaps_api_key", "");
@@ -152,11 +156,11 @@ settings_fields("phoenix_press_options");
 
   public static function phoenix_api_url_field_callback()
   {
-    $apiUrl = get_option("phoenix_api_url", PHOENIX_API);
+    $apiUrl = get_option("phoenix_api_url", "");
     echo '<input type="text" id="phoenix_api_url" name="phoenix_api_url" value="' .
     esc_attr($apiUrl) .
       '" size="50" /><br />';
-    echo '<label for="phoenix_api_url"><b>default endpoint: </b>' . PHOENIX_API . '</label><br />';
+    echo '<label for="phoenix_api_url"><b>default endpoint is </b>' . PHOENIX_API . '</label><br />';
   }
 
 }

@@ -8,6 +8,7 @@ import ServiceSelect from './ServiceSelect';
 import PhoneField from './PhoneField';
 
 const Answer = ({ question }) => {
+  const { errors, setErrors } = useContext(GlobalStateContext);
   const { questions, setQuestions, currentQuestionIndex } = useContext(GlobalStateContext);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
@@ -32,6 +33,16 @@ const Answer = ({ question }) => {
     const currentInput = updatedQuestions[currentQuestionIndex].inputs.find((input) => input.name === name);
     currentInput.value = value;
     setQuestions(updatedQuestions);
+
+    if (currentInput.type === 'text') {
+      // Validate text input
+      const errorMessage = validateField(currentInput);
+      setErrors({ ...errors, [currentInput.name]: errorMessage });
+    }
+  };
+
+  const validateField = (input) => {
+    if (!input.optional) return !input.value.trim() ? 'This field is required' : '';
   };
 
   return (
@@ -52,6 +63,8 @@ const Answer = ({ question }) => {
               fullWidth
               variant="outlined"
               margin="normal"
+              error={!!errors[input.name]}
+              helperText={errors[input.name]}
             />
           );
         }

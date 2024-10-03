@@ -8,7 +8,6 @@ const options = [
         type: 'tel',
         label: 'Enter your phone number...',
         value: '',
-        model: '',
         optional: false,
       },
     ],

@@ -19,9 +19,21 @@ const PhoenixForm = () => {
     setSubmitted,
     isFormVisible,
     setIsFormVisible,
+    errors,
   } = useContext(GlobalStateContext);
   const currentQuestion = questions[currentQuestionIndex];
   const [showModal, setShowModal] = useState(false);
+  const [invalid, setInvalid] = useState(true);
+
+  useEffect(() => {
+    console.log('testing..');
+    const hasErrors = currentQuestion.inputs.some((input) => errors[input.name]);
+    const isEmpty = currentQuestion.inputs.some(
+      (input) => !input.optional && (input.value === '' || (Array.isArray(input.value) && input.value.length === 0))
+    );
+    console.log({ isEmpty, hasErrors });
+    setInvalid(hasErrors || isEmpty);
+  }, [errors, currentQuestionIndex]);
 
   useEffect(() => {
     if (isFormVisible) {
@@ -29,7 +41,6 @@ const PhoenixForm = () => {
       if (savedData) {
         const formData = JSON.parse(savedData);
 
-        // Check if any input has a non-empty value
         const hasFilledField = formData.some((question) =>
           question.inputs.some((input) => typeof input.value === 'string' && input.value.trim() !== '')
         );
@@ -50,15 +61,16 @@ const PhoenixForm = () => {
   };
 
   const handleNewStart = () => {
-    localStorage.removeItem('formData'); // Clear saved data
+    localStorage.removeItem('formData');
     setSubmitted(false);
     setQuestions(questionData);
     setCurrentQuestionIndex(0);
+    setInvalid(true);
     setShowModal(false);
   };
 
   const toggleFormVisibility = () => {
-    setIsFormVisible(!isFormVisible); // Toggle form visibility
+    setIsFormVisible(!isFormVisible);
   };
 
   const handleSubmit = async () => {
@@ -66,28 +78,23 @@ const PhoenixForm = () => {
 
     if (isLastQuestion) {
       setLoading(true);
-      const submission = questions.map((question) =>
-        question.inputs.map((input) => ({
-          name: input.name,
-          value: input.value,
-        }))
+      const submission = questions.flatMap((question) =>
+        question.inputs.map((input) => {
+          const { name, value, obj } = input;
+          return obj ? { name, value, obj } : { name, value };
+        })
       );
 
-      const completed = currentQuestionIndex + 1 === questions.length;
-      console.log(window.location);
+      const completed = true;
       const source = window.location.href;
-      console.log({ submission, completed, source });
       try {
-        fetch(
-          LOCALIZED.API_URL + '/submit-lead-form',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+        fetch(LOCALIZED.API_URL + '/submit-lead-form', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-          { submission, completed, source }
-        ).then((response) => {
+          body: JSON.stringify({ submission, completed, source }),
+        }).then(() => {
           setSubmitted(true);
         });
       } catch (error) {
@@ -139,7 +146,7 @@ const PhoenixForm = () => {
             top: '50%',
             left: '50%',
             width: '80%',
-            transform: 'translate(-50%, -50%)', // Centering the modal
+            transform: 'translate(-50%, -50%)',
             bgcolor: 'background.paper',
             boxShadow: 24,
             p: 4,
@@ -200,7 +207,7 @@ const PhoenixForm = () => {
                           handleSubmit();
                         }
                       }}
-                      disabled={loading}
+                      disabled={invalid || loading}
                     >
                       {currentQuestionIndex + 1 === questions.length ? 'Submit' : 'Next'}
                     </Button>

@@ -1,12 +1,12 @@
 import { TextField } from '@mui/material';
+import { useContext } from 'react';
+import { GlobalStateContext } from '../state';
 
 export default function PhoneField({ input, onChange }) {
-  // Function to format phone number
+  const { errors, setErrors } = useContext(GlobalStateContext);
   const formatPhoneNumber = (value) => {
-    // Remove non-numeric characters
     const phoneNumber = value.replace(/\D/g, '');
 
-    // Format the number based on length
     if (phoneNumber.length <= 3) {
       return phoneNumber;
     } else if (phoneNumber.length <= 6) {
@@ -16,9 +16,17 @@ export default function PhoneField({ input, onChange }) {
     }
   };
 
+  // Function to validate phone number
+  const validatePhoneNumber = (value) => {
+    const phoneNumber = value.replace(/\D/g, '');
+    return phoneNumber.length !== 10 ? 'Phone number must be 10 digits' : '';
+  };
+
   const handleInputChange = (event) => {
     const { value } = event.target;
     const formatted = formatPhoneNumber(value);
+    const errorMessage = validatePhoneNumber(formatted);
+    setErrors({ ...errors, [input.name]: errorMessage });
     onChange({ target: { name: 'phone', value: formatted } });
   };
 
@@ -32,6 +40,8 @@ export default function PhoneField({ input, onChange }) {
       variant="outlined"
       margin="normal"
       type="tel"
+      error={!!errors[input.name]}
+      helperText={errors[input.name]}
     />
   );
 }
