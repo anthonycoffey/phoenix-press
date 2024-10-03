@@ -12,5 +12,5 @@ phoenix-press.zip
 # Editor-based HTTP Client requests
 /httpRequests/
 .idea/
-
+tests/
 .env*
