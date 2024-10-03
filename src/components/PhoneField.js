@@ -1,13 +1,6 @@
 import { TextField } from '@mui/material';
-import { useEffect, useState } from 'react';
 
 export default function PhoneField({ input, onChange }) {
-  const [formattedValue, setFormattedValue] = useState(input.value || '');
-
-  useEffect(() => {
-    setFormattedValue(formatPhoneNumber(input.value));
-  }, [input]);
-
   // Function to format phone number
   const formatPhoneNumber = (value) => {
     // Remove non-numeric characters
@@ -26,7 +19,6 @@ export default function PhoneField({ input, onChange }) {
   const handleInputChange = (event) => {
     const { value } = event.target;
     const formatted = formatPhoneNumber(value);
-    setFormattedValue(formatted);
     onChange({ target: { name: 'phone', value: formatted } });
   };
 
@@ -34,7 +26,7 @@ export default function PhoneField({ input, onChange }) {
     <TextField
       label={input.label}
       name={input.name}
-      value={formattedValue}
+      value={input.value}
       onChange={handleInputChange}
       fullWidth
       variant="outlined"

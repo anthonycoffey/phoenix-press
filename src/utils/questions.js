@@ -1,5 +1,6 @@
 const options = [
   {
+    name: 'phone',
     prompt: 'What is your phone number?',
     inputs: [
       {
@@ -8,11 +9,12 @@ const options = [
         label: 'Enter your phone number...',
         value: '',
         model: '',
-        invalid: true,
+        optional: false,
       },
     ],
   },
   {
+    name: 'full_name',
     prompt: 'What is your name?',
     inputs: [
       {
@@ -20,10 +22,12 @@ const options = [
         type: 'text',
         label: 'Full Name',
         value: '',
+        optional: false,
       },
     ],
   },
   {
+    name: 'location',
     prompt: 'What is your current location?',
     inputs: [
       {
@@ -32,13 +36,12 @@ const options = [
         label: 'Search for your location...',
         value: '',
         obj: {},
-        lat: 0,
-        lng: 0,
-        invalid: true,
+        optional: false,
       },
     ],
   },
   {
+    name: 'service_time',
     prompt: 'When do you need service?',
     inputs: [
       {
@@ -46,22 +49,22 @@ const options = [
         type: 'datetime',
         name: 'service_time',
         selected: '',
-        dateDialog: false,
-        timeDialog: false,
+        optional: false,
       },
     ],
   },
   {
+    name: 'service_type',
     prompt: 'What service do you need?',
-    autoSubmit: true,
     inputs: [
       {
-        value: '',
+        value: [],
         valueId: null,
         type: 'select',
         name: 'service_type',
         optionsKey: 'serviceOptions',
         options: [],
+        optional: false,
       },
     ],
   },
@@ -73,19 +76,21 @@ const options = [
         type: 'text',
         label: 'Car Make',
         value: '',
+        optional: false,
       },
       {
         name: 'car_model',
         type: 'text',
         label: 'Car Model',
         value: '',
+        optional: false,
       },
       {
         name: 'car_year',
         type: 'text',
         label: 'Car Year',
         value: '',
-        optional: true,
+        optional: false,
       },
       {
         name: 'car_color',

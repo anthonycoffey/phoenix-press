@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { TextField, Stack } from '@mui/material';
 import { DatePicker, TimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -8,14 +8,22 @@ import ServiceSelect from './ServiceSelect';
 import PhoneField from './PhoneField';
 
 const Answer = ({ question }) => {
-  const { questions, setQuestions, currentQuestionIndex, selectedDate, setSelectedDate } =
-    useContext(GlobalStateContext);
+  const { questions, setQuestions, currentQuestionIndex } = useContext(GlobalStateContext);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  useEffect(() => {
+    if (questions) {
+      const updatedQuestions = [...questions];
+      const currentInput = updatedQuestions[currentQuestionIndex].inputs.find((input) => input.name === 'service_time');
+      if (currentInput) {
+        currentInput.value = selectedDate;
+        setQuestions(updatedQuestions);
+      }
+    }
+  }, [question, selectedDate]);
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
-    const updatedQuestions = [...questions];
-    updatedQuestions[currentQuestionIndex].inputs[0].value = date;
-    setQuestions(updatedQuestions);
   };
 
   const handleInputChange = (event) => {

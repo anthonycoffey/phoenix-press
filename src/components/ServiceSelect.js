@@ -1,15 +1,21 @@
 import { FormControl, FormControlLabel, FormGroup, Checkbox, Box } from '@mui/material';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { GlobalStateContext } from '../state';
 
 export default function ServiceSelect({ input }) {
-  const { services } = useContext(GlobalStateContext); // Access global state
+  const { questions, currentQuestionIndex, setQuestions, services } = useContext(GlobalStateContext);
+
   const [selectedServices, setSelectedServices] = useState([]);
   const handleCheckboxChange = (event) => {
     const { value, checked } = event.target;
-    // todo: if localstorage has value for this field, set it here
     setSelectedServices((prev) => (checked ? [...prev, value] : prev.filter((service) => service !== value)));
   };
+  useEffect(() => {
+    const updatedQuestions = [...questions];
+    const currentInput = updatedQuestions[currentQuestionIndex].inputs.find((input) => input.name === 'service_type');
+    currentInput.value = selectedServices;
+    setQuestions(updatedQuestions);
+  }, [selectedServices]);
 
   return (
     <FormControl component="fieldset" fullWidth margin="dense">

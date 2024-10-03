@@ -5,7 +5,6 @@ import Prompt from './components/Prompt';
 import Answer from './components/Answer';
 import './styles.sass';
 import questionData from './utils/questions';
-
 import { GlobalStateContext, GlobalStateProvider } from './state.js'; // Import context
 
 const PhoenixForm = () => {
@@ -18,11 +17,10 @@ const PhoenixForm = () => {
     setLoading,
     submitted,
     setSubmitted,
-    selectedDate,
     isFormVisible,
     setIsFormVisible,
   } = useContext(GlobalStateContext);
-
+  const currentQuestion = questions[currentQuestionIndex];
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
@@ -33,7 +31,7 @@ const PhoenixForm = () => {
 
         // Check if any input has a non-empty value
         const hasFilledField = formData.some((question) =>
-          question.inputs.some((input) => input.value && input.value.trim() !== '')
+          question.inputs.some((input) => typeof input.value === 'string' && input.value.trim() !== '')
         );
 
         if (hasFilledField) {
@@ -53,6 +51,7 @@ const PhoenixForm = () => {
 
   const handleNewStart = () => {
     localStorage.removeItem('formData'); // Clear saved data
+    setSubmitted(false);
     setQuestions(questionData);
     setCurrentQuestionIndex(0);
     setShowModal(false);
@@ -75,6 +74,7 @@ const PhoenixForm = () => {
       );
 
       const completed = currentQuestionIndex + 1 === questions.length;
+      console.log(window.location);
       const source = window.location.href;
       console.log({ submission, completed, source });
       try {
@@ -88,7 +88,6 @@ const PhoenixForm = () => {
           },
           { submission, completed, source }
         ).then((response) => {
-          console.log('Response:', response);
           setSubmitted(true);
         });
       } catch (error) {
@@ -100,8 +99,6 @@ const PhoenixForm = () => {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     }
   };
-
-  const currentQuestion = questions[currentQuestionIndex];
 
   return (
     <>
@@ -183,16 +180,28 @@ const PhoenixForm = () => {
                   <CardContent>
                     <Stack space={2}>
                       <Prompt question={currentQuestion} />
-                      <Answer question={currentQuestion} selectedDate={selectedDate} />
+                      <Answer question={currentQuestion} />
                     </Stack>
                   </CardContent>
+
                   <CardActions sx={{ justifyContent: 'space-between' }}>
                     {currentQuestionIndex > 0 && (
                       <Button variant="contained" onClick={() => setCurrentQuestionIndex(currentQuestionIndex - 1)}>
                         Back
                       </Button>
                     )}
-                    <Button variant="contained" color="primary" onClick={handleSubmit} disabled={loading}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => {
+                        if (currentQuestionIndex + 1 < questions.length) {
+                          setCurrentQuestionIndex(currentQuestionIndex + 1);
+                        } else {
+                          handleSubmit();
+                        }
+                      }}
+                      disabled={loading}
+                    >
                       {currentQuestionIndex + 1 === questions.length ? 'Submit' : 'Next'}
                     </Button>
                   </CardActions>

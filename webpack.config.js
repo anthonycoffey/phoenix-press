@@ -1,14 +1,14 @@
 const path = require('path');
 module.exports = {
-  externals:
-    process.env.NODE_ENV === 'production'
-      ? {
-          react: 'React',
-          'react-dom': 'ReactDOM',
-        }
-      : {},
-  mode: process.env.NODE_ENV === 'production' ? 'production' : 'development', // Conditionally set mode
-  devtool: process.env.NODE_ENV === 'production' ? false : 'source-map', // Conditionally add source maps
+  // externals:
+  //   process.env.NODE_ENV === 'production'
+  //     ? {
+  //         react: 'React',
+  //         'react-dom': 'ReactDOM',
+  //       }
+  //     : {},
+  mode: 'development', // Conditionally set mode
+  devtool: 'source-map', // Conditionally add source maps
   entry: './src/index.js',
   output: {
     path: path.resolve(__dirname, 'build'),
