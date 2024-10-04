@@ -65,6 +65,7 @@ const Answer = ({ question }) => {
               margin="normal"
               error={!!errors[input.name]}
               helperText={errors[input.name]}
+              required={!input.optional}
             />
           );
         }
@@ -88,6 +89,7 @@ const Answer = ({ question }) => {
               fullWidth
               multiline
               rows={2}
+              required={!input.optional}
               variant="outlined"
               margin="normal"
             />

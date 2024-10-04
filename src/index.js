@@ -26,12 +26,10 @@ const PhoenixForm = () => {
   const [invalid, setInvalid] = useState(true);
 
   useEffect(() => {
-    console.log('testing..');
     const hasErrors = currentQuestion.inputs.some((input) => errors[input.name]);
     const isEmpty = currentQuestion.inputs.some(
       (input) => !input.optional && (input.value === '' || (Array.isArray(input.value) && input.value.length === 0))
     );
-    console.log({ isEmpty, hasErrors });
     setInvalid(hasErrors || isEmpty);
   }, [errors, currentQuestionIndex]);
 
@@ -96,6 +94,15 @@ const PhoenixForm = () => {
           body: JSON.stringify({ submission, completed, source }),
         }).then(() => {
           setSubmitted(true);
+
+          if (window?.dataLayer) {
+            window.dataLayer.push({
+              event: 'form_submit',
+              submission,
+              source,
+              completed,
+            });
+          }
         });
       } catch (error) {
         console.error('There was an error', error);

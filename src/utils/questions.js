@@ -6,7 +6,7 @@ const options = [
       {
         name: 'phone',
         type: 'tel',
-        label: 'Enter your phone number...',
+        label: 'Enter your phone number',
         value: '',
         optional: false,
       },
@@ -32,7 +32,7 @@ const options = [
       {
         name: 'location',
         type: 'geo',
-        label: 'Search for your location...',
+        label: 'Search for your location',
         value: '',
         obj: {},
         optional: false,

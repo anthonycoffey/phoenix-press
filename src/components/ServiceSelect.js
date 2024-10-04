@@ -1,4 +1,4 @@
-import { FormControl, FormControlLabel, FormGroup, Checkbox, Box } from '@mui/material';
+import { FormControl, FormControlLabel, FormGroup, Checkbox, Box, FormHelperText, FormLabel } from '@mui/material';
 import { useContext, useEffect, useState } from 'react';
 import { GlobalStateContext } from '../state';
 
@@ -29,7 +29,8 @@ export default function ServiceSelect({ input }) {
   };
 
   return (
-    <FormControl component="fieldset" fullWidth margin="dense">
+    <FormControl component="fieldset" fullWidth margin="dense" error={errors['service_type']}>
+      <FormLabel component="legend">Select desired service(s)</FormLabel>
       <FormGroup>
         <Box
           sx={{
@@ -56,6 +57,7 @@ export default function ServiceSelect({ input }) {
           ))}
         </Box>
       </FormGroup>
+      <FormHelperText>{errors['service_type']}</FormHelperText>
     </FormControl>
   );
 }

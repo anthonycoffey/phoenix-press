@@ -121,6 +121,7 @@ export default function AddressAutoComplete({ input }) {
         InputProps={{
           endAdornment: loadingLocation ? <CircularProgress size={20} /> : null,
         }}
+        required={!input.optional}
         error={!!errors[input.name]}
         helperText={errors[input.name]}
       />

@@ -1,14 +1,11 @@
 const path = require('path');
 module.exports = {
-  externals:
-    process.env.NODE_ENV === 'production'
-      ? {
-          react: 'React',
-          'react-dom': 'ReactDOM',
-        }
-      : {},
-  // mode: 'development', 
-  // devtool: 'source-map', 
+  externals: {
+    react: 'React',
+    'react-dom': 'ReactDOM',
+  },
+  // mode: 'development',
+  // devtool: 'source-map',
   entry: './src/index.js',
   output: {
     path: path.resolve(__dirname, 'build'),
