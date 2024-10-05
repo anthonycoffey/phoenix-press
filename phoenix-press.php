@@ -3,7 +3,7 @@
  * Plugin Name: PhoenixPress
  * Plugin URI: https://github.com/
  * Description:
- * Version: 1.0.0
+ * Version: 1.0.2
  * Author: Anthony Coffey
  * Author URI: https://coffey.codes/
  *

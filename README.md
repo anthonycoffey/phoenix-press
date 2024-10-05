@@ -1,4 +1,3 @@
-
 # PhoenixPress
 
 ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
@@ -8,9 +7,11 @@
 ![PHP](https://img.shields.io/badge/php-%23777BB4.svg?style=for-the-badge&logo=php&logoColor=white)
 
 ### Description
+
 WordPress plugin for Phoenix platform.
 
 ### Installation
+
 check Releases page for the latest version of the plugin.
 
 ### Contributing

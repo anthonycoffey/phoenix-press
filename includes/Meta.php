@@ -9,6 +9,7 @@ class Meta
     add_action("wp_enqueue_scripts", [ __CLASS__, "enqueue_scripts" ]);
     add_action("rest_api_init", [ __CLASS__, "register_rest_routes" ]);
     add_action("wp_footer", [ __CLASS__, "lead_form" ]);
+    add_shortcode('phoenix_form', [ __CLASS__, 'lead_form_shortcode' ]);
     add_action("admin_menu", [ __CLASS__, "add_settings_page" ]);
     add_action("admin_init", [ __CLASS__, "register_settings" ]);
   }
@@ -89,6 +90,12 @@ class Meta
     echo '<div id="phoenix-form-root"></div>';
   }
 
+  public static function lead_form_shortcode($attr)
+  {
+    ob_start();
+    echo '<div class="phoenix-form-embed-root"></div>';
+    return ob_get_clean();
+  }
   public static function add_settings_page()
   {
     add_options_page(
@@ -102,19 +109,15 @@ class Meta
 
   public static function render_settings_page()
   {
-    ?>
-        <div class="wrap">
-            <h1>Phoenix Press Settings</h1>
-            <form method="post" action="options.php">
-                <?php
-                  settings_fields("phoenix_press_options");
-                  do_settings_sections("phoenix-press");
-                  submit_button();
-                ?>
-            </form>
-        </div>
-    <?php
-}
+    echo '<div class="wrap">';
+    echo '<h1>Phoenix Press Settings</h1>';
+    echo '<form method="post" action="options.php">';
+    settings_fields("phoenix_press_options");
+    do_settings_sections("phoenix-press");
+    submit_button();
+    echo '</form>';
+    echo '</div>';
+  }
 
   public static function register_settings()
   {

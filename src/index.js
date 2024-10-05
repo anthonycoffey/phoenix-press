@@ -7,7 +7,7 @@ import './styles.sass';
 import questionData from './utils/questions';
 import { GlobalStateContext, GlobalStateProvider } from './state.js'; // Import context
 
-const PhoenixForm = () => {
+const PhoenixForm = ({ embed }) => {
   const {
     questions,
     setQuestions,
@@ -24,6 +24,9 @@ const PhoenixForm = () => {
   const currentQuestion = questions[currentQuestionIndex];
   const [showModal, setShowModal] = useState(false);
   const [invalid, setInvalid] = useState(true);
+  console.log({
+    embed,
+  });
 
   useEffect(() => {
     const hasErrors = currentQuestion.inputs.some((input) => errors[input.name]);
@@ -34,7 +37,7 @@ const PhoenixForm = () => {
   }, [errors, currentQuestionIndex]);
 
   useEffect(() => {
-    if (isFormVisible) {
+    if (isFormVisible || embed) {
       const savedData = localStorage.getItem('formData');
       if (savedData) {
         const formData = JSON.parse(savedData);
@@ -115,7 +118,7 @@ const PhoenixForm = () => {
   };
 
   return (
-    <>
+    <section>
       <button
         onClick={toggleFormVisibility}
         style={{
@@ -175,7 +178,7 @@ const PhoenixForm = () => {
         </Box>
       </Modal>
 
-      {isFormVisible && (
+      {(isFormVisible || embed) && (
         <Card className="phoenix-form">
           {loading ? (
             <CircularProgress />
@@ -225,14 +228,23 @@ const PhoenixForm = () => {
           )}
         </Card>
       )}
-    </>
+    </section>
   );
 };
 
-const rootElement = document.getElementById('phoenix-form-root');
-const root = createRoot(rootElement);
+const chat = document.getElementById('phoenix-form-root');
+const root = createRoot(chat);
 root.render(
   <GlobalStateProvider>
     <PhoenixForm />
   </GlobalStateProvider>
 );
+
+const roots = document.querySelectorAll('.phoenix-form-embed-root');
+roots.forEach((el) => {
+  createRoot(el).render(
+    <GlobalStateProvider>
+      <PhoenixForm embed={true} />
+    </GlobalStateProvider>
+  );
+});
