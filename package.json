@@ -1,6 +1,6 @@
 {
   "name": "phoenix-press",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "WordPress Plugin for Phoenix Platform",
   "author": "Anthony Coffey",
   "license": "MIT",
@@ -42,6 +42,7 @@
     "@mui/material": "^6.1.1",
     "@mui/x-date-pickers": "^6.20.2",
     "@react-google-maps/api": "^2.19.3",
+    "@sentry/react": "^8.33.1",
     "axios": "^1.7.7",
     "core-js": "^3.38.1",
     "date-fns": "^2.30.0",

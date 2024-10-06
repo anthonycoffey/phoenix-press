@@ -1,9 +1,9 @@
 <?php
 /*
  * Plugin Name: PhoenixPress
- * Plugin URI: https://github.com/
+ * Plugin URI: https://github.com/anthonycoffey/phoenix-press
  * Description:
- * Version: 1.0.2
+ * Version: 1.0.3
  * Author: Anthony Coffey
  * Author URI: https://coffey.codes/
  *

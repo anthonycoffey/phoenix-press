@@ -7,6 +7,15 @@ import './styles.sass';
 import questionData from './utils/questions';
 import { GlobalStateContext, GlobalStateProvider } from './state.js'; // Import context
 
+import * as Sentry from '@sentry/react';
+Sentry.init({
+  dsn: 'https://dd1a8a07e9b52037987d3792acac547e@o4505751809884160.ingest.us.sentry.io/4508072984313856',
+  integrations: [Sentry.browserTracingIntegration(), Sentry.replayIntegration()],
+  tracesSampleRate: 1.0, //  Capture 100% of the transactions
+  replaysSessionSampleRate: 0.1, // This sets the sample rate at 10%. You may want to change it to 100% while in development and then sample at a lower rate in production.
+  replaysOnErrorSampleRate: 1.0, // If you're not already sampling the entire session, change the sample rate to 100% when sampling sessions where errors occur.
+});
+
 const PhoenixForm = ({ embed }) => {
   const {
     questions,
