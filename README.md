@@ -10,9 +10,9 @@
 
 WordPress plugin for Phoenix platform.
 
-### Installation
+### Plugin Install File
 
-check Releases page for the latest version of the plugin.
+check [Releases](https://github.com/anthonycoffey/phoenix-press/releases) for the latest version of the plugin.
 
 ### Contributing
 
