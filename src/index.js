@@ -4,7 +4,7 @@ import { Button, Card, CardContent, CardActions, Stack, Modal, Box, Typography }
 import Prompt from './components/Prompt';
 import Answer from './components/Answer';
 import SkeletonChat from './components/SkeletonChat';
-import { GlobalStateContext, GlobalStateProvider } from './state.js'; // Import context
+import { GlobalStateContext, GlobalStateProvider } from './state.js';
 import './styles.sass';
 
 import * as Sentry from '@sentry/react';
@@ -35,7 +35,7 @@ const PhoenixForm = ({ embed }) => {
   const [showModal, setShowModal] = useState(false);
   const [invalid, setInvalid] = useState(true);
   const [formStarted, setFormStarted] = useState(false);
-  const [formSubmissionId, setFormSubmissionId] = useState(null); // Track form submission ID for PATCH requests
+  const [formSubmissionId, setFormSubmissionId] = useState(null);
 
   useEffect(() => {
     const hasErrors = currentQuestion.inputs.some((input) => errors[input.name]);
@@ -112,8 +112,7 @@ const PhoenixForm = ({ embed }) => {
       const headers = {
         'Content-Type': 'application/json',
       };
-      const source = window.location.origin + window.location.pathname.replace(/\/$/, '');
-
+      const source = window.location.origin.replace(/^https?:\/\//, '') + window.location.pathname.replace(/\/$/, '');
       if (formSubmissionId) {
         response = await fetch(`${LOCALIZED.API_URL}/submit-lead-form/${formSubmissionId}`, {
           method: 'PATCH',
@@ -150,8 +149,7 @@ const PhoenixForm = ({ embed }) => {
     if (isLastQuestion) {
       setLoading(true);
       const completed = true;
-      const source = window.location.origin + window.location.pathname.replace(/\/$/, '');
-
+      const source = window.location.origin.replace(/^https?:\/\//, '') + window.location.pathname.replace(/\/$/, '');
       try {
         if (formSubmissionId) {
           await fetch(`${LOCALIZED.API_URL}/submit-lead-form/${formSubmissionId}`, {

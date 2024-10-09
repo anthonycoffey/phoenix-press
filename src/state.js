@@ -14,7 +14,6 @@ export const GlobalStateProvider = ({ children }) => {
   const [services, setServices] = useState(null);
   const [errors, setErrors] = useState({});
 
-  // Save to localStorage whenever questions change
   useEffect(() => {
     if (questions) {
       localStorage.setItem('formData', JSON.stringify(questions));
