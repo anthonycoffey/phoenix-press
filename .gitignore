@@ -12,4 +12,4 @@ phoenix-press.zip
 .idea/
 tests/
 .env*
-PhoenixPress-v*.zip
+composer.lock
