@@ -13,3 +13,4 @@ tests/
 .env*
 composer.lock
 package-lock.json
+.prettierrc
