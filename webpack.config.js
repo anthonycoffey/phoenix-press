@@ -4,8 +4,6 @@ module.exports = {
     react: 'React',
     'react-dom': 'ReactDOM',
   },
-  // mode: 'development',
-  // devtool: 'source-map',
   entry: './src/index.js',
   output: {
     path: path.resolve(__dirname, 'build'),
@@ -24,12 +22,8 @@ module.exports = {
         },
       },
       {
-        test: /\.sass$/, // Regex for .scss files
-        use: [
-          'style-loader', // Injects styles into the DOM
-          'css-loader', // Turns CSS into CommonJS
-          'sass-loader', // Compiles Sass to CSS
-        ],
+        test: /\.sass$/,
+        use: ['style-loader', 'css-loader', 'sass-loader'],
       },
     ],
   },

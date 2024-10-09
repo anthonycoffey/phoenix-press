@@ -1,19 +1,19 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Button, Card, CardContent, CardActions, CircularProgress, Stack, Modal, Box, Typography } from '@mui/material';
+import { Button, Card, CardContent, CardActions, Stack, Modal, Box, Typography } from '@mui/material';
 import Prompt from './components/Prompt';
 import Answer from './components/Answer';
-import './styles.sass';
-import questionData from './utils/questions';
+import SkeletonChat from './components/SkeletonChat';
 import { GlobalStateContext, GlobalStateProvider } from './state.js'; // Import context
+import './styles.sass';
 
 import * as Sentry from '@sentry/react';
 Sentry.init({
   dsn: 'https://dd1a8a07e9b52037987d3792acac547e@o4505751809884160.ingest.us.sentry.io/4508072984313856',
   integrations: [Sentry.browserTracingIntegration(), Sentry.replayIntegration()],
-  tracesSampleRate: 1.0, //  Capture 100% of the transactions
-  replaysSessionSampleRate: 0.1, // This sets the sample rate at 10%. You may want to change it to 100% while in development and then sample at a lower rate in production.
-  replaysOnErrorSampleRate: 1.0, // If you're not already sampling the entire session, change the sample rate to 100% when sampling sessions where errors occur.
+  tracesSampleRate: 1.0,
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1.0,
 });
 
 const PhoenixForm = ({ embed }) => {
@@ -30,12 +30,12 @@ const PhoenixForm = ({ embed }) => {
     setIsFormVisible,
     errors,
   } = useContext(GlobalStateContext);
+
   const currentQuestion = questions[currentQuestionIndex];
   const [showModal, setShowModal] = useState(false);
   const [invalid, setInvalid] = useState(true);
-  console.log({
-    embed,
-  });
+  const [formStarted, setFormStarted] = useState(false);
+  const [formSubmissionId, setFormSubmissionId] = useState(null); // Track form submission ID for PATCH requests
 
   useEffect(() => {
     const hasErrors = currentQuestion.inputs.some((input) => errors[input.name]);
@@ -48,7 +48,9 @@ const PhoenixForm = ({ embed }) => {
   useEffect(() => {
     if (isFormVisible || embed) {
       const savedData = localStorage.getItem('formData');
-      if (savedData) {
+      const savedIndex = localStorage.getItem('currentQuestionIndex');
+      const savedFormId = localStorage.getItem('formSubmissionId');
+      if (savedData && savedIndex) {
         const formData = JSON.parse(savedData);
 
         const hasFilledField = formData.some((question) =>
@@ -58,24 +60,35 @@ const PhoenixForm = ({ embed }) => {
         if (hasFilledField) {
           setShowModal(true);
         }
+
+        if (savedFormId) {
+          setFormSubmissionId(savedFormId);
+        }
       }
     }
   }, [isFormVisible]);
 
   const handleContinue = () => {
     const savedData = localStorage.getItem('formData');
-    if (savedData) {
+    const savedIndex = localStorage.getItem('currentQuestionIndex');
+    const savedFormId = localStorage.getItem('formSubmissionId');
+    if (savedData && savedIndex) {
       setQuestions(JSON.parse(savedData));
+      setCurrentQuestionIndex(parseInt(savedIndex));
+    }
+    if (savedFormId) {
+      setFormSubmissionId(savedFormId);
     }
     setShowModal(false);
   };
 
   const handleNewStart = () => {
     localStorage.removeItem('formData');
+    localStorage.removeItem('currentQuestionIndex');
+    localStorage.removeItem('formSubmissionId');
     setSubmitted(false);
-    setQuestions(questionData);
+    setFormSubmissionId(null);
     setCurrentQuestionIndex(0);
-    setInvalid(true);
     setShowModal(false);
   };
 
@@ -84,38 +97,82 @@ const PhoenixForm = ({ embed }) => {
   };
 
   const handleSubmit = async () => {
-    const isLastQuestion = currentQuestionIndex + 1 === questions.length;
+    setLoading(true);
+    const submission = questions.flatMap((question) =>
+      question.inputs.map((input) => {
+        const { name, value, obj } = input;
+        return obj ? { name, value, obj } : { name, value };
+      })
+    );
 
-    if (isLastQuestion) {
-      setLoading(true);
-      const submission = questions.flatMap((question) =>
-        question.inputs.map((input) => {
-          const { name, value, obj } = input;
-          return obj ? { name, value, obj } : { name, value };
-        })
-      );
+    localStorage.setItem('currentQuestionIndex', String(currentQuestionIndex));
 
-      const completed = true;
-      const source = window.location.href;
-      try {
-        fetch(LOCALIZED.API_URL + '/submit-lead-form', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ submission, completed, source }),
-        }).then(() => {
-          setSubmitted(true);
+    try {
+      let response;
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+      const source = window.location.origin + window.location.pathname.replace(/\/$/, '');
 
+      if (formSubmissionId) {
+        response = await fetch(`${LOCALIZED.API_URL}/submit-lead-form/${formSubmissionId}`, {
+          method: 'PATCH',
+          headers,
+          body: JSON.stringify({ submission, completed: false, source }),
+        });
+      } else {
+        if (!formStarted) {
+          setFormStarted(true);
           if (window?.dataLayer) {
             window.dataLayer.push({
-              event: 'form_submit',
-              submission,
-              source,
-              completed,
+              event: 'form_start',
             });
           }
+        }
+        response = await fetch(`${LOCALIZED.API_URL}/submit-lead-form`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ submission, source }),
         });
+
+        const result = await response.json();
+        setFormSubmissionId(result.id);
+        localStorage.setItem('formSubmissionId', result.id);
+      }
+    } catch (error) {
+      console.error('There was an error', error);
+      Sentry.captureException(new Error(error));
+    } finally {
+      setLoading(false);
+    }
+
+    const isLastQuestion = currentQuestionIndex + 1 === questions.length;
+    if (isLastQuestion) {
+      setLoading(true);
+      const completed = true;
+      const source = window.location.origin + window.location.pathname.replace(/\/$/, '');
+
+      try {
+        if (formSubmissionId) {
+          await fetch(`${LOCALIZED.API_URL}/submit-lead-form/${formSubmissionId}`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ submission, completed, source }),
+          });
+        }
+
+        setSubmitted(true);
+
+        if (window?.dataLayer) {
+          window.dataLayer.push({
+            event: 'form_submit',
+            submission,
+            source,
+            completed,
+          });
+        }
       } catch (error) {
         console.error('There was an error', error);
       } finally {
@@ -125,27 +182,9 @@ const PhoenixForm = ({ embed }) => {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     }
   };
-
   return (
     <section>
-      <button
-        onClick={toggleFormVisibility}
-        style={{
-          position: 'fixed',
-          bottom: '20px',
-          right: '20px',
-          width: '60px',
-          height: '60px',
-          borderRadius: '50%',
-          backgroundColor: '#4395ce',
-          border: 'none',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          cursor: 'pointer',
-        }}
-        aria-label="Show Lead Form"
-      >
+      <button onClick={toggleFormVisibility} id="phoenix-show-form-button" aria-label="Show Lead Form">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="e-font-icon-svg e-fas-comment-alt"
@@ -162,10 +201,10 @@ const PhoenixForm = ({ embed }) => {
         <Box
           sx={{
             position: 'absolute',
-            top: '50%',
-            left: '50%',
-            width: '80%',
-            transform: 'translate(-50%, -50%)',
+            top: '60%',
+            left: '60%',
+            width: '75%',
+            transform: 'translate(-60%, -60%)',
             bgcolor: 'background.paper',
             boxShadow: 24,
             p: 4,
@@ -190,7 +229,7 @@ const PhoenixForm = ({ embed }) => {
       {(isFormVisible || embed) && (
         <Card className="phoenix-form">
           {loading ? (
-            <CircularProgress />
+            <SkeletonChat />
           ) : (
             <>
               {submitted && (
@@ -217,14 +256,11 @@ const PhoenixForm = ({ embed }) => {
                       </Button>
                     )}
                     <Button
+                      style={{ justifyContent: 'flex-end' }}
                       variant="contained"
                       color="primary"
                       onClick={() => {
-                        if (currentQuestionIndex + 1 < questions.length) {
-                          setCurrentQuestionIndex(currentQuestionIndex + 1);
-                        } else {
-                          handleSubmit();
-                        }
+                        handleSubmit();
                       }}
                       disabled={invalid || loading}
                     >
