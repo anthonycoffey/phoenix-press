@@ -3,7 +3,6 @@ node_modules
 .phpunit.cache
 .phpunit.result.cache
 .DS_Store
-phoenix-press.zip
 # Default ignored files
 /shelf/
 /workspace.xml
@@ -13,3 +12,4 @@ phoenix-press.zip
 tests/
 .env*
 composer.lock
+package-lock.json

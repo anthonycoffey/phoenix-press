@@ -32,8 +32,8 @@ export const GlobalStateProvider = ({ children }) => {
       .then((response) => response.json())
       .then((response) => {
         let { data } = response;
-        if (!data) {
-          return new Error('No data found in response');
+        if (!data && !data.length) {
+          return new Error('Unable to get services...');
         } else {
           const services = data
             ?.filter((service) => !service?.isDefault && !service?.isInternal)

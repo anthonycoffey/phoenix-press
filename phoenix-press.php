@@ -2,8 +2,8 @@
 /*
  * Plugin Name: PhoenixPress
  * Plugin URI: https://github.com/anthonycoffey/phoenix-press
- * Description:
- * Version: 1.0.3
+ * Description: WordPress plugin for Phoenix CRM.
+ * Version: 1.0.4
  * Author: Anthony Coffey
  * Author URI: https://coffey.codes/
  *

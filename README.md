@@ -8,22 +8,71 @@
 
 ### Description
 
-WordPress plugin for Phoenix platform.
+Custom WordPress plugin for Phoenix CRM.
 
-### Plugin Install File
+### File Download
 
-check [Releases](https://github.com/anthonycoffey/phoenix-press/releases) for the latest version of the plugin.
+Check [Releases](https://github.com/anthonycoffey/phoenix-press/releases) for the latest version of the plugin.
 
-### Contributing
+### Installation
 
-1. clone repo
-2. `npm install`
-3. `npm run start`
+#### Prerequisites
+- Ensure you have `composer` and `npm` installed on your system.
+- Install `watchexec` for the `watch-test` task.
 
-`/src` - contains the source code of the plugin.
+#### Steps
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/anthonycoffey/phoenix-press.git
+   cd phoenix-press
+   ```
 
-### Build
+2. Move the Makefile to parent directory, and install dependencies:
+   ```sh
+   mv Makefile ..
+   cd ..
+   make install
+   ```
 
-Before creating a new plugin installable zip file, make sure to build the plugin.
+3. Build the project:
+   ```sh
+   make build
+   ```
 
-1. `npm run build`
+4. Start the development server:
+   ```sh
+   make start
+   ```
+
+### Available Commands
+
+1. **Install Dependencies**
+   ```sh
+   make install
+   ```
+   This command installs PHP dependencies using Composer and JavaScript dependencies using npm.
+
+2. **Build the Project**
+   ```sh
+   make build
+   ```
+   This command builds the project using npm.
+
+3. **Start the Development Server**
+   ```sh
+   make start
+   ```
+   This command starts the development server using npm.
+
+4. **Create a Release**
+   ```sh
+   make release
+   ```
+   This command prepares a release by installing production dependencies, building the project, and creating a zip file excluding `node_modules` and `src` directories.
+
+
+To build the project and create a release, you would run:
+```sh
+make build
+make release
+```
