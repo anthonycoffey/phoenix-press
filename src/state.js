@@ -20,36 +20,39 @@ export const GlobalStateProvider = ({ children }) => {
     }
   }, [questions]);
 
-  useEffect(() => {
+useEffect(() => {
+  const fetchData = async () => {
     setLoading(true);
-    fetch(LOCALIZED.API_URL + '/get-form-data', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-      .then((response) => response.json())
-      .then((response) => {
-        let { data } = response;
-        if (!data && !data.length) {
-          return new Error('Unable to get services...');
-        } else {
-          const services = data
-            ?.filter((service) => !service?.isDefault && !service?.isInternal)
-            .map((service) => ({
-              text: service.name,
-              value: service.name,
-              id: service.id,
-            }));
-          setServices(services);
-          setLoading(false);
-        }
-      })
-      .catch((error) => {
-        console.error('Error fetching form data:', error);
-        setLoading(false);
+    try {
+      const response = await fetch(LOCALIZED.API_URL + '/get-form-data', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
-  }, []);
+      const result = await response.json();
+      let { data } = result;
+      if (!data && !data.length) {
+          console.log('No services found in the response.');
+      } else {
+        const services = data
+          ?.filter((service) => !service?.isDefault && !service?.isInternal)
+          .map((service) => ({
+            text: service.name,
+            value: service.name,
+            id: service.id,
+          }));
+        setServices(services);
+      }
+    } catch (error) {
+      console.error('Error fetching form data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchData();
+}, []);
 
   return (
     <GlobalStateContext.Provider
