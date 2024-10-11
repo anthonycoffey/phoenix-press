@@ -14,6 +14,11 @@ import Prompt from "./components/Prompt";
 import Answer from "./components/Answer";
 import SkeletonChat from "./components/SkeletonChat";
 import { GlobalStateContext, GlobalStateProvider } from "./state.js";
+import {
+  safeLocalStorageGetItem,
+  safeLocalStorageSetItem,
+  safeLocalStorageRemoveItem,
+} from "./utils/localStorageUtils";
 import "./styles.sass";
 
 import * as Sentry from "@sentry/react";
@@ -22,30 +27,6 @@ Sentry.init({
   integrations: [Sentry.browserTracingIntegration()],
   tracesSampleRate: 1.0,
 });
-
-function safeLocalStorageGetItem(key, defaultValue = null) {
-  try {
-    return localStorage.getItem(key);
-  } catch (error) {
-    return defaultValue;
-  }
-}
-
-function safeLocalStorageSetItem(key, value) {
-  try {
-    localStorage.setItem(key, value);
-  } catch (error) {
-    console.log(`Error setting localStorage for key "${key}":`, error);
-  }
-}
-
-function safeLocalStorageRemoveItem(key) {
-  try {
-    localStorage.removeItem(key);
-  } catch (error) {
-    console.log(`Error removing localStorage for key "${key}":`, error);
-  }
-}
 
 const PhoenixForm = ({ embed }) => {
   const {

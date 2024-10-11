@@ -1,22 +1,10 @@
 import React, { createContext, useEffect, useState } from "react";
 export const GlobalStateContext = createContext();
+import {
+  safeLocalStorageGetItem,
+  safeLocalStorageSetItem,
+} from "./utils/localStorageUtils";
 import questionData from "./utils/questions";
-
-function safeLocalStorageGetItem(key, defaultValue = null) {
-  try {
-    return localStorage.getItem(key);
-  } catch (error) {
-    return defaultValue;
-  }
-}
-
-function safeLocalStorageSetItem(key, value) {
-  try {
-    localStorage.setItem(key, value);
-  } catch (error) {
-    console.log(`Error setting localStorage for key "${key}":`, error);
-  }
-}
 
 export const GlobalStateProvider = ({ children }) => {
   const [questions, setQuestions] = useState(() => {
