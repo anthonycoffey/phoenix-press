@@ -65,8 +65,7 @@ class Meta
 
     public static function get_form_data( $request )
  {
-        $setting = get_option( 'phoenix_api_url' );
-        $api_url = $setting ? $setting : PHOENIX_API;
+        $api_url = get_option( 'phoenix_api_url' );
         $response = wp_remote_get( $api_url . '/services?limit=all' );
         $body = wp_remote_retrieve_body( $response );
 
@@ -75,8 +74,7 @@ class Meta
 
     public static function submit_lead( $request )
  {
-        $setting = get_option( 'phoenix_api_url' );
-        $api_url = $setting ? $setting : PHOENIX_API;
+        $api_url = get_option( 'phoenix_api_url' );
 
         $data = $request->get_json_params();
 
@@ -101,8 +99,7 @@ class Meta
 
     public static function update_lead( $request )
  {
-        $setting = get_option( 'phoenix_api_url' );
-        $api_url = $setting ? $setting : PHOENIX_API;
+        $api_url = get_option( 'phoenix_api_url' );
 
         $id = $request->get_param( 'id' );
         $data = $request->get_json_params();
@@ -204,8 +201,7 @@ class Meta
         $apiUrl = get_option( 'phoenix_api_url', '' );
         echo '<input type="text" id="phoenix_api_url" name="phoenix_api_url" value="' .
         esc_attr( $apiUrl ) .
-        '" size="50" /><br />';
-        echo '<label for="phoenix_api_url"><b>default endpoint is </b>' . PHOENIX_API . '</label><br />';
+        '" size="50" />';
     }
 
 }

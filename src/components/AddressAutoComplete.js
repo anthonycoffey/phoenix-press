@@ -9,7 +9,6 @@ const getAddressObject = (address_components) => {
   if (!address_components) return obj;
 
   const number = address_components.find((c) => c.types.includes('street_number'))?.long_name;
-
   const street = address_components.find((c) => c.types.includes('route'))?.short_name;
 
   obj.address_1 = number && street ? `${number} ${street}` : '';
@@ -24,9 +23,9 @@ const getAddressObject = (address_components) => {
 const libraries = ['places'];
 
 export default function AddressAutoComplete({ input }) {
-  const { questions, currentQuestionIndex, setQuestions, errors, setErrors } = useContext(GlobalStateContext); // Access global state
+  const { questions, currentQuestionIndex, setQuestions, errors, setErrors } = useContext(GlobalStateContext);
   const [loadingLocation, setLoadingLocation] = useState(false);
-  const inputRef = useRef(null); // Ref for the Autocomplete
+  const inputRef = useRef(null);
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: LOCALIZED?.GMAPS_API_KEY,
@@ -36,17 +35,24 @@ export default function AddressAutoComplete({ input }) {
   useEffect(() => {
     if (!inputRef.current || !window.google) return;
 
-    const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current);
-    autocomplete.addListener('place_changed', () => {
-      const place = autocomplete.getPlace();
-      const addressObj = getAddressObject(place.address_components);
-      handleInputChange(addressObj);
-    });
+    try {
+      const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current);
+      autocomplete.addListener('place_changed', () => {
+        try {
+          const place = autocomplete.getPlace();
+          const addressObj = getAddressObject(place.address_components);
+          handleInputChange(addressObj);
+        } catch (error) {
+          console.error('Error handling place_changed event:', error);
+        }
+      });
 
-    // Cleanup
-    return () => {
-      window.google.maps.event.clearInstanceListeners(autocomplete);
-    };
+      return () => {
+        window.google.maps.event.clearInstanceListeners(autocomplete);
+      };
+    } catch (error) {
+      console.error('Error initializing Google Maps Autocomplete:', error);
+    }
   }, [isLoaded]);
 
   const handleUseGps = () => {
@@ -58,41 +64,50 @@ export default function AddressAutoComplete({ input }) {
     setLoadingLocation(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const { latitude, longitude } = pos.coords;
-        const geocoder = new window.google.maps.Geocoder();
+        try {
+          const { latitude, longitude } = pos.coords;
+          const geocoder = new window.google.maps.Geocoder();
 
-        geocoder.geocode({ location: { lat: latitude, lng: longitude } }, (results, status) => {
+          geocoder.geocode({ location: { lat: latitude, lng: longitude } }, (results, status) => {
+            setLoadingLocation(false);
+            if (status === 'OK' && results[0]) {
+              const addressObj = getAddressObject(results[0].address_components);
+              handleInputChange(addressObj);
+            } else {
+              console.error('Geocoder failed due to:', status);
+            }
+          });
+        } catch (error) {
           setLoadingLocation(false);
-          if (status === 'OK' && results[0]) {
-            const addressObj = getAddressObject(results[0].address_components);
-            handleInputChange(addressObj);
-          } else {
-            console.error('Geocoder failed due to: ' + status);
-          }
-        });
+          console.error('Error in geolocation success callback:', error);
+        }
       },
       (err) => {
         setLoadingLocation(false);
-        console.error('Error in getting geolocation: ', err);
+        console.error('Error in getting geolocation:', err);
       }
     );
   };
 
   const handleInputChange = (event) => {
-    const updatedQuestions = [...questions];
-    const currentInput = updatedQuestions[currentQuestionIndex].inputs.find((input) => input.name === 'location');
+    try {
+      const updatedQuestions = [...questions];
+      const currentInput = updatedQuestions[currentQuestionIndex].inputs.find((input) => input.name === 'location');
 
-    if (event.nativeEvent instanceof Event) {
-      currentInput.value = event.target.value;
-    } else {
-      currentInput.obj = event;
-      currentInput.value = `${event.address_1}, ${event.city}, ${event.state} ${event.zipcode}`;
+      if (event.nativeEvent instanceof Event) {
+        currentInput.value = event.target.value;
+      } else {
+        currentInput.obj = event;
+        currentInput.value = `${event.address_1}, ${event.city}, ${event.state} ${event.zipcode}`;
+      }
+
+      setQuestions(updatedQuestions);
+
+      const errorMessage = validateLocation(currentInput);
+      setErrors({ ...errors, [currentInput.name]: errorMessage });
+    } catch (error) {
+      console.error('Error handling input change:', error);
     }
-
-    setQuestions(updatedQuestions);
-
-    const errorMessage = validateLocation(currentInput);
-    setErrors({ ...errors, [currentInput.name]: errorMessage });
   };
 
   const validateLocation = (input) => {
@@ -100,6 +115,7 @@ export default function AddressAutoComplete({ input }) {
   };
 
   if (loadError) {
+    console.error('Error loading maps:', loadError);
     return <div>Error loading maps</div>;
   }
 

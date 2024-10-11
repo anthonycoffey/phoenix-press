@@ -10,10 +10,8 @@ import './styles.sass';
 import * as Sentry from '@sentry/react';
 Sentry.init({
   dsn: 'https://dd1a8a07e9b52037987d3792acac547e@o4505751809884160.ingest.us.sentry.io/4508072984313856',
-  integrations: [Sentry.browserTracingIntegration(), Sentry.replayIntegration()],
+  integrations: [Sentry.browserTracingIntegration()],
   tracesSampleRate: 1.0,
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1.0,
 });
 
 const PhoenixForm = ({ embed }) => {

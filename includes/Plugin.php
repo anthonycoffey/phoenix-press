@@ -12,7 +12,7 @@ class Plugin
   /**
    * Plugin version.
    */
-  private $version = '1.0.4';
+  private $version = '1.0.5';
 
   /**
    * The single instance of the class.
@@ -139,11 +139,6 @@ class Plugin
     $this->maybe_define_constant(
       'PHOENIX_PRESS_ABSPATH',
       trailingslashit(plugin_dir_path(__DIR__))
-    );
-
-    $this->maybe_define_constant(
-      'PHOENIX_API',
-      'https://phoenix-crm-api.herokuapp.com'
     );
   }
 
