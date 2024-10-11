@@ -1,15 +1,24 @@
-import React, { useContext, useState, useEffect } from 'react';
-import { createRoot } from 'react-dom/client';
-import { Button, Card, CardContent, CardActions, Stack, Modal, Box, Typography } from '@mui/material';
-import Prompt from './components/Prompt';
-import Answer from './components/Answer';
-import SkeletonChat from './components/SkeletonChat';
-import { GlobalStateContext, GlobalStateProvider } from './state.js';
-import './styles.sass';
+import React, { useContext, useState, useEffect } from "react";
+import { createRoot } from "react-dom/client";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardActions,
+  Stack,
+  Modal,
+  Box,
+  Typography,
+} from "@mui/material";
+import Prompt from "./components/Prompt";
+import Answer from "./components/Answer";
+import SkeletonChat from "./components/SkeletonChat";
+import { GlobalStateContext, GlobalStateProvider } from "./state.js";
+import "./styles.sass";
 
-import * as Sentry from '@sentry/react';
+import * as Sentry from "@sentry/react";
 Sentry.init({
-  dsn: 'https://dd1a8a07e9b52037987d3792acac547e@o4505751809884160.ingest.us.sentry.io/4508072984313856',
+  dsn: "https://dd1a8a07e9b52037987d3792acac547e@o4505751809884160.ingest.us.sentry.io/4508072984313856",
   integrations: [Sentry.browserTracingIntegration()],
   tracesSampleRate: 1.0,
 });
@@ -36,54 +45,74 @@ const PhoenixForm = ({ embed }) => {
   const [formSubmissionId, setFormSubmissionId] = useState(null);
 
   useEffect(() => {
-    const hasErrors = currentQuestion.inputs.some((input) => errors[input.name]);
+    const hasErrors = currentQuestion.inputs.some(
+      (input) => errors[input.name],
+    );
     const isEmpty = currentQuestion.inputs.some(
-      (input) => !input.optional && (input.value === '' || (Array.isArray(input.value) && input.value.length === 0))
+      (input) =>
+        !input.optional &&
+        (input.value === "" ||
+          (Array.isArray(input.value) && input.value.length === 0)),
     );
     setInvalid(hasErrors || isEmpty);
   }, [errors, currentQuestionIndex]);
 
   useEffect(() => {
     if (isFormVisible || embed) {
-      const savedData = localStorage.getItem('formData');
-      const savedIndex = localStorage.getItem('currentQuestionIndex');
-      const savedFormId = localStorage.getItem('formSubmissionId');
-      if (savedData && savedIndex) {
-        const formData = JSON.parse(savedData);
+      try {
+        const savedData = localStorage.getItem("formData");
+        const savedIndex = localStorage.getItem("currentQuestionIndex");
+        const savedFormId = localStorage.getItem("formSubmissionId");
+        if (savedData && savedIndex) {
+          const formData = JSON.parse(savedData);
 
-        const hasFilledField = formData.some((question) =>
-          question.inputs.some((input) => typeof input.value === 'string' && input.value.trim() !== '')
-        );
+          const hasFilledField = formData.some((question) =>
+            question.inputs.some(
+              (input) =>
+                typeof input.value === "string" && input.value.trim() !== "",
+            ),
+          );
 
-        if (hasFilledField) {
-          setShowModal(true);
+          if (hasFilledField) {
+            setShowModal(true);
+          }
+
+          if (savedFormId) {
+            setFormSubmissionId(savedFormId);
+          }
         }
-
-        if (savedFormId) {
-          setFormSubmissionId(savedFormId);
-        }
+      } catch (error) {
+        console.log("Error accessing localStorage:", error);
       }
     }
   }, [isFormVisible]);
 
   const handleContinue = () => {
-    const savedData = localStorage.getItem('formData');
-    const savedIndex = localStorage.getItem('currentQuestionIndex');
-    const savedFormId = localStorage.getItem('formSubmissionId');
-    if (savedData && savedIndex) {
-      setQuestions(JSON.parse(savedData));
-      setCurrentQuestionIndex(parseInt(savedIndex));
+    try {
+      const savedData = localStorage.getItem("formData");
+      const savedIndex = localStorage.getItem("currentQuestionIndex");
+      const savedFormId = localStorage.getItem("formSubmissionId");
+      if (savedData && savedIndex) {
+        setQuestions(JSON.parse(savedData));
+        setCurrentQuestionIndex(parseInt(savedIndex));
+      }
+      if (savedFormId) {
+        setFormSubmissionId(savedFormId);
+      }
+      setShowModal(false);
+    } catch (error) {
+      console.log("Error accessing localStorage:", error);
     }
-    if (savedFormId) {
-      setFormSubmissionId(savedFormId);
-    }
-    setShowModal(false);
   };
 
   const handleNewStart = () => {
-    localStorage.removeItem('formData');
-    localStorage.removeItem('currentQuestionIndex');
-    localStorage.removeItem('formSubmissionId');
+    try {
+      localStorage.removeItem("formData");
+      localStorage.removeItem("currentQuestionIndex");
+      localStorage.removeItem("formSubmissionId");
+    } catch (error) {
+      console.log("Error accessing localStorage:", error);
+    }
     setSubmitted(false);
     setFormSubmissionId(null);
     setCurrentQuestionIndex(0);
@@ -100,44 +129,60 @@ const PhoenixForm = ({ embed }) => {
       question.inputs.map((input) => {
         const { name, value, obj } = input;
         return obj ? { name, value, obj } : { name, value };
-      })
+      }),
     );
 
-    localStorage.setItem('currentQuestionIndex', String(currentQuestionIndex));
+    try {
+      localStorage.setItem(
+        "currentQuestionIndex",
+        String(currentQuestionIndex),
+      );
+    } catch (error) {
+      console.log("Error accessing localStorage:", error);
+    }
 
     try {
       let response;
       const headers = {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       };
-      const source = window.location.origin.replace(/^https?:\/\//, '') + window.location.pathname.replace(/\/$/, '');
+      const source =
+        window.location.origin.replace(/^https?:\/\//, "") +
+        window.location.pathname.replace(/\/$/, "");
       if (formSubmissionId) {
-        response = await fetch(`${LOCALIZED.API_URL}/submit-lead-form/${formSubmissionId}`, {
-          method: 'PATCH',
-          headers,
-          body: JSON.stringify({ submission, completed: false, source }),
-        });
+        response = await fetch(
+          `${LOCALIZED.API_URL}/submit-lead-form/${formSubmissionId}`,
+          {
+            method: "PATCH",
+            headers,
+            body: JSON.stringify({ submission, completed: false, source }),
+          },
+        );
       } else {
         if (!formStarted) {
           setFormStarted(true);
           if (window?.dataLayer) {
             window.dataLayer.push({
-              event: 'form_start',
+              event: "form_start",
             });
           }
         }
         response = await fetch(`${LOCALIZED.API_URL}/submit-lead-form`, {
-          method: 'POST',
+          method: "POST",
           headers,
           body: JSON.stringify({ submission, source }),
         });
 
         const result = await response.json();
         setFormSubmissionId(result.id);
-        localStorage.setItem('formSubmissionId', result.id);
+        try {
+          localStorage.setItem("formSubmissionId", result.id);
+        } catch (error) {
+          console.log("Error accessing localStorage:", error);
+        }
       }
     } catch (error) {
-      console.error('There was an error', error);
+      console.log("There was an error", error);
       Sentry.captureException(new Error(error));
     } finally {
       setLoading(false);
@@ -147,30 +192,35 @@ const PhoenixForm = ({ embed }) => {
     if (isLastQuestion) {
       setLoading(true);
       const completed = true;
-      const source = window.location.origin.replace(/^https?:\/\//, '') + window.location.pathname.replace(/\/$/, '');
+      const source =
+        window.location.origin.replace(/^https?:\/\//, "") +
+        window.location.pathname.replace(/\/$/, "");
       try {
         if (formSubmissionId) {
-          await fetch(`${LOCALIZED.API_URL}/submit-lead-form/${formSubmissionId}`, {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
+          await fetch(
+            `${LOCALIZED.API_URL}/submit-lead-form/${formSubmissionId}`,
+            {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ submission, completed, source }),
             },
-            body: JSON.stringify({ submission, completed, source }),
-          });
+          );
         }
 
         setSubmitted(true);
 
         if (window?.dataLayer) {
           window.dataLayer.push({
-            event: 'form_submit',
+            event: "form_submit",
             submission,
             source,
             completed,
           });
         }
       } catch (error) {
-        console.error('There was an error', error);
+        console.log("There was an error", error);
       } finally {
         setLoading(false);
       }
@@ -178,9 +228,14 @@ const PhoenixForm = ({ embed }) => {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     }
   };
+
   return (
     <section>
-      <button onClick={toggleFormVisibility} id="phoenix-show-form-button" aria-label="Show Lead Form">
+      <button
+        onClick={toggleFormVisibility}
+        id="phoenix-show-form-button"
+        aria-label="Show Lead Form"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="e-font-icon-svg e-fas-comment-alt"
@@ -196,12 +251,12 @@ const PhoenixForm = ({ embed }) => {
       <Modal open={showModal} onClose={() => setShowModal(false)}>
         <Box
           sx={{
-            position: 'absolute',
-            top: '60%',
-            left: '60%',
-            width: '75%',
-            transform: 'translate(-60%, -60%)',
-            bgcolor: 'background.paper',
+            position: "absolute",
+            top: "60%",
+            left: "60%",
+            width: "75%",
+            transform: "translate(-60%, -60%)",
+            bgcolor: "background.paper",
             boxShadow: 24,
             p: 4,
             borderRadius: 2,
@@ -209,13 +264,22 @@ const PhoenixForm = ({ embed }) => {
         >
           <Typography variant="h6">Continue existing submission?</Typography>
           <Typography variant="body1">
-            It looks like you started this form before. Would you like to pick up where you left off?
+            It looks like you started this form before. Would you like to pick
+            up where you left off?
           </Typography>
           <Box display="flex" justifyContent="space-between" mt={2}>
-            <Button variant="outlined" color="secondary" onClick={handleNewStart}>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={handleNewStart}
+            >
               Start Over
             </Button>
-            <Button variant="contained" color="primary" onClick={handleContinue}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleContinue}
+            >
               Continue
             </Button>
           </Box>
@@ -231,7 +295,12 @@ const PhoenixForm = ({ embed }) => {
               {submitted && (
                 <CardContent>
                   <Stack space={2}>
-                    <Prompt question={{ prompt: 'Thank you for your submission! We will contact you shortly.' }} />
+                    <Prompt
+                      question={{
+                        prompt:
+                          "Thank you for your submission! We will contact you shortly.",
+                      }}
+                    />
                   </Stack>
                 </CardContent>
               )}
@@ -245,14 +314,19 @@ const PhoenixForm = ({ embed }) => {
                     </Stack>
                   </CardContent>
 
-                  <CardActions sx={{ justifyContent: 'space-between' }}>
+                  <CardActions sx={{ justifyContent: "space-between" }}>
                     {currentQuestionIndex > 0 && (
-                      <Button variant="contained" onClick={() => setCurrentQuestionIndex(currentQuestionIndex - 1)}>
+                      <Button
+                        variant="contained"
+                        onClick={() =>
+                          setCurrentQuestionIndex(currentQuestionIndex - 1)
+                        }
+                      >
                         Back
                       </Button>
                     )}
                     <Button
-                      style={{ justifyContent: 'flex-end' }}
+                      style={{ justifyContent: "flex-end" }}
                       variant="contained"
                       color="primary"
                       onClick={() => {
@@ -260,7 +334,9 @@ const PhoenixForm = ({ embed }) => {
                       }}
                       disabled={invalid || loading}
                     >
-                      {currentQuestionIndex + 1 === questions.length ? 'Submit' : 'Next'}
+                      {currentQuestionIndex + 1 === questions.length
+                        ? "Submit"
+                        : "Next"}
                     </Button>
                   </CardActions>
                 </>
@@ -273,19 +349,19 @@ const PhoenixForm = ({ embed }) => {
   );
 };
 
-const chat = document.getElementById('phoenix-form-root');
+const chat = document.getElementById("phoenix-form-root");
 const root = createRoot(chat);
 root.render(
   <GlobalStateProvider>
     <PhoenixForm />
-  </GlobalStateProvider>
+  </GlobalStateProvider>,
 );
 
-const roots = document.querySelectorAll('.phoenix-form-embed-root');
+const roots = document.querySelectorAll(".phoenix-form-embed-root");
 roots.forEach((el) => {
   createRoot(el).render(
     <GlobalStateProvider>
       <PhoenixForm embed={true} />
-    </GlobalStateProvider>
+    </GlobalStateProvider>,
   );
 });

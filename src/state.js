@@ -51,7 +51,7 @@ export const GlobalStateProvider = ({ children }) => {
           setServices(services);
         }
       } catch (error) {
-        console.error("Error fetching form data:", error);
+        console.log("Error fetching form data:", error);
       } finally {
         setLoading(false);
       }

@@ -1,29 +1,43 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
-import { TextField, Stack, Button, CircularProgress } from '@mui/material';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import { useLoadScript } from '@react-google-maps/api';
-import { GlobalStateContext } from '../state';
+import React, { useState, useEffect, useRef, useContext } from "react";
+import { TextField, Stack, Button, CircularProgress } from "@mui/material";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import { useLoadScript } from "@react-google-maps/api";
+import { GlobalStateContext } from "../state";
 
 const getAddressObject = (address_components) => {
   const obj = {};
   if (!address_components) return obj;
 
-  const number = address_components.find((c) => c.types.includes('street_number'))?.long_name;
-  const street = address_components.find((c) => c.types.includes('route'))?.short_name;
+  const number = address_components.find((c) =>
+    c.types.includes("street_number"),
+  )?.long_name;
+  const street = address_components.find((c) =>
+    c.types.includes("route"),
+  )?.short_name;
 
-  obj.address_1 = number && street ? `${number} ${street}` : '';
-  obj.city = address_components.find((c) => c.types.includes('locality'))?.long_name || '';
-  obj.state = address_components.find((c) => c.types.includes('administrative_area_level_1'))?.short_name || '';
-  obj.country = address_components.find((c) => c.types.includes('country'))?.short_name || '';
-  obj.zipcode = address_components.find((c) => c.types.includes('postal_code'))?.long_name || '';
+  obj.address_1 = number && street ? `${number} ${street}` : "";
+  obj.city =
+    address_components.find((c) => c.types.includes("locality"))?.long_name ||
+    "";
+  obj.state =
+    address_components.find((c) =>
+      c.types.includes("administrative_area_level_1"),
+    )?.short_name || "";
+  obj.country =
+    address_components.find((c) => c.types.includes("country"))?.short_name ||
+    "";
+  obj.zipcode =
+    address_components.find((c) => c.types.includes("postal_code"))
+      ?.long_name || "";
 
   return obj;
 };
 
-const libraries = ['places'];
+const libraries = ["places"];
 
 export default function AddressAutoComplete({ input }) {
-  const { questions, currentQuestionIndex, setQuestions, errors, setErrors } = useContext(GlobalStateContext);
+  const { questions, currentQuestionIndex, setQuestions, errors, setErrors } =
+    useContext(GlobalStateContext);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const inputRef = useRef(null);
 
@@ -36,14 +50,16 @@ export default function AddressAutoComplete({ input }) {
     if (!inputRef.current || !window.google) return;
 
     try {
-      const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current);
-      autocomplete.addListener('place_changed', () => {
+      const autocomplete = new window.google.maps.places.Autocomplete(
+        inputRef.current,
+      );
+      autocomplete.addListener("place_changed", () => {
         try {
           const place = autocomplete.getPlace();
           const addressObj = getAddressObject(place.address_components);
           handleInputChange(addressObj);
         } catch (error) {
-          console.error('Error handling place_changed event:', error);
+          console.log("Error handling place_changed event:", error);
         }
       });
 
@@ -51,13 +67,13 @@ export default function AddressAutoComplete({ input }) {
         window.google.maps.event.clearInstanceListeners(autocomplete);
       };
     } catch (error) {
-      console.error('Error initializing Google Maps Autocomplete:', error);
+      console.log("Error initializing Google Maps Autocomplete:", error);
     }
   }, [isLoaded]);
 
   const handleUseGps = () => {
     if (!navigator.geolocation) {
-      console.error('Geolocation is not supported by your browser.');
+      console.log("Geolocation is not supported by your browser.");
       return;
     }
 
@@ -68,31 +84,38 @@ export default function AddressAutoComplete({ input }) {
           const { latitude, longitude } = pos.coords;
           const geocoder = new window.google.maps.Geocoder();
 
-          geocoder.geocode({ location: { lat: latitude, lng: longitude } }, (results, status) => {
-            setLoadingLocation(false);
-            if (status === 'OK' && results[0]) {
-              const addressObj = getAddressObject(results[0].address_components);
-              handleInputChange(addressObj);
-            } else {
-              console.error('Geocoder failed due to:', status);
-            }
-          });
+          geocoder.geocode(
+            { location: { lat: latitude, lng: longitude } },
+            (results, status) => {
+              setLoadingLocation(false);
+              if (status === "OK" && results[0]) {
+                const addressObj = getAddressObject(
+                  results[0].address_components,
+                );
+                handleInputChange(addressObj);
+              } else {
+                console.log("Geocoder failed due to:", status);
+              }
+            },
+          );
         } catch (error) {
           setLoadingLocation(false);
-          console.error('Error in geolocation success callback:', error);
+          console.log("Error in geolocation success callback:", error);
         }
       },
       (err) => {
         setLoadingLocation(false);
-        console.error('Error in getting geolocation:', err);
-      }
+        console.log("Error in getting geolocation:", err);
+      },
     );
   };
 
   const handleInputChange = (event) => {
     try {
       const updatedQuestions = [...questions];
-      const currentInput = updatedQuestions[currentQuestionIndex].inputs.find((input) => input.name === 'location');
+      const currentInput = updatedQuestions[currentQuestionIndex].inputs.find(
+        (input) => input.name === "location",
+      );
 
       if (event.nativeEvent instanceof Event) {
         currentInput.value = event.target.value;
@@ -106,16 +129,17 @@ export default function AddressAutoComplete({ input }) {
       const errorMessage = validateLocation(currentInput);
       setErrors({ ...errors, [currentInput.name]: errorMessage });
     } catch (error) {
-      console.error('Error handling input change:', error);
+      console.log("Error handling input change:", error);
     }
   };
 
   const validateLocation = (input) => {
-    if (!input.optional) return !input.value.trim() ? 'This field is required' : '';
+    if (!input.optional)
+      return !input.value.trim() ? "This field is required" : "";
   };
 
   if (loadError) {
-    console.error('Error loading maps:', loadError);
+    console.log("Error loading maps:", loadError);
     return <div>Error loading maps</div>;
   }
 
@@ -124,7 +148,7 @@ export default function AddressAutoComplete({ input }) {
   }
 
   return (
-    <Stack spacing={2} direction="column" sx={{ marginTop: '1rem' }}>
+    <Stack spacing={2} direction="column" sx={{ marginTop: "1rem" }}>
       <TextField
         label={input.label}
         name={input.name}
