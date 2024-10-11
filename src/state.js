@@ -8,7 +8,7 @@ export const GlobalStateProvider = ({ children }) => {
       const savedData = localStorage.getItem("formData");
       return savedData ? JSON.parse(savedData) : questionData;
     } catch (error) {
-      console.error("Error accessing localStorage:", error);
+      console.log("Error accessing localStorage:", error);
       return questionData;
     }
   });
@@ -51,7 +51,7 @@ export const GlobalStateProvider = ({ children }) => {
           setServices(services);
         }
       } catch (error) {
-        console.error("Error fetching form data:", error);
+        console.log("Error fetching form data:", error);
       } finally {
         setLoading(false);
       }
