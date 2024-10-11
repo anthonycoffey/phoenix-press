@@ -14,6 +14,11 @@ import Prompt from "./components/Prompt";
 import Answer from "./components/Answer";
 import SkeletonChat from "./components/SkeletonChat";
 import { GlobalStateContext, GlobalStateProvider } from "./state.js";
+import {
+  safeLocalStorageGetItem,
+  safeLocalStorageSetItem,
+  safeLocalStorageRemoveItem,
+} from "./utils/localStorageUtils";
 import "./styles.sass";
 
 import * as Sentry from "@sentry/react";
@@ -59,60 +64,48 @@ const PhoenixForm = ({ embed }) => {
 
   useEffect(() => {
     if (isFormVisible || embed) {
-      try {
-        const savedData = localStorage.getItem("formData");
-        const savedIndex = localStorage.getItem("currentQuestionIndex");
-        const savedFormId = localStorage.getItem("formSubmissionId");
-        if (savedData && savedIndex) {
-          const formData = JSON.parse(savedData);
+      const savedData = safeLocalStorageGetItem("formData");
+      const savedIndex = safeLocalStorageGetItem("currentQuestionIndex");
+      const savedFormId = safeLocalStorageGetItem("formSubmissionId");
+      if (savedData && savedIndex) {
+        const formData = JSON.parse(savedData);
 
-          const hasFilledField = formData.some((question) =>
-            question.inputs.some(
-              (input) =>
-                typeof input.value === "string" && input.value.trim() !== "",
-            ),
-          );
+        const hasFilledField = formData.some((question) =>
+          question.inputs.some(
+            (input) =>
+              typeof input.value === "string" && input.value.trim() !== "",
+          ),
+        );
 
-          if (hasFilledField) {
-            setShowModal(true);
-          }
-
-          if (savedFormId) {
-            setFormSubmissionId(savedFormId);
-          }
+        if (hasFilledField) {
+          setShowModal(true);
         }
-      } catch (error) {
-        console.log("Error accessing localStorage:", error);
+
+        if (savedFormId) {
+          setFormSubmissionId(savedFormId);
+        }
       }
     }
   }, [isFormVisible]);
 
   const handleContinue = () => {
-    try {
-      const savedData = localStorage.getItem("formData");
-      const savedIndex = localStorage.getItem("currentQuestionIndex");
-      const savedFormId = localStorage.getItem("formSubmissionId");
-      if (savedData && savedIndex) {
-        setQuestions(JSON.parse(savedData));
-        setCurrentQuestionIndex(parseInt(savedIndex));
-      }
-      if (savedFormId) {
-        setFormSubmissionId(savedFormId);
-      }
-      setShowModal(false);
-    } catch (error) {
-      console.log("Error accessing localStorage:", error);
+    const savedData = safeLocalStorageGetItem("formData");
+    const savedIndex = safeLocalStorageGetItem("currentQuestionIndex");
+    const savedFormId = safeLocalStorageGetItem("formSubmissionId");
+    if (savedData && savedIndex) {
+      setQuestions(JSON.parse(savedData));
+      setCurrentQuestionIndex(parseInt(savedIndex));
     }
+    if (savedFormId) {
+      setFormSubmissionId(savedFormId);
+    }
+    setShowModal(false);
   };
 
   const handleNewStart = () => {
-    try {
-      localStorage.removeItem("formData");
-      localStorage.removeItem("currentQuestionIndex");
-      localStorage.removeItem("formSubmissionId");
-    } catch (error) {
-      console.log("Error accessing localStorage:", error);
-    }
+    safeLocalStorageRemoveItem("formData");
+    safeLocalStorageRemoveItem("currentQuestionIndex");
+    safeLocalStorageRemoveItem("formSubmissionId");
     setSubmitted(false);
     setFormSubmissionId(null);
     setCurrentQuestionIndex(0);
@@ -132,14 +125,10 @@ const PhoenixForm = ({ embed }) => {
       }),
     );
 
-    try {
-      localStorage.setItem(
-        "currentQuestionIndex",
-        String(currentQuestionIndex),
-      );
-    } catch (error) {
-      console.log("Error accessing localStorage:", error);
-    }
+    safeLocalStorageSetItem(
+      "currentQuestionIndex",
+      String(currentQuestionIndex),
+    );
 
     try {
       let response;
@@ -175,11 +164,7 @@ const PhoenixForm = ({ embed }) => {
 
         const result = await response.json();
         setFormSubmissionId(result.id);
-        try {
-          localStorage.setItem("formSubmissionId", result.id);
-        } catch (error) {
-          console.log("Error accessing localStorage:", error);
-        }
+        safeLocalStorageSetItem("formSubmissionId", result.id);
       }
     } catch (error) {
       console.log("There was an error", error);
