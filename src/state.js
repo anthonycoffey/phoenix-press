@@ -2,15 +2,26 @@ import React, { createContext, useEffect, useState } from "react";
 export const GlobalStateContext = createContext();
 import questionData from "./utils/questions";
 
+function safeLocalStorageGetItem(key, defaultValue = null) {
+  try {
+    return localStorage.getItem(key);
+  } catch (error) {
+    return defaultValue;
+  }
+}
+
+function safeLocalStorageSetItem(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch (error) {
+    console.log(`Error setting localStorage for key "${key}":`, error);
+  }
+}
+
 export const GlobalStateProvider = ({ children }) => {
   const [questions, setQuestions] = useState(() => {
-    try {
-      const savedData = localStorage.getItem("formData");
-      return savedData ? JSON.parse(savedData) : questionData;
-    } catch (error) {
-      console.log("Error accessing localStorage:", error);
-      return questionData;
-    }
+    const savedData = safeLocalStorageGetItem("formData");
+    return savedData ? JSON.parse(savedData) : questionData;
   });
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -22,9 +33,9 @@ export const GlobalStateProvider = ({ children }) => {
 
   useEffect(() => {
     if (questions) {
-      localStorage.setItem("formData", JSON.stringify(questions));
+      safeLocalStorageSetItem("formData", JSON.stringify(questions));
     }
-  }, [questions]);
+  }, [currentQuestionIndex]);
 
   useEffect(() => {
     const fetchData = async () => {
