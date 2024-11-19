@@ -1,6 +1,6 @@
 {
   "name": "phoenix-press",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "WordPress Plugin for Phoenix Platform",
   "author": "Anthony Coffey",
   "license": "MIT",
@@ -32,7 +32,9 @@
     "style-loader": "^4.0.0",
     "webpack": "^5.95.0",
     "webpack-cli": "^5.1.4",
-    "webpack-dev-server": "^5.1.0"
+    "webpack-dev-server": "^5.1.0",
+    "ajv": "^8.17.1",
+    "ajv-keywords": "^5.1.0"
   },
   "dependencies": {
     "@date-io/date-fns": "^3.0.0",

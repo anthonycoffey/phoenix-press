@@ -56,7 +56,7 @@ const PhoenixForm = ({ embed }) => {
     const isEmpty = currentQuestion.inputs.some(
       (input) =>
         !input.optional &&
-        (input.value === "" ||
+        (input.value === "" || input.value === false ||
           (Array.isArray(input.value) && input.value.length === 0)),
     );
     setInvalid(hasErrors || isEmpty);

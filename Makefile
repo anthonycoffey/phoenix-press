@@ -9,7 +9,7 @@ endif
 install:
 	$(COMPOSER_BIN) install
 	$(COMPOSER_BIN) install --working-dir phoenix-press
-	cd phoenix-press && npm install --dev
+	cd phoenix-press && npm install --include=dev
 
 .PHONY: build
 build:
@@ -25,3 +25,7 @@ release:
 	$(COMPOSER_BIN) install --working-dir phoenix-press --no-dev
 	cd phoenix-press && npm install && npm run build
 	zip -r --exclude="*node_modules*" --exclude="*src*" phoenix-press.zip phoenix-press
+
+.PHONY: clean
+clean:
+	rm -rf phoenix-press/node_modules phoenix-press/package-lock.json vendor composer.lock
