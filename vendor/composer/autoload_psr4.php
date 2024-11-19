@@ -6,6 +6,5 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Phoenix\\Press\\Tests\\' => array($baseDir . '/tests'),
     'Phoenix\\Press\\' => array($baseDir . '/includes'),
 );
