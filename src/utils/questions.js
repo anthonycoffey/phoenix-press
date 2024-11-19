@@ -16,7 +16,7 @@ const options = [
         label:
           "I agree to be contacted via text messages & voice calls from 24hr Car Unlocking. I understand that I can opt out at any time, and consent to the Terms of Service and Privacy Policy.",
         value: false,
-        required: true,
+        optional: false,
       },
     ],
   },

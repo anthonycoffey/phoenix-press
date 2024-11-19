@@ -43,7 +43,7 @@ const Answer = ({ question }) => {
     currentInput.value = type === "checkbox" ? checked : value;
     setQuestions(updatedQuestions);
 
-    if (currentInput.type === "text") {
+    if (currentInput.type === "text" || currentInput.type === "checkbox") {
       // Validate text input
       const errorMessage = validateField(currentInput);
       setErrors({ ...errors, [currentInput.name]: errorMessage });
@@ -51,8 +51,17 @@ const Answer = ({ question }) => {
   };
 
   const validateField = (input) => {
-    if (!input.optional)
-      return !input.value.trim() ? "This field is required" : "";
+      if (!input.optional) {
+          switch (input.type) {
+              case 'text':
+                  return !input.value.trim() ? "This field is required" : "";
+              case 'checkbox':
+                  return !input.value ? "This field is required" : "";
+              default:
+                  return "";
+          }
+      }
+      return "";
   };
 
   return (
@@ -121,7 +130,7 @@ const Answer = ({ question }) => {
                   checked={input.value}
                   onChange={handleInputChange}
                   name={input.name}
-                  required={input.required}
+                  required={input.optional}
                 />
               }
               label={input.label}
