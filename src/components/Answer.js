@@ -1,5 +1,11 @@
 import React, { useContext, useEffect, useState } from "react";
-import { TextField, Stack, Checkbox, FormControlLabel } from "@mui/material";
+import {
+  TextField,
+  Stack,
+  Checkbox,
+  FormControlLabel,
+  Alert,
+} from "@mui/material";
 import {
   DatePicker,
   TimePicker,
@@ -51,17 +57,17 @@ const Answer = ({ question }) => {
   };
 
   const validateField = (input) => {
-      if (!input.optional) {
-          switch (input.type) {
-              case 'text':
-                  return !input.value.trim() ? "This field is required" : "";
-              case 'checkbox':
-                  return !input.value ? "This field is required" : "";
-              default:
-                  return "";
-          }
+    if (!input.optional) {
+      switch (input.type) {
+        case "text":
+          return !input.value.trim() ? "This field is required" : "";
+        case "checkbox":
+          return !input.value ? "This field is required" : "";
+        default:
+          return "";
       }
-      return "";
+    }
+    return "";
   };
 
   return (
@@ -123,18 +129,20 @@ const Answer = ({ question }) => {
 
         if (input.type === "checkbox") {
           return (
-            <FormControlLabel
-              key={index}
-              control={
-                <Checkbox
-                  checked={input.value}
-                  onChange={handleInputChange}
-                  name={input.name}
-                  required={input.optional}
-                />
-              }
-              label={input.label}
-            />
+            <>
+              <FormControlLabel
+                key={index}
+                control={
+                  <Checkbox
+                    checked={input.value}
+                    onChange={handleInputChange}
+                    name={input.name}
+                    required={!input.optional}
+                  />
+                }
+                label={input.label}
+              />
+            </>
           );
         }
 
@@ -159,6 +167,7 @@ const Answer = ({ question }) => {
             </LocalizationProvider>
           );
         }
+
         return null;
       })}
     </>

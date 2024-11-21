@@ -9,9 +9,11 @@ import {
   Modal,
   Box,
   Typography,
+  Alert,
 } from "@mui/material";
 import Prompt from "./components/Prompt";
 import Answer from "./components/Answer";
+import Disclaimer from "./components/Disclaimer";
 import SkeletonChat from "./components/SkeletonChat";
 import { GlobalStateContext, GlobalStateProvider } from "./state.js";
 import {
@@ -56,7 +58,8 @@ const PhoenixForm = ({ embed }) => {
     const isEmpty = currentQuestion.inputs.some(
       (input) =>
         !input.optional &&
-        (input.value === "" || input.value === false ||
+        (input.value === "" ||
+          input.value === false ||
           (Array.isArray(input.value) && input.value.length === 0)),
     );
     setInvalid(hasErrors || isEmpty);
@@ -296,6 +299,7 @@ const PhoenixForm = ({ embed }) => {
                     <Stack space={2}>
                       <Prompt question={currentQuestion} />
                       <Answer question={currentQuestion} />
+                      <Disclaimer index={currentQuestionIndex} />
                     </Stack>
                   </CardContent>
 
