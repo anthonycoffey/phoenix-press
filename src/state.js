@@ -4,7 +4,7 @@ import {
   safeLocalStorageGetItem,
   safeLocalStorageSetItem,
 } from "./utils/localStorageUtils";
-import questionData from "./utils/questions";
+import questionData from "./utils/form-data";
 
 export const GlobalStateProvider = ({ children }) => {
   const [questions, setQuestions] = useState(() => {
