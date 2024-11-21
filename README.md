@@ -76,3 +76,25 @@ To build the project and create a release, you would run:
 make build
 make release
 ```
+
+### composer.json
+
+In the parent `plugins` directory, you will need a `composer.json` file. This file is used to manage dependencies for the WordPress plugins. When you run `composer install`, Composer will install the dependencies listed in this file.
+
+```JSON
+{
+  "name": "phoenix/press",
+  "type": "wordpress-plugin",
+  "require-dev": {
+    "10up/wp_mock": "^1.0"
+  },
+  "require": {
+    "php": "^7.4.3 || ^8"
+  },
+  "scripts": {
+    "test": "composer test:unit",
+    "test:unit": "phpunit -c phpunit.xml",
+    "fixes": "phpcbf php/ && phpcbf tests/"
+  }
+}
+```

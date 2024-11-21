@@ -11,12 +11,12 @@ const options = [
         optional: false,
       },
       {
-        name: "communication_consent",
+        name: "sms_consent",
         type: "checkbox",
         label:
-          "I agree to be contacted via text messages & voice calls from 24hr Car Unlocking. I understand that I can opt out at any time, and consent to the Terms of Service and Privacy Policy.",
+          "I agree to receive SMS updates and notifications related to my roadside service request.",
         value: false,
-        optional: false,
+        optional: true,
       },
     ],
   },
