@@ -123,20 +123,19 @@ const Answer = ({ question }) => {
 
         if (input.type === "checkbox") {
           return (
-            <>
-              <FormControlLabel
-                key={index}
-                control={
-                  <Checkbox
-                    checked={input.value}
-                    onChange={handleInputChange}
-                    name={input.name}
-                    required={!input.optional}
-                  />
-                }
-                label={input.label}
-              />
-            </>
+            <FormControlLabel
+              style={{ marginBottom: "1rem" }}
+              key={index}
+              control={
+                <Checkbox
+                  checked={input.value}
+                  onChange={handleInputChange}
+                  name={input.name}
+                  required={!input.optional}
+                />
+              }
+              label={input.label}
+            />
           );
         }
 

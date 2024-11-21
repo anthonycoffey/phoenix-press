@@ -14,7 +14,7 @@ const options = [
         name: "sms_consent",
         type: "checkbox",
         label:
-          "I agree to receive SMS updates and notifications related to my roadside service request.",
+          "Yes, send me SMS updates and notifications to keep me informed about my roadside service request.",
         value: false,
         optional: true,
       },
