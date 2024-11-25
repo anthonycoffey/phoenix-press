@@ -164,8 +164,8 @@ const PhoenixForm = ({ embed }) => {
         });
 
         const result = await response.json();
-        setFormSubmissionId(result?.formSubmission?.id);
-        safeLocalStorageSetItem("formSubmissionId", result?.formSubmission?.id);
+        setFormSubmissionId(result?.id);
+        safeLocalStorageSetItem("formSubmissionId", result?.id);
       }
 
       if (currentQuestionIndex + 1 === questions.length) {
