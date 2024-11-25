@@ -22,7 +22,7 @@ class Meta
             'phoenix-press-js',
             plugins_url( 'build/bundle.js', __DIR__ ),
             [ 'wp-element' ],
-            '1.0',
+            Plugin::instance()->get_plugin_version(),
             true
         );
 
