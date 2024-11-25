@@ -20,7 +20,7 @@ class Meta
 
         wp_enqueue_script(
             'phoenix-press-js',
-            plugins_url( 'build/bundle.js', __DIR__ ),
+            plugins_url( 'build/phoenix-press.js', __DIR__ ),
             [ 'wp-element' ],
             Plugin::instance()->get_plugin_version(),
             true

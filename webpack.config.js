@@ -1,13 +1,13 @@
-const path = require('path');
+const path = require("path");
 module.exports = {
   externals: {
-    react: 'React',
-    'react-dom': 'ReactDOM',
+    react: "React",
+    "react-dom": "ReactDOM",
   },
-  entry: './src/index.js',
+  entry: "./src/index.js",
   output: {
-    path: path.resolve(__dirname, 'build'),
-    filename: 'bundle.js',
+    path: path.resolve(__dirname, "build"),
+    filename: "phoenix-press.js",
   },
   module: {
     rules: [
@@ -15,15 +15,15 @@ module.exports = {
         test: /\.js$/,
         exclude: /node_modules/,
         use: {
-          loader: 'babel-loader',
+          loader: "babel-loader",
           options: {
-            presets: ['@babel/preset-env', '@babel/preset-react'],
+            presets: ["@babel/preset-env", "@babel/preset-react"],
           },
         },
       },
       {
         test: /\.sass$/,
-        use: ['style-loader', 'css-loader', 'sass-loader'],
+        use: ["style-loader", "css-loader", "sass-loader"],
       },
     ],
   },
