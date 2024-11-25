@@ -22,6 +22,7 @@ import {
   safeLocalStorageRemoveItem,
 } from "./utils/localStorageUtils";
 import "./styles.sass";
+import questionData from "./utils/form-data";
 
 import * as Sentry from "@sentry/react";
 Sentry.init({
@@ -69,7 +70,6 @@ const PhoenixForm = ({ embed }) => {
     if (isFormVisible || embed) {
       const savedData = safeLocalStorageGetItem("formData");
       const savedIndex = safeLocalStorageGetItem("currentQuestionIndex");
-      const savedFormId = safeLocalStorageGetItem("formSubmissionId");
       if (savedData && savedIndex) {
         const formData = JSON.parse(savedData);
 
@@ -82,10 +82,6 @@ const PhoenixForm = ({ embed }) => {
 
         if (hasFilledField) {
           setShowModal(true);
-        }
-
-        if (savedFormId) {
-          setFormSubmissionId(savedFormId);
         }
       }
     }
@@ -110,6 +106,7 @@ const PhoenixForm = ({ embed }) => {
     safeLocalStorageRemoveItem("currentQuestionIndex");
     safeLocalStorageRemoveItem("formSubmissionId");
     setSubmitted(false);
+    setQuestions(questionData);
     setFormSubmissionId(null);
     setCurrentQuestionIndex(0);
     setShowModal(false);
@@ -133,21 +130,22 @@ const PhoenixForm = ({ embed }) => {
       String(currentQuestionIndex),
     );
 
+    const headers = {
+      "Content-Type": "application/json",
+    };
+    const source =
+      window.location.origin.replace(/^https?:\/\//, "") +
+      window.location.pathname.replace(/\/$/, "");
+
     try {
       let response;
-      const headers = {
-        "Content-Type": "application/json",
-      };
-      const source =
-        window.location.origin.replace(/^https?:\/\//, "") +
-        window.location.pathname.replace(/\/$/, "");
       if (formSubmissionId) {
         response = await fetch(
           `${LOCALIZED.API_URL}/submit-lead-form/${formSubmissionId}`,
           {
             method: "PATCH",
             headers,
-            body: JSON.stringify({ submission, completed: false, source }),
+            body: JSON.stringify({ submission, source }),
           },
         );
       } else {
@@ -166,8 +164,15 @@ const PhoenixForm = ({ embed }) => {
         });
 
         const result = await response.json();
-        setFormSubmissionId(result.id);
-        safeLocalStorageSetItem("formSubmissionId", result.id);
+        setFormSubmissionId(result?.formSubmission?.id);
+        safeLocalStorageSetItem("formSubmissionId", result?.formSubmission?.id);
+      }
+
+      if (currentQuestionIndex + 1 === questions.length) {
+        console.log("completeSubmission function call");
+        await completeSubmission(submission, source);
+      } else {
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
       }
     } catch (error) {
       console.log("There was an error", error);
@@ -175,48 +180,37 @@ const PhoenixForm = ({ embed }) => {
     } finally {
       setLoading(false);
     }
-
-    const isLastQuestion = currentQuestionIndex + 1 === questions.length;
-    if (isLastQuestion) {
-      setLoading(true);
-      const completed = true;
-      const source =
-        window.location.origin.replace(/^https?:\/\//, "") +
-        window.location.pathname.replace(/\/$/, "");
-      try {
-        if (formSubmissionId) {
-          await fetch(
-            `${LOCALIZED.API_URL}/submit-lead-form/${formSubmissionId}`,
-            {
-              method: "PATCH",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ submission, completed, source }),
-            },
-          );
-        }
-
-        setSubmitted(true);
-
-        if (window?.dataLayer) {
-          window.dataLayer.push({
-            event: "form_submit",
-            submission,
-            source,
-            completed,
-          });
-        }
-      } catch (error) {
-        console.log("There was an error", error);
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    }
   };
 
+  const completeSubmission = async (submission, source) => {
+    try {
+      if (formSubmissionId) {
+        await fetch(
+          `${LOCALIZED.API_URL}/submit-lead-form/${formSubmissionId}`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ submission, completed: true, source }),
+          },
+        );
+      }
+
+      setSubmitted(true);
+
+      if (window?.dataLayer) {
+        window.dataLayer.push({
+          event: "form_submit",
+          submission,
+          source,
+          completed: true,
+        });
+      }
+    } catch (error) {
+      console.log("There was an error", error);
+    }
+  };
   return (
     <section>
       <button
