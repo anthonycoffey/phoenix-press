@@ -21,6 +21,7 @@ import {
   safeLocalStorageSetItem,
   safeLocalStorageRemoveItem,
 } from "./utils/localStorageUtils";
+
 import "./styles.sass";
 import questionData from "./utils/form-data";
 
@@ -211,6 +212,7 @@ const PhoenixForm = ({ embed }) => {
       console.log("There was an error", error);
     }
   };
+
   return (
     <section>
       <button
@@ -279,8 +281,7 @@ const PhoenixForm = ({ embed }) => {
                   <Stack space={2}>
                     <Prompt
                       question={{
-                        prompt:
-                          "Thank you for your submission! We will contact you shortly.",
+                        prompt: LOCALIZED.SUBMISSION_MESSAGE,
                       }}
                     />
                   </Stack>
