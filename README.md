@@ -10,18 +10,33 @@
 
 Custom WordPress plugin for Phoenix CRM.
 
-### File Download
+### Plugin Settings
 
-Check [Releases](https://github.com/anthonycoffey/phoenix-press/releases) for the latest version of the plugin.
+Activating this plugin enables a few settings in the WordPress admin area under `Settings`. These settings are used to configure the plugin and are stored in the WordPress database.
 
-### Installation
+- Google Maps API Key
+- Phoenix API URL
+- SMS Consent Message
+- Disclaimer Message
+- Submission Message
+
+*Note: If the plugin is deactivated and removed, the plugin settings will remain. However, for a fresh install of WordPress these settings will need to be configured accordingly.*
+
+![readme-plugin-settings.png](readme-plugin-settings.png)
+
+
+### Releases
+
+Check Releases page for the latest version of the plugin.
+
+### Contributing
 
 #### Prerequisites
-- Ensure you have `composer` and `npm` installed on your system.
-- Install `watchexec` for the `watch-test` task.
+- `composer` and `npm` installed on your system.
+- `PHP` version 7.4.3 or higher.
 
 #### Steps
-1. Clone the repository:
+1. Clone the repository to your local WordPress install in the `wp-content/plugins` directory:
    ```sh
    git clone https://github.com/anthonycoffey/phoenix-press.git
    cd phoenix-press
@@ -44,7 +59,7 @@ Check [Releases](https://github.com/anthonycoffey/phoenix-press/releases) for th
    make start
    ```
 
-### Available Commands
+#### Available Commands
 
 1. **Install Dependencies**
    ```sh
@@ -52,63 +67,40 @@ Check [Releases](https://github.com/anthonycoffey/phoenix-press/releases) for th
    ```
    This command installs PHP dependencies using Composer and JavaScript dependencies using npm.
 
-2. **Build the Project**
-   ```sh
-   make build
-   ```
-   This command builds the project using npm.
-
-3. **Start the Development Server**
+2. **Start the Development Server**
    ```sh
    make start
    ```
    This command starts the development server using npm.
 
-4. **Create a Release**
+3. **Build the Project**
    ```sh
-   make release
+   make build
    ```
-   This command prepares a release by installing production dependencies, building the project, and creating a zip file excluding `node_modules` and `src` directories.
+   This command builds the project using npm.
 
 
-To build the project and create a release, you would run:
-```sh
-make build
-make release
-```
-
-### composer.json
+#### composer.json for parent `plugins` directory
 
 In the parent `plugins` directory, you will need a `composer.json` file. This file is used to manage dependencies for the WordPress plugins. When you run `composer install`, Composer will install the dependencies listed in this file.
 
+Create a `composer.json` file in the parent `plugins` directory, and paste the following contents:
+
+
 ```JSON
 {
-  "name": "phoenix/press",
-  "type": "wordpress-plugin",
-  "require-dev": {
-    "10up/wp_mock": "^1.0"
-  },
-  "require": {
-    "php": "^7.4.3 || ^8"
-  },
-  "scripts": {
-    "test": "composer test:unit",
-    "test:unit": "phpunit -c phpunit.xml",
-    "fixes": "phpcbf php/ && phpcbf tests/"
-  }
+   "name": "phoenix/press",
+   "type": "wordpress-plugin",
+   "require-dev": {
+      "10up/wp_mock": "^1.0"
+   },
+   "require": {
+      "php": "^7.4.3 || ^8"
+   },
+   "scripts": {
+      "test": "composer test:unit",
+      "test:unit": "phpunit -c phpunit.xml",
+      "fixes": "phpcbf php/ && phpcbf tests/"
+   }
 }
 ```
-
-### Plugin Settings
-
-Activating this plugin enables a few settings in the WordPress admin area under `Settings`. These settings are used to configure the plugin and are stored in the WordPress database.
-
-- Google Maps API Key
-- Phoenix API URL
-- SMS Consent Message
-- Disclaimer Message
-- Submission Message
-
-If the plugin is deactivated and removed, the plugin settings will remain. However, for a fresh install of WordPress these settings will need to be configured accordingly.
-
-![readme-plugin-settings.png](readme-plugin-settings.png)
