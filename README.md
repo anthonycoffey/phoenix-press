@@ -98,3 +98,17 @@ In the parent `plugins` directory, you will need a `composer.json` file. This fi
   }
 }
 ```
+
+### Plugin Settings
+
+Activating this plugin enables a few settings in the WordPress admin area under `Settings`. These settings are used to configure the plugin and are stored in the WordPress database.
+
+- Google Maps API Key
+- Phoenix API URL
+- SMS Consent Message
+- Disclaimer Message
+- Submission Message
+
+If the plugin is deactivated and removed, the plugin settings will remain. However, for a fresh install of WordPress these settings will need to be configured accordingly.
+
+![readme-plugin-settings.png](readme-plugin-settings.png)
