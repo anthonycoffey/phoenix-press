@@ -96,3 +96,4 @@ Check Releases page to download the latest version of the plugin.
    ```sh
    make build
    ```
+
