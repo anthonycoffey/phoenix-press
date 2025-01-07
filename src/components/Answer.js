@@ -10,6 +10,7 @@ import { GlobalStateContext } from "../state";
 import AddressAutoComplete from "./AddressAutoComplete";
 import ServiceSelect from "./ServiceSelect";
 import PhoneField from "./PhoneField";
+import parse from "react-html-parser";
 
 const Answer = ({ question }) => {
   const { errors, setErrors } = useContext(GlobalStateContext);
@@ -134,7 +135,7 @@ const Answer = ({ question }) => {
                   required={!input.optional}
                 />
               }
-              label={input.label}
+              label={parse(LOCALIZED.SMS_CONTENT_MESSAGE || input.label)}
             />
           );
         }
