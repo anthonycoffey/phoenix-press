@@ -25,7 +25,7 @@ class Meta
       'phoenix-press-js',
       plugins_url('build/phoenix-press.js', __DIR__),
       [ 'wp-element' ],
-      '1.0',
+      PHOENIX_PRESS_VERSION,
       true
     );
 
