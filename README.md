@@ -63,15 +63,16 @@ Check Releases page to download the latest version of the plugin.
    make install
    ```
 
-4. Build the project:
+4. Start the development server:
+   ```sh
+   make start
+   ```
+
+5. Build the project:
    ```sh
    make build
    ```
 
-5. Start the development server:
-   ```sh
-   make start
-   ```
 
 #### Available Commands
 
