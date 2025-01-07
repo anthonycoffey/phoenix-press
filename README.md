@@ -24,10 +24,9 @@ Activating this plugin enables a few settings in the WordPress admin area under 
 
 ![readme-plugin-settings.png](readme-plugin-settings.png)
 
-
 ### Releases
 
-Check Releases page for the latest version of the plugin.
+Check Releases page to download the latest version of the plugin.
 
 ### Contributing
 
@@ -37,24 +36,39 @@ Check Releases page for the latest version of the plugin.
 
 #### Steps
 1. Clone the repository to your local WordPress install in the `wp-content/plugins` directory:
-   ```sh
-   git clone https://github.com/anthonycoffey/phoenix-press.git
-   cd phoenix-press
-   ```
 
-2. Move the Makefile to parent directory, and install dependencies:
+2. Create additional composer.json file for parent `plugins` directory and paste the following contents in it:
+   ```JSON
+   {
+      "name": "phoenix/press",
+      "type": "wordpress-plugin",
+      "require-dev": {
+         "10up/wp_mock": "^1.0"
+      },
+      "require": {
+         "php": "^7.4.3 || ^8"
+      },
+      "scripts": {
+         "test": "composer test:unit",
+         "test:unit": "phpunit -c phpunit.xml",
+         "fixes": "phpcbf php/ && phpcbf tests/"
+      }
+   }
+   ```
+   
+3. Move the Makefile to parent directory, and install dependencies:
    ```sh
    mv Makefile ..
    cd ..
    make install
    ```
 
-3. Build the project:
+4. Build the project:
    ```sh
    make build
    ```
 
-4. Start the development server:
+5. Start the development server:
    ```sh
    make start
    ```
@@ -62,45 +76,22 @@ Check Releases page for the latest version of the plugin.
 #### Available Commands
 
 1. **Install Dependencies**
+
+   This command installs PHP dependencies using Composer and JavaScript dependencies using npm.
    ```sh
    make install
    ```
-   This command installs PHP dependencies using Composer and JavaScript dependencies using npm.
 
 2. **Start the Development Server**
+
+   This command starts the development server using npm.
    ```sh
    make start
    ```
-   This command starts the development server using npm.
 
 3. **Build the Project**
+
+   This command builds the project using npm.
    ```sh
    make build
    ```
-   This command builds the project using npm.
-
-
-#### composer.json for parent `plugins` directory
-
-In the parent `plugins` directory, you will need a `composer.json` file. This file is used to manage dependencies for the WordPress plugins. When you run `composer install`, Composer will install the dependencies listed in this file.
-
-Create a `composer.json` file in the parent `plugins` directory, and paste the following contents:
-
-
-```JSON
-{
-   "name": "phoenix/press",
-   "type": "wordpress-plugin",
-   "require-dev": {
-      "10up/wp_mock": "^1.0"
-   },
-   "require": {
-      "php": "^7.4.3 || ^8"
-   },
-   "scripts": {
-      "test": "composer test:unit",
-      "test:unit": "phpunit -c phpunit.xml",
-      "fixes": "phpcbf php/ && phpcbf tests/"
-   }
-}
-```
