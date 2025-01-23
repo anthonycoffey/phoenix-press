@@ -63,6 +63,8 @@ const options = [
   {
     prompt: "Please provide your car details",
     type: "row",
+    title: "Vehicle Details:",
+    label: "Year, Make, Model, and Color",
     inputs: [
       {
         name: "car_year",

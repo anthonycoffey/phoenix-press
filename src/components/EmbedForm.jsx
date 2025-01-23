@@ -6,6 +6,7 @@ import {
   CardContent,
   CardActions,
   Stack,
+  Typography,
 } from "@mui/material";
 import Prompt from "./Prompt";
 import questionData from "../utils/embed-form-data";
@@ -13,7 +14,7 @@ import "../styles.sass";
 import InputField from "./InputField";
 import Disclaimer from "./Disclaimer";
 
-const useThrottledSubmit = (submitFunction, delay = 500) => {
+const useThrottledSubmit = (submitFunction, delay = 1000) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const throttledSubmit = useCallback(
@@ -199,27 +200,40 @@ export default function EmbedForm({ embed }) {
                 {questions?.map((question, index) => {
                   if (question.type === "row") {
                     return (
-                      <Box
-                        key={index}
-                        display="flex"
-                        flexDirection="row"
-                        gap={2}
-                      >
-                        {question.inputs.map((input, index) => (
-                          <InputField
-                            key={index}
-                            input={input}
-                            handleTextChange={handleTextChange}
-                            handleDateChange={handleDateChange}
-                            handleConsentChange={handleConsentChange}
-                            selectedDate={selectedDate}
-                            setValidPhoneNumber={setValidPhoneNumber}
-                            checked={checked}
-                            setChecked={setChecked}
-                            handleBlur={handleBlur}
-                          />
-                        ))}
-                      </Box>
+                      <>
+                        <Typography
+                          variant="subtitle1"
+                          sx={{ mt: "1rem" }}
+                          color="textSecondary"
+                        >
+                          {question.title}
+                          <Typography variant="subtitle2" color="textSecondary">
+                            {question.label}
+                          </Typography>
+                        </Typography>
+
+                        <Box
+                          key={index}
+                          display="flex"
+                          flexDirection="row"
+                          gap={2}
+                        >
+                          {question.inputs.map((input, index) => (
+                            <InputField
+                              key={index}
+                              input={input}
+                              handleTextChange={handleTextChange}
+                              handleDateChange={handleDateChange}
+                              handleConsentChange={handleConsentChange}
+                              selectedDate={selectedDate}
+                              setValidPhoneNumber={setValidPhoneNumber}
+                              checked={checked}
+                              setChecked={setChecked}
+                              handleBlur={handleBlur}
+                            />
+                          ))}
+                        </Box>
+                      </>
                     );
                   } else {
                     return question.inputs.map((input, index) => (
