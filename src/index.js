@@ -27,12 +27,12 @@ import questionData from "./utils/form-data";
 
 import EmbedForm from "./components/EmbedForm";
 
-// import * as Sentry from "@sentry/react";
-// Sentry.init({
-//   dsn: "https://dd1a8a07e9b52037987d3792acac547e@o4505751809884160.ingest.us.sentry.io/4508072984313856",
-//   integrations: [Sentry.browserTracingIntegration()],
-//   tracesSampleRate: 1.0,
-// });
+import * as Sentry from "@sentry/react";
+Sentry.init({
+  dsn: "https://dd1a8a07e9b52037987d3792acac547e@o4505751809884160.ingest.us.sentry.io/4508072984313856",
+  integrations: [Sentry.browserTracingIntegration()],
+  tracesSampleRate: 1.0,
+});
 
 const PhoenixForm = () => {
   const {
