@@ -20,7 +20,7 @@ const options = [
         name: "phone",
         type: "tel",
         label: "Enter your phone number",
-        value: "7379324565",
+        value: "",
         optional: false,
       },
       {

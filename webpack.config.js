@@ -4,13 +4,12 @@ module.exports = {
     react: "React",
     "react-dom": "ReactDOM",
   },
-  mode: "development",
+  // mode: "development",
   entry: "./src/index.js",
   output: {
     path: path.resolve(__dirname, "build"),
     filename: "phoenix-press.js",
   },
-  devtool: "eval",
   module: {
     rules: [
       {
@@ -31,9 +30,9 @@ module.exports = {
   },
   resolve: {
     modules: ["src", "node_modules"],
-    extensions: [".js", ".jsx"], // Automatically resolve .js and .jsx extensions
+    extensions: [".js", ".jsx"],
   },
   cache: {
-    type: "filesystem", // Stores cache on disk
+    type: "filesystem",
   },
 };

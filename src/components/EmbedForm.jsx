@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -13,9 +13,44 @@ import "../styles.sass";
 import InputField from "./InputField";
 import Disclaimer from "./Disclaimer";
 
+const useThrottledSubmit = (submitFunction, delay = 500) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const throttledSubmit = useCallback(
+    debounce(async (args) => {
+      try {
+        setIsSubmitting(true);
+        await submitFunction(args);
+      } catch (error) {
+        console.error("Throttled submit error:", error);
+      } finally {
+        setIsSubmitting(false);
+      }
+    }, delay),
+    [submitFunction, delay],
+  );
+
+  return { throttledSubmit, isSubmitting };
+};
+
+const debounce = (func, wait) => {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+};
+
+import { requiredFields, isSubmissionComplete } from "../utils/validation";
+
 export default function EmbedForm({ embed }) {
   const [questions] = useState(questionData || false);
   const [invalid, setInvalid] = useState(true);
+  const [validPhoneNumber, setValidPhoneNumber] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [formStarted, setFormStarted] = useState(false);
@@ -23,9 +58,7 @@ export default function EmbedForm({ embed }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [checked, setChecked] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState(null);
-  // const [widgetId, setWidgetId] = useState(null);
-
-  console.log(LOCALIZED.TURNSTILE_SITE_KEY, "local");
+  const [submitButtonPressed, setSubmitButtonPressed] = useState(false);
 
   useEffect(() => {
     if (window.turnstile) {
@@ -35,16 +68,29 @@ export default function EmbedForm({ embed }) {
           setTurnstileToken(token);
         },
         "expired-callback": () => {
-          // Turnstile calls this when token expires
+          console.log("expired callback running", { id });
           window.turnstile.reset(id);
         },
       });
-      // setWidgetId(id);
     }
   }, []);
 
-  const handleSubmit = async () => {
+  useEffect(() => {
+    // note: valid phone number and turnstile token are required to submit the form
+    if (turnstileToken && validPhoneNumber) {
+      setInvalid(false);
+    } else {
+      setInvalid(true);
+    }
+  }, [turnstileToken, validPhoneNumber]);
+
+  const handleSubmit = async (buttonPressed) => {
+    if (isSubmitting) return false;
     setLoading(true);
+
+    if (buttonPressed) {
+      setSubmitButtonPressed(true);
+    }
 
     const submission = questions.flatMap((question) =>
       question.inputs.map((input) => {
@@ -57,24 +103,17 @@ export default function EmbedForm({ embed }) {
       "Content-Type": "application/json",
       "X-Turnstile-Token": turnstileToken,
     };
-    console.log({ headers });
 
     const source =
       window.location.origin.replace(/^https?:\/\//, "") +
       window.location.pathname.replace(/\/$/, "");
 
-    try {
-      if (formSubmissionId) {
-        const completed = questions.every((question) =>
-          question.inputs.every(
-            (input) =>
-              input.optional ||
-              submission.some(
-                (sub) => sub.name === input.name && sub.value !== "",
-              ),
-          ),
-        );
+    if (!turnstileToken) return false;
 
+    try {
+      const completed = isSubmissionComplete(submission, requiredFields);
+
+      if (formSubmissionId) {
         await fetch(
           `${LOCALIZED.API_URL}/submit-lead-form/${formSubmissionId}`,
           {
@@ -96,11 +135,17 @@ export default function EmbedForm({ embed }) {
         const response = await fetch(`${LOCALIZED.API_URL}/submit-lead-form`, {
           method: "POST",
           headers,
-          body: JSON.stringify({ submission, source }),
+          body: JSON.stringify({ submission, source, completed }),
         });
 
         const result = await response.json();
-        setFormSubmissionId(result?.id);
+        if (result?.id) {
+          setFormSubmissionId(result?.id);
+        }
+      }
+
+      if (buttonPressed) {
+        setSubmitted(true);
       }
     } catch (error) {
       console.error("There was an error", error);
@@ -109,17 +154,21 @@ export default function EmbedForm({ embed }) {
     }
   };
 
+  const { throttledSubmit, isSubmitting } = useThrottledSubmit(handleSubmit);
+
   const handleTextChange = ({ input, event }) => {
     input.value = event?.target?.value;
   };
 
   const handleDateChange = ({ input, event }) => {
-    setSelectedDate(event);
     input.value = event;
+    setSelectedDate(event);
   };
 
   const handleBlur = () => {
-    handleSubmit();
+    if (!invalid) {
+      throttledSubmit();
+    }
   };
 
   const handleConsentChange = ({ input, event }) => {
@@ -164,7 +213,7 @@ export default function EmbedForm({ embed }) {
                             handleDateChange={handleDateChange}
                             handleConsentChange={handleConsentChange}
                             selectedDate={selectedDate}
-                            setInvalid={setInvalid}
+                            setValidPhoneNumber={setValidPhoneNumber}
                             checked={checked}
                             setChecked={setChecked}
                             handleBlur={handleBlur}
@@ -181,7 +230,7 @@ export default function EmbedForm({ embed }) {
                         handleDateChange={handleDateChange}
                         handleConsentChange={handleConsentChange}
                         selectedDate={selectedDate}
-                        setInvalid={setInvalid}
+                        setValidPhoneNumber={setValidPhoneNumber}
                         checked={checked}
                         setChecked={setChecked}
                         handleBlur={handleBlur}
@@ -211,12 +260,13 @@ export default function EmbedForm({ embed }) {
                 variant="contained"
                 color="primary"
                 onClick={() => {
-                  handleSubmit();
+                  handleSubmit(true);
                 }}
-                disabled={invalid || loading}
+                disabled={invalid || submitButtonPressed}
               >
                 Submit
               </Button>
+              <>{loading || (isSubmitting && <LinearProgress />)}</>
             </CardActions>
           </form>
         )}

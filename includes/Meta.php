@@ -33,30 +33,32 @@ class Meta
     {
         $headers = $request->get_headers();
         $token = $headers["x_turnstile_token"][0] ?? "";
-    
+
         error_log("TURNSTILE: Starting token verification process");
         error_log("TURNSTILE: Received token - " . $token);
-    
+
         if (empty($token)) {
             error_log("TURNSTILE: Token is empty");
             return false;
         }
-    
+
         // First, check if token is processed
         $is_processed = self::is_token_processed($token);
-        error_log("TURNSTILE: Is token processed? " . ($is_processed ? 'Yes' : 'No'));
-    
+        error_log(
+            "TURNSTILE: Is token processed? " . ($is_processed ? "Yes" : "No")
+        );
+
         if ($is_processed) {
             error_log("TURNSTILE: Token already processed, returning true");
             return true;
         }
-    
+
         $turnstile_secret = get_option("phoenix_turnstile_secret_key");
         if (empty($turnstile_secret)) {
             error_log("TURNSTILE: Turnstile secret key is empty");
             return false;
         }
-    
+
         $response = wp_remote_post(
             "https://challenges.cloudflare.com/turnstile/v0/siteverify",
             [
@@ -66,85 +68,110 @@ class Meta
                 ],
             ]
         );
-    
+
         if (is_wp_error($response)) {
-            error_log("TURNSTILE: Cloudflare verification error - " . $response->get_error_message());
+            error_log(
+                "TURNSTILE: Cloudflare verification error - " .
+                    $response->get_error_message()
+            );
             return false;
         }
-    
+
         $data = json_decode(wp_remote_retrieve_body($response), true);
         error_log("TURNSTILE: Cloudflare response - " . print_r($data, true));
-    
+
         $is_valid = isset($data["success"]) && $data["success"] === true;
-    
+
         if ($is_valid) {
             error_log("TURNSTILE: Token is valid. Marking as processed.");
             self::mark_token_processed($token);
             return true;
         }
-    
+
         error_log("TURNSTILE: Token is invalid");
         return false;
     }
-    
+
     private static function is_token_processed($token)
     {
         error_log("TURNSTILE: Checking token processing - Method start");
-        
+
         // Use a unique cache key for processed tokens
-        $cache_key = 'phoenix_processed_turnstile_tokens';
-        
+        $cache_key = "phoenix_processed_turnstile_tokens";
+
         // Attempt to get processed tokens, using a persistent method
         $processed_tokens = get_transient($cache_key);
-        
-        error_log("TURNSTILE: Retrieved tokens from transient - " . print_r($processed_tokens, true));
-        
+
+        error_log(
+            "TURNSTILE: Retrieved tokens from transient - " .
+                print_r($processed_tokens, true)
+        );
+
         if (empty($processed_tokens) || !is_array($processed_tokens)) {
             error_log("TURNSTILE: No processed tokens found");
             return false;
         }
-        
+
         // Check if specific token exists and is not expired
-        $is_processed = isset($processed_tokens[$token]) && 
-            (time() - $processed_tokens[$token]) < self::TOKEN_CACHE_DURATION;
-        
-        error_log("TURNSTILE: Token processing check result - " . ($is_processed ? 'Processed' : 'Not Processed'));
-        
+        $is_processed =
+            isset($processed_tokens[$token]) &&
+            time() - $processed_tokens[$token] < self::TOKEN_CACHE_DURATION;
+
+        error_log(
+            "TURNSTILE: Token processing check result - " .
+                ($is_processed ? "Processed" : "Not Processed")
+        );
+
         return $is_processed;
     }
-    
+
     private static function mark_token_processed($token)
     {
         error_log("TURNSTILE: Marking token as processed");
-        
+
         // Use a unique cache key for processed tokens
-        $cache_key = 'phoenix_processed_turnstile_tokens';
-        
+        $cache_key = "phoenix_processed_turnstile_tokens";
+
         // Retrieve existing tokens
         $processed_tokens = get_transient($cache_key) ?: [];
-        
+
         // Add current token
         $processed_tokens[$token] = time();
-        
+
         // Remove expired tokens
         $current_time = time();
-        $processed_tokens = array_filter($processed_tokens, function($timestamp) use ($current_time) {
-            $is_valid = ($current_time - $timestamp) < self::TOKEN_CACHE_DURATION;
-            
+        $processed_tokens = array_filter($processed_tokens, function (
+            $timestamp
+        ) use ($current_time) {
+            $is_valid = $current_time - $timestamp < self::TOKEN_CACHE_DURATION;
+
             error_log("TURNSTILE: Token timestamp check");
             error_log("TURNSTILE: Current time: " . $current_time);
             error_log("TURNSTILE: Token timestamp: " . $timestamp);
-            error_log("TURNSTILE: Time difference: " . ($current_time - $timestamp));
-            error_log("TURNSTILE: Cache duration: " . self::TOKEN_CACHE_DURATION);
-            error_log("TURNSTILE: Token is " . ($is_valid ? "VALID" : "EXPIRED"));
-            
+            error_log(
+                "TURNSTILE: Time difference: " . ($current_time - $timestamp)
+            );
+            error_log(
+                "TURNSTILE: Cache duration: " . self::TOKEN_CACHE_DURATION
+            );
+            error_log(
+                "TURNSTILE: Token is " . ($is_valid ? "VALID" : "EXPIRED")
+            );
+
             return $is_valid;
         });
-        
+
         // Store tokens using WordPress transients (more persistent than object cache)
-        set_transient($cache_key, $processed_tokens, self::TOKEN_CACHE_DURATION);
-        
-        error_log("TURNSTILE: Processed tokens stored - " . print_r($processed_tokens, true));
+        set_transient(
+            $cache_key,
+            $processed_tokens,
+            self::TOKEN_CACHE_DURATION
+        );
+
+        error_log(
+            "TURNSTILE: Processed tokens stored - " .
+                print_r($processed_tokens, true)
+        );
     }
 
     public static function register_rest_routes()
@@ -213,8 +240,6 @@ class Meta
             true
         );
     }
-
- 
 
     public static function submit_lead($request)
     {
@@ -304,8 +329,6 @@ class Meta
         return new \WP_REST_Response($decoded_body, 200);
     }
 
-
-
     public static function lead_form()
     {
         echo '<div id="phoenix-form-root"></div>';
@@ -344,6 +367,10 @@ class Meta
     public static function register_settings()
     {
         $settings = [
+            "phoenix_api_url" => [
+                "label" => "Phoenix API Base URL",
+                "type" => "text",
+            ],
             "phoenix_turnstile_site_key" => [
                 "label" => "Turnstile Site Key",
                 "type" => "text",

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { TextField, FormControlLabel, Checkbox, Stack } from "@mui/material";
 import {
   DatePicker,
@@ -17,16 +17,21 @@ const InputField = ({
   handleDateChange,
   handleConsentChange,
   selectedDate,
-  setInvalid,
+  setValidPhoneNumber,
   checked,
   setChecked,
   handleBlur,
 }) => {
+  useEffect(() => {
+    if (input.type === "datetime") {
+      handleDateChange({ input, event: selectedDate });
+    }
+  }, []);
   switch (input.type) {
     case "tel":
       return (
         <>
-          <PhoneField input={input} setInvalid={setInvalid} />
+          <PhoneField input={input} setValidPhoneNumber={setValidPhoneNumber} />
         </>
       );
     case "text":

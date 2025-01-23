@@ -1,5 +1,11 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
-import { TextField, Stack, Button, CircularProgress } from "@mui/material";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  TextField,
+  Stack,
+  Button,
+  CircularProgress,
+  LinearProgress,
+} from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import { useLoadScript } from "@react-google-maps/api";
 
@@ -135,7 +141,7 @@ export default function AddressAutoComplete({ input }) {
   }
 
   if (!isLoaded) {
-    return <div>Loading...</div>;
+    return <LinearProgress />;
   }
 
   return (

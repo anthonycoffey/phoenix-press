@@ -4,40 +4,20 @@ import {
   Button,
   Card,
   CardContent,
-  CardActions,
   Stack,
-  Modal,
-  Box,
-  Typography,
-  Alert,
+  LinearProgress,
+  CircularProgress,
 } from "@mui/material";
 import Prompt from "./components/Prompt";
 import Answer from "./components/Answer";
 import Disclaimer from "./components/Disclaimer";
-import SkeletonChat from "./components/SkeletonChat";
 import { GlobalStateContext, GlobalStateProvider } from "./state.js";
-import {
-  safeLocalStorageGetItem,
-  safeLocalStorageSetItem,
-  safeLocalStorageRemoveItem,
-} from "./utils/localStorageUtils";
-
 import "./styles.sass";
-import questionData from "./utils/form-data";
-
 import EmbedForm from "./components/EmbedForm";
-
-import * as Sentry from "@sentry/react";
-Sentry.init({
-  dsn: "https://dd1a8a07e9b52037987d3792acac547e@o4505751809884160.ingest.us.sentry.io/4508072984313856",
-  integrations: [Sentry.browserTracingIntegration()],
-  tracesSampleRate: 1.0,
-});
 
 const PhoenixForm = () => {
   const {
     questions,
-    setQuestions,
     currentQuestionIndex,
     setCurrentQuestionIndex,
     loading,
@@ -50,70 +30,34 @@ const PhoenixForm = () => {
   } = useContext(GlobalStateContext);
 
   const currentQuestion = questions[currentQuestionIndex];
-  const [showModal, setShowModal] = useState(false);
+
   const [invalid, setInvalid] = useState(true);
   const [formStarted, setFormStarted] = useState(false);
   const [formSubmissionId, setFormSubmissionId] = useState(null);
+  const [turnstileToken, setTurnstileToken] = useState(null);
 
   useEffect(() => {
     const hasErrors = currentQuestion.inputs.some(
       (input) => errors[input.name],
     );
-    const isEmpty = currentQuestion.inputs.some(
-      (input) =>
-        !input.optional &&
-        (input.value === "" ||
-          input.value === false ||
-          (Array.isArray(input.value) && input.value.length === 0)),
-    );
-    setInvalid(hasErrors || isEmpty);
-  }, [errors, currentQuestionIndex]);
+
+    setInvalid(hasErrors);
+  }, [errors]);
 
   useEffect(() => {
-    if (isFormVisible) {
-      const savedData = safeLocalStorageGetItem("formData");
-      const savedIndex = safeLocalStorageGetItem("currentQuestionIndex");
-      if (savedData && savedIndex) {
-        const formData = JSON.parse(savedData);
-
-        const hasFilledField = formData.some((question) =>
-          question.inputs.some(
-            (input) =>
-              typeof input.value === "string" && input.value.trim() !== "",
-          ),
-        );
-
-        if (hasFilledField) {
-          setShowModal(true);
-        }
-      }
+    if (isFormVisible && window.turnstile) {
+      const id = window.turnstile.render("#conversation-turnstile-widget", {
+        sitekey: LOCALIZED.TURNSTILE_SITE_KEY,
+        callback: (token) => {
+          setTurnstileToken(token);
+        },
+        "expired-callback": () => {
+          console.log("expired callback running", { id });
+          window.turnstile.reset(id);
+        },
+      });
     }
   }, [isFormVisible]);
-
-  const handleContinue = () => {
-    const savedData = safeLocalStorageGetItem("formData");
-    const savedIndex = safeLocalStorageGetItem("currentQuestionIndex");
-    const savedFormId = safeLocalStorageGetItem("formSubmissionId");
-    if (savedData && savedIndex) {
-      setQuestions(JSON.parse(savedData));
-      setCurrentQuestionIndex(parseInt(savedIndex));
-    }
-    if (savedFormId) {
-      setFormSubmissionId(savedFormId);
-    }
-    setShowModal(false);
-  };
-
-  const handleNewStart = () => {
-    safeLocalStorageRemoveItem("formData");
-    safeLocalStorageRemoveItem("currentQuestionIndex");
-    safeLocalStorageRemoveItem("formSubmissionId");
-    setSubmitted(false);
-    setQuestions(questionData);
-    setFormSubmissionId(null);
-    setCurrentQuestionIndex(0);
-    setShowModal(false);
-  };
 
   const toggleFormVisibility = () => {
     setIsFormVisible(!isFormVisible);
@@ -128,58 +72,57 @@ const PhoenixForm = () => {
       }),
     );
 
-    safeLocalStorageSetItem(
-      "currentQuestionIndex",
-      String(currentQuestionIndex),
-    );
-
     const headers = {
       "Content-Type": "application/json",
+      "X-Turnstile-Token": turnstileToken,
     };
     const source =
       window.location.origin.replace(/^https?:\/\//, "") +
       window.location.pathname.replace(/\/$/, "");
 
+    if (currentQuestionIndex + 1 === questions.length) {
+      return await completeSubmission(submission, source);
+    } else {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    }
+
+    if (!formStarted) {
+      setFormStarted(true);
+      if (window?.dataLayer) {
+        window.dataLayer.push({
+          event: "form_start",
+        });
+      }
+    }
+
     try {
-      let response;
+      if (!turnstileToken) {
+        return false;
+      }
+
       if (formSubmissionId) {
-        response = await fetch(
+        await fetch(
           `${LOCALIZED.API_URL}/submit-lead-form/${formSubmissionId}`,
           {
-            method: "PATCH",
+            method: "PUT",
             headers,
             body: JSON.stringify({ submission, source }),
           },
         );
       } else {
-        if (!formStarted) {
-          setFormStarted(true);
-          if (window?.dataLayer) {
-            window.dataLayer.push({
-              event: "form_start",
-            });
-          }
-        }
-        response = await fetch(`${LOCALIZED.API_URL}/submit-lead-form`, {
+        const response = await fetch(`${LOCALIZED.API_URL}/submit-lead-form`, {
           method: "POST",
           headers,
           body: JSON.stringify({ submission, source }),
         });
 
         const result = await response.json();
-        setFormSubmissionId(result?.id);
-        safeLocalStorageSetItem("formSubmissionId", result?.id);
-      }
-
-      if (currentQuestionIndex + 1 === questions.length) {
-        console.log("completeSubmission function call");
-        await completeSubmission(submission, source);
-      } else {
-        setCurrentQuestionIndex(currentQuestionIndex + 1);
+        if (result?.id) {
+          setFormSubmissionId(result?.id);
+        }
       }
     } catch (error) {
-      console.log("There was an error", error);
-      Sentry.captureException(new Error(error));
+      console.error("There was an error", error);
     } finally {
       setLoading(false);
     }
@@ -187,20 +130,21 @@ const PhoenixForm = () => {
 
   const completeSubmission = async (submission, source) => {
     try {
+      setLoading(true);
+      setSubmitted(true);
       if (formSubmissionId) {
         await fetch(
           `${LOCALIZED.API_URL}/submit-lead-form/${formSubmissionId}`,
           {
-            method: "PATCH",
+            method: "PUT",
             headers: {
               "Content-Type": "application/json",
+              "X-Turnstile-Token": turnstileToken,
             },
             body: JSON.stringify({ submission, completed: true, source }),
           },
         );
       }
-
-      setSubmitted(true);
 
       if (window?.dataLayer) {
         window.dataLayer.push({
@@ -212,6 +156,8 @@ const PhoenixForm = () => {
       }
     } catch (error) {
       console.log("There was an error", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -234,76 +180,43 @@ const PhoenixForm = () => {
         </svg>
       </button>
 
-      <Modal open={showModal} onClose={() => setShowModal(false)}>
-        <Box
-          sx={{
-            position: "absolute",
-            top: "60%",
-            left: "60%",
-            width: "75%",
-            transform: "translate(-60%, -60%)",
-            bgcolor: "background.paper",
-            boxShadow: 24,
-            p: 4,
-            borderRadius: 2,
-          }}
-        >
-          <Typography variant="h6">Continue existing submission?</Typography>
-          <Typography variant="body1">
-            It looks like you started this form before. Would you like to pick
-            up where you left off?
-          </Typography>
-          <Box display="flex" justifyContent="space-between" mt={2}>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={handleNewStart}
-            >
-              Start Over
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleContinue}
-            >
-              Continue
-            </Button>
-          </Box>
-        </Box>
-      </Modal>
-
       {isFormVisible && (
         <Card className="phoenix-form">
-          {loading ? (
-            <SkeletonChat />
-          ) : (
-            <>
-              {submitted && (
+          <>
+            {submitted && (
+              <CardContent>
+                <Stack space={2}>
+                  <Prompt
+                    question={{
+                      prompt: LOCALIZED.SUBMISSION_MESSAGE,
+                    }}
+                  />
+                </Stack>
+              </CardContent>
+            )}
+
+            {!submitted && (
+              <>
                 <CardContent>
                   <Stack space={2}>
-                    <Prompt
-                      question={{
-                        prompt: LOCALIZED.SUBMISSION_MESSAGE,
-                      }}
-                    />
+                    <Prompt question={currentQuestion} />
+                    <Answer question={currentQuestion} />
                   </Stack>
-                </CardContent>
-              )}
-
-              {!submitted && (
-                <>
-                  <CardContent>
-                    <Stack space={2}>
-                      <Prompt question={currentQuestion} />
-                      <Answer question={currentQuestion} />
-                      <Disclaimer index={currentQuestionIndex} />
-                    </Stack>
-                  </CardContent>
-
-                  <CardActions sx={{ justifyContent: "space-between" }}>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                      width: "100%",
+                      display: "flex",
+                      my: "1rem",
+                      justifyContent:
+                        currentQuestionIndex > 0 ? "space-between" : "flex-end",
+                    }}
+                  >
                     {currentQuestionIndex > 0 && (
                       <Button
                         variant="contained"
+                        loading={loading}
                         onClick={() =>
                           setCurrentQuestionIndex(currentQuestionIndex - 1)
                         }
@@ -311,24 +224,53 @@ const PhoenixForm = () => {
                         Back
                       </Button>
                     )}
+
                     <Button
-                      sx={{ justifyContent: "flex-end" }}
+                      sx={{ justifySelf: "end" }}
                       variant="contained"
                       color="primary"
                       onClick={() => {
                         handleSubmit();
                       }}
-                      disabled={invalid || loading}
+                      disabled={invalid || !turnstileToken || submitted}
                     >
                       {currentQuestionIndex + 1 === questions.length
                         ? "Submit"
                         : "Next"}
                     </Button>
-                  </CardActions>
-                </>
-              )}
-            </>
-          )}
+                  </Stack>
+
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                      width: "100%",
+                      display: "flex",
+                      my: "1rem",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <>{loading || (!turnstileToken && <CircularProgress />)}</>
+                  </Stack>
+
+                  <Disclaimer index={currentQuestionIndex} />
+                </CardContent>
+              </>
+            )}
+          </>
+
+          <div
+            id="conversation-turnstile-widget"
+            className="cf-turnstile"
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              margin: "1rem 0",
+              padding: "1rem",
+            }}
+            data-sitekey={LOCALIZED.TURNSTILE_SITE_KEY}
+          ></div>
         </Card>
       )}
     </section>
