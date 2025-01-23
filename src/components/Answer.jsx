@@ -10,7 +10,7 @@ import { GlobalStateContext } from "../state";
 import AddressAutoComplete from "./AddressAutoComplete";
 import ServiceSelect from "./ServiceSelect";
 import PhoneField from "./PhoneField";
-import parse from "react-html-parser";
+import parse from "html-react-parser";
 
 const Answer = ({ question }) => {
   const { errors, setErrors } = useContext(GlobalStateContext);
@@ -125,7 +125,7 @@ const Answer = ({ question }) => {
         if (input.type === "checkbox") {
           return (
             <FormControlLabel
-              style={{ marginBottom: "1rem" }}
+              sx={{ marginBottom: "1rem" }}
               key={index}
               control={
                 <Checkbox
@@ -143,7 +143,7 @@ const Answer = ({ question }) => {
         if (input.type === "datetime") {
           return (
             <LocalizationProvider dateAdapter={AdapterDateFns} key={index}>
-              <Stack direction="row" spacing={2} style={{ marginTop: "1rem" }}>
+              <Stack direction="row" spacing={2} sx={{ marginTop: "1rem" }}>
                 <DatePicker
                   label="Select Date"
                   value={selectedDate}

@@ -1,7 +1,7 @@
 import React from "react";
 import { Avatar, Stack } from "@mui/material";
 import SpeechBubble from "./SpeechBubble";
-import parse from "react-html-parser";
+import parse from 'html-react-parser';
 
 const Prompt = ({ question }) => {
   const assets = LOCALIZED?.ASSETS_URL ?? "";

@@ -30,6 +30,9 @@ class Plugin
     return self::$_instance;
   }
 
+
+
+  
   /**
    * Cloning is forbidden.
    */

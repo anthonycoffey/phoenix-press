@@ -25,14 +25,16 @@ import {
 import "./styles.sass";
 import questionData from "./utils/form-data";
 
-import * as Sentry from "@sentry/react";
-Sentry.init({
-  dsn: "https://dd1a8a07e9b52037987d3792acac547e@o4505751809884160.ingest.us.sentry.io/4508072984313856",
-  integrations: [Sentry.browserTracingIntegration()],
-  tracesSampleRate: 1.0,
-});
+import EmbedForm from "./components/EmbedForm";
 
-const PhoenixForm = ({ embed }) => {
+// import * as Sentry from "@sentry/react";
+// Sentry.init({
+//   dsn: "https://dd1a8a07e9b52037987d3792acac547e@o4505751809884160.ingest.us.sentry.io/4508072984313856",
+//   integrations: [Sentry.browserTracingIntegration()],
+//   tracesSampleRate: 1.0,
+// });
+
+const PhoenixForm = () => {
   const {
     questions,
     setQuestions,
@@ -68,7 +70,7 @@ const PhoenixForm = ({ embed }) => {
   }, [errors, currentQuestionIndex]);
 
   useEffect(() => {
-    if (isFormVisible || embed) {
+    if (isFormVisible) {
       const savedData = safeLocalStorageGetItem("formData");
       const savedIndex = safeLocalStorageGetItem("currentQuestionIndex");
       if (savedData && savedIndex) {
@@ -270,7 +272,7 @@ const PhoenixForm = ({ embed }) => {
         </Box>
       </Modal>
 
-      {(isFormVisible || embed) && (
+      {isFormVisible && (
         <Card className="phoenix-form">
           {loading ? (
             <SkeletonChat />
@@ -310,7 +312,7 @@ const PhoenixForm = ({ embed }) => {
                       </Button>
                     )}
                     <Button
-                      style={{ justifyContent: "flex-end" }}
+                      sx={{ justifyContent: "flex-end" }}
                       variant="contained"
                       color="primary"
                       onClick={() => {
@@ -345,7 +347,7 @@ const roots = document.querySelectorAll(".phoenix-form-embed-root");
 roots.forEach((el) => {
   createRoot(el).render(
     <GlobalStateProvider>
-      <PhoenixForm embed={true} />
+      <EmbedForm />
     </GlobalStateProvider>,
   );
 });

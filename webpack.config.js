@@ -4,15 +4,17 @@ module.exports = {
     react: "React",
     "react-dom": "ReactDOM",
   },
+  mode: "development",
   entry: "./src/index.js",
   output: {
     path: path.resolve(__dirname, "build"),
     filename: "phoenix-press.js",
   },
+  devtool: "eval",
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.(js|jsx)$/,
         exclude: /node_modules/,
         use: {
           loader: "babel-loader",
@@ -26,5 +28,12 @@ module.exports = {
         use: ["style-loader", "css-loader", "sass-loader"],
       },
     ],
+  },
+  resolve: {
+    modules: ["src", "node_modules"],
+    extensions: [".js", ".jsx"], // Automatically resolve .js and .jsx extensions
+  },
+  cache: {
+    type: "filesystem", // Stores cache on disk
   },
 };

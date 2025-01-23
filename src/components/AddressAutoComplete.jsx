@@ -59,7 +59,7 @@ export default function AddressAutoComplete({ input }) {
           const addressObj = getAddressObject(place.address_components);
           handleInputChange(addressObj);
         } catch (error) {
-          console.log("Error handling place_changed event:", error);
+          console.error("Error handling place_changed event:", error);
         }
       });
 
@@ -67,13 +67,13 @@ export default function AddressAutoComplete({ input }) {
         window.google.maps.event.clearInstanceListeners(autocomplete);
       };
     } catch (error) {
-      console.log("Error initializing Google Maps Autocomplete:", error);
+      console.error("Error initializing Google Maps Autocomplete:", error);
     }
   }, [isLoaded]);
 
   const handleUseGps = () => {
     if (!navigator.geolocation) {
-      console.log("Geolocation is not supported by your browser.");
+      console.error("Geolocation is not supported by your browser.");
       return;
     }
 
@@ -94,18 +94,18 @@ export default function AddressAutoComplete({ input }) {
                 );
                 handleInputChange(addressObj);
               } else {
-                console.log("Geocoder failed due to:", status);
+                console.error("Geocoder failed due to:", status);
               }
             },
           );
         } catch (error) {
           setLoadingLocation(false);
-          console.log("Error in geolocation success callback:", error);
+          console.error("Error in geolocation success callback:", error);
         }
       },
       (err) => {
         setLoadingLocation(false);
-        console.log("Error in getting geolocation:", err);
+        console.error("Error in getting geolocation:", err);
       },
     );
   };
@@ -129,7 +129,7 @@ export default function AddressAutoComplete({ input }) {
       const errorMessage = validateLocation(currentInput);
       setErrors({ ...errors, [currentInput.name]: errorMessage });
     } catch (error) {
-      console.log("Error handling input change:", error);
+      console.error("Error handling input change:", error);
     }
   };
 
@@ -139,7 +139,7 @@ export default function AddressAutoComplete({ input }) {
   };
 
   if (loadError) {
-    console.log("Error loading maps:", loadError);
+    console.error("Error loading maps:", loadError);
     return <div>Error loading maps</div>;
   }
 

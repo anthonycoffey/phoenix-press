@@ -1,11 +1,11 @@
-import { TextField } from '@mui/material';
-import { useContext } from 'react';
-import { GlobalStateContext } from '../state';
+import { TextField } from "@mui/material";
+import { useContext } from "react";
+import { GlobalStateContext } from "../state";
 
 export default function PhoneField({ input, onChange }) {
   const { errors, setErrors } = useContext(GlobalStateContext);
   const formatPhoneNumber = (value) => {
-    const phoneNumber = value.replace(/\D/g, '');
+    const phoneNumber = value.replace(/\D/g, "");
 
     if (phoneNumber.length <= 3) {
       return phoneNumber;
@@ -18,8 +18,8 @@ export default function PhoneField({ input, onChange }) {
 
   // Function to validate phone number
   const validatePhoneNumber = (value) => {
-    const phoneNumber = value.replace(/\D/g, '');
-    return phoneNumber.length !== 10 ? 'Phone number must be 10 digits' : '';
+    const phoneNumber = value.replace(/\D/g, "");
+    return phoneNumber.length !== 10 ? "Valid phone number is required." : "";
   };
 
   const handleInputChange = (event) => {
@@ -27,7 +27,7 @@ export default function PhoneField({ input, onChange }) {
     const formatted = formatPhoneNumber(value);
     const errorMessage = validatePhoneNumber(formatted);
     setErrors({ ...errors, [input.name]: errorMessage });
-    onChange({ target: { name: 'phone', value: formatted } });
+    onChange({ target: { name: "phone", value: formatted } });
   };
 
   return (

@@ -5,18 +5,18 @@ import {
   safeLocalStorageSetItem,
 } from "./utils/localStorageUtils";
 import questionData from "./utils/form-data";
+import servicesData from "./utils/services";
 
 export const GlobalStateProvider = ({ children }) => {
   const [questions, setQuestions] = useState(() => {
     const savedData = safeLocalStorageGetItem("formData");
     return savedData ? JSON.parse(savedData) : questionData;
   });
-
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [isFormVisible, setIsFormVisible] = useState(false);
-  const [services, setServices] = useState(null);
+  const [services, setServices] = useState(servicesData || null);
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
@@ -24,40 +24,6 @@ export const GlobalStateProvider = ({ children }) => {
       safeLocalStorageSetItem("formData", JSON.stringify(questions));
     }
   }, [currentQuestionIndex]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(LOCALIZED.API_URL + "/get-form-data", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        const result = await response.json();
-        let { data } = result;
-        if (!data && !data.length) {
-          console.log("No services found in the response.");
-        } else {
-          const services = data
-            ?.filter((service) => !service?.isDefault && !service?.isInternal)
-            .map((service) => ({
-              text: service.name,
-              value: service.name,
-              id: service.id,
-            }));
-          setServices(services);
-        }
-      } catch (error) {
-        console.log("Error fetching form data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
 
   return (
     <GlobalStateContext.Provider
