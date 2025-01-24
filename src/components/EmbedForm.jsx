@@ -7,48 +7,16 @@ import {
   CardActions,
   Stack,
   Typography,
+  LinearProgress,
 } from "@mui/material";
 import Prompt from "./Prompt";
 import questionData from "../utils/embed-form-data";
 import "../styles.sass";
 import InputField from "./InputField";
 import Disclaimer from "./Disclaimer";
-
-const useThrottledSubmit = (submitFunction, delay = 250) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const throttledSubmit = useCallback(
-    debounce(async (args) => {
-      try {
-        setIsSubmitting(true);
-        await submitFunction(args);
-      } catch (error) {
-        console.error("Throttled submit error:", error);
-      } finally {
-        setIsSubmitting(false);
-      }
-    }, delay),
-    [submitFunction, delay],
-  );
-
-  return { throttledSubmit, isSubmitting };
-};
-
-const debounce = (func, wait) => {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-};
-
 import { requiredFields, isSubmissionComplete } from "../utils/validation";
 
-export default function EmbedForm({ embed }) {
+export default function EmbedForm() {
   const [questions] = useState(questionData || false);
   const [invalid, setInvalid] = useState(true);
   const [validPhoneNumber, setValidPhoneNumber] = useState(false);
@@ -85,7 +53,6 @@ export default function EmbedForm({ embed }) {
   }, [turnstileToken, validPhoneNumber]);
 
   const handleSubmit = async (buttonPressed) => {
-    if (isSubmitting) return false;
     setLoading(true);
 
     if (buttonPressed) {
@@ -154,8 +121,6 @@ export default function EmbedForm({ embed }) {
     }
   };
 
-  const { throttledSubmit, isSubmitting } = useThrottledSubmit(handleSubmit);
-
   const handleTextChange = ({ input, event }) => {
     input.value = event?.target?.value;
   };
@@ -166,8 +131,8 @@ export default function EmbedForm({ embed }) {
   };
 
   const handleBlur = () => {
-    if (!invalid) {
-      throttledSubmit();
+    if (!invalid && !loading) {
+      handleSubmit();
     }
   };
 
@@ -267,6 +232,7 @@ export default function EmbedForm({ embed }) {
                 }}
                 data-sitekey={LOCALIZED.TURNSTILE_SITE_KEY}
               ></div>
+              <>{loading && <LinearProgress />}</>
             </CardContent>
 
             <CardActions sx={{ justifyContent: "end" }}>
@@ -276,11 +242,10 @@ export default function EmbedForm({ embed }) {
                 onClick={() => {
                   handleSubmit(true);
                 }}
-                disabled={invalid || submitButtonPressed}
+                disabled={invalid || submitButtonPressed || loading}
               >
                 Submit
               </Button>
-              <>{loading || (isSubmitting && <LinearProgress />)}</>
             </CardActions>
           </form>
         )}

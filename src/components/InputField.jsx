@@ -41,6 +41,7 @@ const InputField = ({
           label={input.label}
           name={input.name}
           onChange={(event) => handleTextChange({ input, event })}
+          onBlur={handleBlur}
           fullWidth
           variant="outlined"
           margin="normal"
@@ -50,7 +51,7 @@ const InputField = ({
     case "geo":
       return <AddressAutoComplete input={input} handleBlur={handleBlur} />;
     case "select":
-      return <Services input={input} />;
+      return <Services input={input} handleBlur={handleBlur} />;
     case "checkbox":
       return (
         <FormControlLabel
@@ -79,7 +80,7 @@ const InputField = ({
               label="Select Date"
               value={selectedDate}
               onChange={(event) => handleDateChange({ input, event })}
-              onBlur={handleBlur}
+              onAccept={handleBlur}
               disablePast
               fullWidth
             />
@@ -87,7 +88,7 @@ const InputField = ({
               label="Select Time"
               value={selectedDate}
               onChange={(event) => handleDateChange({ input, event })}
-              onBlur={handleBlur}
+              onAccept={handleBlur}
               fullWidth
             />
           </Stack>

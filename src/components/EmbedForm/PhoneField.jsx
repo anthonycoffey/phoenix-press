@@ -1,11 +1,7 @@
 import { TextField } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
 
-export default function PhoneField({
-  input,
-  setValidPhoneNumber,
-  handleOnBlur,
-}) {
+export default function PhoneField({ input, setValidPhoneNumber, handleBlur }) {
   const [errors, setErrors] = useState({});
   const formatPhoneNumber = (value) => {
     const phoneNumber = value.replace(/\D/g, "");
@@ -43,7 +39,7 @@ export default function PhoneField({
       name={input.name}
       value={input.value}
       onChange={handleInputChange}
-      onBlur={handleOnBlur}
+      onBlur={handleBlur}
       fullWidth
       variant="outlined"
       margin="normal"

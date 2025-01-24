@@ -10,7 +10,7 @@ import {
 import { useEffect, useState } from "react";
 import services from "../../utils/services";
 
-export default function Services({ input }) {
+export default function Services({ input, handleBlur }) {
   const [selectedServices, setSelectedServices] = useState([]);
 
   const handleCheckboxChange = (event) => {
@@ -18,6 +18,7 @@ export default function Services({ input }) {
     setSelectedServices((prev) =>
       checked ? [...prev, value] : prev.filter((service) => service !== value),
     );
+    handleBlur();
   };
 
   useEffect(() => {
