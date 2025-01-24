@@ -58,7 +58,6 @@ const PhoenixForm = () => {
           setTurnstileToken(token);
         },
         "expired-callback": () => {
-          console.log("expired callback running", { id });
           window.turnstile.reset(id);
         },
       });
@@ -161,7 +160,7 @@ const PhoenixForm = () => {
         });
       }
     } catch (error) {
-      console.log("There was an error", error);
+      console.error("There was an error", error);
     } finally {
       setLoading(false);
     }

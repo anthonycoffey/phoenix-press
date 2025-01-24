@@ -69,7 +69,6 @@ export default function EmbedForm({ embed }) {
           setTurnstileToken(token);
         },
         "expired-callback": () => {
-          console.log("expired callback running", { id });
           window.turnstile.reset(id);
         },
       });
@@ -158,7 +157,6 @@ export default function EmbedForm({ embed }) {
   const { throttledSubmit, isSubmitting } = useThrottledSubmit(handleSubmit);
 
   const handleTextChange = ({ input, event }) => {
-    console.log({ event });
     input.value = event?.target?.value;
   };
 
