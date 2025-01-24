@@ -11,8 +11,8 @@ import Prompt from "./components/Prompt";
 import Answer from "./components/Answer";
 import Disclaimer from "./components/Disclaimer";
 import { GlobalStateContext, GlobalStateProvider } from "./state.js";
-import "./styles.sass";
 import EmbedForm from "./components/EmbedForm";
+import "./styles.sass";
 
 import * as Sentry from "@sentry/react";
 Sentry.init({
@@ -282,19 +282,19 @@ const PhoenixForm = () => {
   );
 };
 
-const chat = document.getElementById("phoenix-form-root");
-const root = createRoot(chat);
-root.render(
-  <GlobalStateProvider>
-    <PhoenixForm />
-  </GlobalStateProvider>,
-);
+document.addEventListener("DOMContentLoaded", () => {
+  const chat = document.getElementById("phoenix-form-root");
+  if (chat) {
+    const root = createRoot(chat);
+    root.render(
+      <GlobalStateProvider>
+        <PhoenixForm />
+      </GlobalStateProvider>,
+    );
+  }
 
-const roots = document.querySelectorAll(".phoenix-form-embed-root");
-roots.forEach((el) => {
-  createRoot(el).render(
-    <GlobalStateProvider>
-      <EmbedForm />
-    </GlobalStateProvider>,
-  );
+  const roots = document.querySelectorAll(".phoenix-form-embed-root");
+  roots.forEach((el) => {
+    createRoot(el).render(<EmbedForm />);
+  });
 });

@@ -74,7 +74,11 @@ const InputField = ({
           <Stack
             direction="row"
             spacing={4}
-            sx={{ marginTop: "1rem", justifyContent: "space-between" }}
+            sx={{
+              marginTop: "1rem",
+              justifyContent: "space-around",
+              width: "100%",
+            }}
           >
             <DatePicker
               label="Select Date"

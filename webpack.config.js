@@ -4,6 +4,7 @@ const TerserPlugin = require("terser-webpack-plugin");
 module.exports = {
   // mode: "development", // local development only
   // devtool: "eval", // local development only
+  target: "web",
   mode: "production",
   devtool: "source-map",
   entry: ["core-js/stable", "regenerator-runtime/runtime", "./src/index.js"],
@@ -31,16 +32,7 @@ module.exports = {
       },
       {
         test: /\.sass$/,
-        use: [
-          "style-loader",
-          {
-            loader: "css-loader",
-            options: {
-              modules: true, // Enable CSS Modules for scoping
-            },
-          },
-          "sass-loader",
-        ],
+        use: ["style-loader", "css-loader", "sass-loader"],
       },
     ],
   },

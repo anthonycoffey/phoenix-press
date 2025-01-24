@@ -1,7 +1,6 @@
 const options = [
   {
     name: "full_name",
-    prompt: "What is your name?",
     type: "row",
     title: "Contact Information",
     label: "Please enter your contact information.",
@@ -17,7 +16,6 @@ const options = [
   },
   {
     name: "phone",
-    prompt: "What is your phone number?",
     inputs: [
       {
         name: "phone",
@@ -38,7 +36,9 @@ const options = [
   },
   {
     name: "service_time",
-    prompt: "When do you need service?",
+    type: "row",
+    title: "When do you need service?",
+    label: "Please verify service date and time.",
     inputs: [
       {
         value: "",
@@ -53,7 +53,7 @@ const options = [
     name: "location",
     type: "row",
     title: "Where is the vehicle located?",
-    prompt: "What is your current location?",
+    label: "Please verify service location.",
     inputs: [
       {
         name: "location",
@@ -66,7 +66,6 @@ const options = [
     ],
   },
   {
-    prompt: "Please provide your car details",
     type: "row",
     title: "Vehicle Details",
     label: "Year, Make, Model, and Color",
@@ -103,7 +102,6 @@ const options = [
   },
   {
     name: "service_type",
-    prompt: "What service do you need?",
     inputs: [
       {
         value: [],
@@ -117,7 +115,6 @@ const options = [
     ],
   },
   {
-    prompt: "Please provide any additional information",
     inputs: [
       {
         name: "notes",
