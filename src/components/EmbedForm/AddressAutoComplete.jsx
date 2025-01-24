@@ -145,7 +145,11 @@ export default function AddressAutoComplete({ input }) {
   }
 
   return (
-    <Stack spacing={2} direction="column" sx={{ marginTop: "1rem" }}>
+    <Stack
+      spacing={2}
+      direction="column"
+      sx={{ marginTop: "1rem", display: "flex", width: "100%" }}
+    >
       <TextField
         label={input.label}
         name={input.name}

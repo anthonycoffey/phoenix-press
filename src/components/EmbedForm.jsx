@@ -216,6 +216,7 @@ export default function EmbedForm({ embed }) {
                           key={index}
                           display="flex"
                           flexDirection="row"
+                          sx={{ width: "100%" }}
                           gap={2}
                         >
                           {question.inputs.map((input, index) => (

@@ -5,6 +5,7 @@ module.exports = {
     "react-dom": "ReactDOM",
   },
   // mode: "development",
+  // devtool: "eval",
   entry: "./src/index.js",
   output: {
     path: path.resolve(__dirname, "build"),

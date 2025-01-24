@@ -2,7 +2,31 @@ const options = [
   {
     name: "full_name",
     prompt: "What is your name?",
+    type: "row",
+    title: "Contact Information",
+    label: "Please enter your contact information.",
     inputs: [
+      {
+        name: "phone",
+        prompt: "What is your phone number?",
+        inputs: [
+          {
+            name: "phone",
+            type: "tel",
+            label: "Enter your phone number",
+            value: "",
+            optional: false,
+          },
+          {
+            name: "sms_consent",
+            type: "checkbox",
+            label:
+              "Yes, send me SMS updates and notifications to keep me informed about my roadside service request.",
+            value: false,
+            optional: true,
+          },
+        ],
+      },
       {
         name: "full_name",
         type: "text",
@@ -12,27 +36,7 @@ const options = [
       },
     ],
   },
-  {
-    name: "phone",
-    prompt: "What is your phone number?",
-    inputs: [
-      {
-        name: "phone",
-        type: "tel",
-        label: "Enter your phone number",
-        value: "",
-        optional: false,
-      },
-      {
-        name: "sms_consent",
-        type: "checkbox",
-        label:
-          "Yes, send me SMS updates and notifications to keep me informed about my roadside service request.",
-        value: false,
-        optional: true,
-      },
-    ],
-  },
+
   {
     name: "service_time",
     prompt: "When do you need service?",
@@ -48,6 +52,8 @@ const options = [
   },
   {
     name: "location",
+    type: "row",
+    title: "Where is the vehicle located?",
     prompt: "What is your current location?",
     inputs: [
       {
@@ -69,21 +75,21 @@ const options = [
       {
         name: "car_year",
         type: "text",
-        label: "Car Year",
+        label: "Year",
         value: "",
         optional: true,
       },
       {
         name: "car_make",
         type: "text",
-        label: "Car Make",
+        label: "Make",
         value: "",
         optional: true,
       },
       {
         name: "car_model",
         type: "text",
-        label: "Car Model",
+        label: "Model",
         value: "",
         optional: true,
       },
@@ -108,6 +114,18 @@ const options = [
         optionsKey: "serviceOptions",
         options: [],
         optional: false,
+      },
+    ],
+  },
+  {
+    prompt: "Please provide any additional information",
+    inputs: [
+      {
+        name: "notes",
+        type: "textarea",
+        label: "Additional Information",
+        value: "",
+        optional: true,
       },
     ],
   },

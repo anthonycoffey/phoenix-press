@@ -93,6 +93,21 @@ const InputField = ({
           </Stack>
         </LocalizationProvider>
       );
+    case "textarea":
+      return (
+        <TextField
+          label={input.label}
+          name={input.name}
+          value={input.value}
+          onChange={(event) => handleTextChange({ input, event })}
+          fullWidth
+          multiline
+          rows={2}
+          required={!input.optional}
+          variant="outlined"
+          margin="normal"
+        />
+      );
     default:
       return null;
   }
