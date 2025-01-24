@@ -40,7 +40,7 @@ const getAddressObject = (address_components) => {
 
 const libraries = ["places"];
 
-export default function AddressAutoComplete({ input }) {
+export default function AddressAutoComplete({ input, handleBlur }) {
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [errors, setErrors] = useState({});
   const inputRef = useRef(null);
@@ -155,6 +155,7 @@ export default function AddressAutoComplete({ input }) {
         name={input.name}
         value={input.value}
         onChange={handleInputChange}
+        onBlur={handleBlur}
         variant="outlined"
         margin="normal"
         fullWidth

@@ -1,6 +1,6 @@
 {
   "name": "phoenix-press",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "description": "WordPress Plugin for Phoenix Platform",
   "author": "Anthony Coffey",
   "license": "MIT",
@@ -44,10 +44,14 @@
     "@mui/material": "^5.16.7",
     "@mui/x-date-pickers": "^7.19.0",
     "@react-google-maps/api": "^2.19.3",
+    "@sentry/react": "^8.51.0",
     "axios": "^1.7.7",
+    "core-js": "^3.40.0",
     "date-fns": "^3.6.0",
+    "html-react-parser": "^5.2.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "html-react-parser": "^5.2.2"
+    "regenerator-runtime": "^0.14.1",
+    "terser-webpack-plugin": "^5.3.11"
   }
 }

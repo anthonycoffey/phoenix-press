@@ -14,7 +14,7 @@ import "../styles.sass";
 import InputField from "./InputField";
 import Disclaimer from "./Disclaimer";
 
-const useThrottledSubmit = (submitFunction, delay = 1000) => {
+const useThrottledSubmit = (submitFunction, delay = 250) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const throttledSubmit = useCallback(
@@ -158,6 +158,7 @@ export default function EmbedForm({ embed }) {
   const { throttledSubmit, isSubmitting } = useThrottledSubmit(handleSubmit);
 
   const handleTextChange = ({ input, event }) => {
+    console.log({ event });
     input.value = event?.target?.value;
   };
 

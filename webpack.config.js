@@ -1,15 +1,21 @@
 const path = require("path");
+const TerserPlugin = require("terser-webpack-plugin");
+
 module.exports = {
-  externals: {
-    react: "React",
-    "react-dom": "ReactDOM",
-  },
-  // mode: "development",
-  // devtool: "eval",
-  entry: "./src/index.js",
+  // mode: "development", // local development only
+  // devtool: "eval", // local development only
+  mode: "production",
+  devtool: "source-map",
+  entry: ["core-js/stable", "regenerator-runtime/runtime", "./src/index.js"],
   output: {
     path: path.resolve(__dirname, "build"),
     filename: "phoenix-press.js",
+    library: "PhoenixPress",
+    libraryTarget: "umd",
+  },
+  externals: {
+    react: "React",
+    "react-dom": "ReactDOM",
   },
   module: {
     rules: [
@@ -25,13 +31,30 @@ module.exports = {
       },
       {
         test: /\.sass$/,
-        use: ["style-loader", "css-loader", "sass-loader"],
+        use: [
+          "style-loader",
+          {
+            loader: "css-loader",
+            options: {
+              modules: true, // Enable CSS Modules for scoping
+            },
+          },
+          "sass-loader",
+        ],
       },
     ],
   },
   resolve: {
     modules: ["src", "node_modules"],
     extensions: [".js", ".jsx"],
+  },
+  optimization: {
+    minimize: true,
+    minimizer: [
+      new TerserPlugin({
+        extractComments: false, // Avoid creating additional license files
+      }),
+    ],
   },
   cache: {
     type: "filesystem",

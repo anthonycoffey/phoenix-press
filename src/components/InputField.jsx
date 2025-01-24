@@ -29,7 +29,11 @@ const InputField = ({
   switch (input.type) {
     case "tel":
       return (
-        <PhoneField input={input} setValidPhoneNumber={setValidPhoneNumber} />
+        <PhoneField
+          input={input}
+          setValidPhoneNumber={setValidPhoneNumber}
+          handleBlur={handleBlur}
+        />
       );
     case "text":
       return (
@@ -37,7 +41,6 @@ const InputField = ({
           label={input.label}
           name={input.name}
           onChange={(event) => handleTextChange({ input, event })}
-          onBlur={handleBlur}
           fullWidth
           variant="outlined"
           margin="normal"
@@ -45,7 +48,7 @@ const InputField = ({
         />
       );
     case "geo":
-      return <AddressAutoComplete input={input} />;
+      return <AddressAutoComplete input={input} handleBlur={handleBlur} />;
     case "select":
       return <Services input={input} />;
     case "checkbox":
@@ -89,21 +92,6 @@ const InputField = ({
             />
           </Stack>
         </LocalizationProvider>
-      );
-    case "textarea":
-      return (
-        <TextField
-          label={input.label}
-          name={input.name}
-          value={input.value}
-          onChange={(event) => handleTextChange({ input, event })}
-          fullWidth
-          multiline
-          rows={2}
-          required={!input.optional}
-          variant="outlined"
-          margin="normal"
-        />
       );
     default:
       return null;
