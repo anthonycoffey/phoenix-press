@@ -7,27 +7,6 @@ const options = [
     label: "Please enter your contact information.",
     inputs: [
       {
-        name: "phone",
-        prompt: "What is your phone number?",
-        inputs: [
-          {
-            name: "phone",
-            type: "tel",
-            label: "Enter your phone number",
-            value: "",
-            optional: false,
-          },
-          {
-            name: "sms_consent",
-            type: "checkbox",
-            label:
-              "Yes, send me SMS updates and notifications to keep me informed about my roadside service request.",
-            value: false,
-            optional: true,
-          },
-        ],
-      },
-      {
         name: "full_name",
         type: "text",
         label: "Enter your name",
@@ -36,7 +15,27 @@ const options = [
       },
     ],
   },
-
+  {
+    name: "phone",
+    prompt: "What is your phone number?",
+    inputs: [
+      {
+        name: "phone",
+        type: "tel",
+        label: "Enter your phone number",
+        value: "",
+        optional: false,
+      },
+      {
+        name: "sms_consent",
+        type: "checkbox",
+        label:
+          "Yes, send me SMS updates and notifications to keep me informed about my roadside service request.",
+        value: false,
+        optional: true,
+      },
+    ],
+  },
   {
     name: "service_time",
     prompt: "When do you need service?",

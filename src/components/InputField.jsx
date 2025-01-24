@@ -19,7 +19,6 @@ const InputField = ({
   selectedDate,
   setValidPhoneNumber,
   checked,
-  setChecked,
   handleBlur,
 }) => {
   useEffect(() => {
@@ -30,9 +29,7 @@ const InputField = ({
   switch (input.type) {
     case "tel":
       return (
-        <>
-          <PhoneField input={input} setValidPhoneNumber={setValidPhoneNumber} />
-        </>
+        <PhoneField input={input} setValidPhoneNumber={setValidPhoneNumber} />
       );
     case "text":
       return (
