@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkphoenix_press=self.webpackChunkphoenix_press||[]).push([[86],{1086:function(e,s,n){n.r(s),n.d(s,{default:function(){return t.A},stackClasses:function(){return u}});var t=n(5583),u=(0,n(8413).A)("MuiStack",["root"])}}]);
+//# sourceMappingURL=86.d72ecb3f66d1a01e3a08.js.map

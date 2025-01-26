@@ -1,17 +1,17 @@
 {
-  "name": "phoenix/press",
-  "type": "wordpress-plugin",
-  "autoload": {
-    "psr-4": {
-      "Phoenix\\Press\\": "./includes"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Phoenix\\Press\\Tests\\": "./tests"
-    }
-  },
-  "require": {
-    "php": "^7.4.3 || ^8"
-  }
+	"name": "phoenix/press",
+	"type": "wordpress-plugin",
+	"autoload": {
+		"psr-4": {
+			"Phoenix\\Press\\": "./includes"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Phoenix\\Press\\Tests\\": "./tests"
+		}
+	},
+	"require": {
+		"php": "^7.4.3 || ^8"
+	}
 }
