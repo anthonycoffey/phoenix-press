@@ -7,6 +7,11 @@ class Meta
     private const TOKEN_CACHE_DURATION = 300; // 5 minutes
     private const TOKEN_CACHE_GROUP = "phoenix_tokens";
 
+    public static function deactivate()
+    {
+        add_action("wp_enqueue_scripts", [__CLASS__, "dequeue_scripts"]);
+    }
+
     public static function init()
     {
         add_action("wp_enqueue_scripts", [__CLASS__, "enqueue_scripts"]);
@@ -151,65 +156,61 @@ class Meta
 
         $phoenix_form_subtitle = get_option("phoenix_form_subtitle", "");
 
-        // Define paths relative to the plugin root
-    $plugin_dir = plugin_dir_path(dirname(__FILE__)); // Moves up from `includes`
-    $build_dir = $plugin_dir . 'build/';
-    $build_url = plugins_url('build/', dirname(__FILE__));
-    
-    // Enqueue the main JavaScript file with hashed file names
-    $main_asset_files = glob($build_dir . 'main.*.asset.php');
-    if (!empty($main_asset_files)) {
-        $main_asset_file = $main_asset_files[0];
-        $main_asset = include $main_asset_file;
-        $main_js_file = basename($main_asset_file, '.asset.php') . '.js';
-        wp_enqueue_script(
-            'phoenix-press-main',
-            $build_url . $main_js_file,
-            $main_asset['dependencies'],
-            $main_asset['version'],
-            true // Load in the footer
-        );
+        $plugin_dir = plugin_dir_path(dirname(__FILE__));
+        $build_dir = $plugin_dir . 'build/';
+        $build_url = plugins_url('build/', dirname(__FILE__));
 
-        wp_localize_script("phoenix-press-main", "LOCALIZED", [
-            "NONCE" => wp_create_nonce("wp_rest"),
-            "API_URL" => rest_url("phoenix-press/v1"),
-            "ASSETS_URL" => plugins_url("assets", __DIR__),
-            "GMAPS_API_KEY" => $gmaps_api_key,
-            "SMS_CONSENT_MESSAGE" => $phoenix_sms_consent_message,
-            "DISCLAIMER_MESSAGE" => $phoenix_disclaimer_message,
-            "SUBMISSION_MESSAGE" => $phoenix_submission_message,
-            "TURNSTILE_SITE_KEY" => $turnstile_site_key,
-        ]);
-    }
-
-
-    // Enqueue dynamic chunk files (e.g., 23.js)
-    foreach (glob($build_dir . '*.asset.php') as $chunk_asset_file) {
-        $chunk_name = basename($chunk_asset_file, '.asset.php');
-        if ($chunk_name !== 'main') {
-            $chunk_asset = include $chunk_asset_file;
+        $main_asset_files = glob($build_dir . 'main.*.asset.php');
+        if (!empty($main_asset_files)) {
+            $main_asset_file = $main_asset_files[0];
+            $main_asset = include $main_asset_file;
+            $main_js_file = basename($main_asset_file, '.asset.php') . '.js';
             wp_enqueue_script(
-                "phoenix-press-chunk-{$chunk_name}",
-                $build_url . "{$chunk_name}.js",
-                $chunk_asset['dependencies'],
-                $chunk_asset['version'],
+                 "phoenix-press-js-{$main_js_file}",
+                $build_url . $main_js_file,
+                $main_asset['dependencies'],
+                $main_asset['version'],
                 true
             );
+
+            wp_localize_script("phoenix-press-js-{$main_js_file}", "LOCALIZED", [
+                "NONCE" => wp_create_nonce("wp_rest"),
+                "API_URL" => rest_url("phoenix-press/v1"),
+                "ASSETS_URL" => plugins_url("assets", __DIR__),
+                "GMAPS_API_KEY" => $gmaps_api_key,
+                "SMS_CONSENT_MESSAGE" => $phoenix_sms_consent_message,
+                "DISCLAIMER_MESSAGE" => $phoenix_disclaimer_message,
+                "SUBMISSION_MESSAGE" => $phoenix_submission_message,
+                "TURNSTILE_SITE_KEY" => $turnstile_site_key,
+            ]);
         }
-    }
-
-    // Enqueue the main CSS file
-    $main_css_file = $build_dir . 'main.css';
-    if (file_exists($main_css_file)) {
-        wp_enqueue_style(
-            'phoenix-press-main',
-            $build_url . 'main.css',
-            array(),
-            filemtime($main_css_file)
-        );
-    }
 
 
+
+        foreach (glob($build_dir . '*.asset.php') as $chunk_asset_file) {
+            $chunk_name = basename($chunk_asset_file, '.asset.php');
+            if (strpos($chunk_name, 'main') === false) {
+                $chunk_asset = include $chunk_asset_file;
+                wp_enqueue_script(
+                    "phoenix-press-js-chunk-{$chunk_name}",
+                    $build_url . "{$chunk_name}.js",
+                    $chunk_asset['dependencies'],
+                    $chunk_asset['version'],
+                    true
+                );
+            }
+        }
+
+        // Enqueue the main CSS file
+        $main_css_file = $build_dir . 'main.css';
+        if (file_exists($main_css_file)) {
+            wp_enqueue_style(
+                'phoenix-press-main',
+                $build_url . 'main.css',
+                array(),
+                filemtime($main_css_file)
+            );
+        }
 
         wp_enqueue_script(
             "turnstile-api",
@@ -219,6 +220,41 @@ class Meta
             true
         );
     }
+
+public static function dequeue_phoenix_scripts() {
+   $plugin_dir = plugin_dir_path(dirname(__FILE__));
+   $build_dir = $plugin_dir . 'build/';
+   $build_url = plugins_url('build/', dirname(__FILE__));
+
+   // Dequeue main JavaScript file
+   $main_asset_files = glob($build_dir . 'main.*.asset.php');
+   if (!empty($main_asset_files)) {
+       $main_asset_file = $main_asset_files[0];
+       $main_asset = include $main_asset_file;
+       $main_js_file = basename($main_asset_file, '.asset.php') . '.js';
+       wp_dequeue_script("phoenix-press-js-{$main_js_file}");
+       wp_deregister_script("phoenix-press-js-{$main_js_file}");
+   }
+
+   // Dequeue dynamic chunk files
+   foreach (glob($build_dir . '*.asset.php') as $chunk_asset_file) {
+       $chunk_name = basename($chunk_asset_file, '.asset.php');
+       if ($chunk_name !== 'main') {
+           wp_dequeue_script("phoenix-press-js-chunk-{$chunk_name}");
+           wp_deregister_script("phoenix-press-js-chunk-{$chunk_name}");
+       }
+   }
+
+   // Dequeue main CSS file
+   wp_dequeue_style('phoenix-press-main');
+   wp_deregister_style('phoenix-press-main');
+
+   // Dequeue Turnstile API script
+   wp_dequeue_script('turnstile-api');
+   wp_deregister_script('turnstile-api');
+}
+
+
 public static function submit_lead($request)
 {
     $api_url = get_option("phoenix_api_url");
