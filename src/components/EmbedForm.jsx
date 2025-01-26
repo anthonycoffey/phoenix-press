@@ -49,24 +49,24 @@ export default function EmbedForm() {
   const handleSubmit = async (submit = false) => {
     if (!turnstileToken && !validPhoneNumber) return false;
 
-    setLoading(true);
-    const submission = questions.flatMap((question) =>
-      question.inputs.map((input) => {
-        const { name, value, obj } = input;
-        return obj ? { name, value, obj } : { name, value };
-      }),
-    );
-
-    const headers = {
-      "Content-Type": "application/json",
-      "X-Turnstile-Token": turnstileToken,
-    };
-
-    const source =
-      window.location.origin.replace(/^https?:\/\//, "") +
-      window.location.pathname.replace(/\/$/, "");
-
     try {
+      setLoading(true);
+      const submission = questions.flatMap((question) =>
+        question.inputs.map((input) => {
+          const { name, value, obj } = input;
+          return obj ? { name, value, obj } : { name, value };
+        }),
+      );
+
+      const headers = {
+        "Content-Type": "application/json",
+        "X-Turnstile-Token": turnstileToken,
+      };
+
+      const source =
+        window.location.origin.replace(/^https?:\/\//, "") +
+        window.location.pathname.replace(/\/$/, "");
+
       const completed = isSubmissionComplete(submission, requiredFields);
 
       if (formSubmissionId) {
@@ -99,13 +99,13 @@ export default function EmbedForm() {
           setFormSubmissionId(result?.id);
         }
       }
-
-      if (submit) {
-        setSubmitted(true);
-      }
     } catch (error) {
       console.error("There was an error", error);
     } finally {
+      if (submit) {
+        setSubmitted(true);
+      }
+
       setLoading(false);
     }
   };
@@ -119,9 +119,9 @@ export default function EmbedForm() {
     setSelectedDate(event);
   };
 
-  const handleBlur = (submit = false) => {
+  const handleBlur = () => {
     if (validPhoneNumber && turnstileToken) {
-      void handleSubmit(submit);
+      void handleSubmit();
     }
   };
 
@@ -227,7 +227,7 @@ export default function EmbedForm() {
                   variant="contained"
                   color="primary"
                   onClick={() => {
-                    handleBlur(true);
+                    handleSubmit(true);
                   }}
                   disabled={loading || !validPhoneNumber || !turnstileToken}
                 >
