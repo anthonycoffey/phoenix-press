@@ -5,9 +5,9 @@ import {
   LocalizationProvider,
 } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
-import PhoneField from "./PhoneField";
-import AddressAutoComplete from "./AddressAutoComplete";
-import Services from "./ServiceSelect";
+import AddressAutoComplete from "./EmbedForm/AddressAutoComplete";
+import PhoneField from "./EmbedForm/PhoneField";
+import Services from "./EmbedForm/Services";
 const TextField = MaterialUI.TextField;
 const FormControlLabel = MaterialUI.FormControlLabel;
 const Checkbox = MaterialUI.Checkbox;

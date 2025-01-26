@@ -1,6 +1,7 @@
 const Avatar = MaterialUI.Avatar;
 const Stack = MaterialUI.Stack;
 import parse from "html-react-parser";
+import SpeechBubble from "./SpeechBubble";
 
 const Prompt = ({ question }) => {
   const assets = LOCALIZED?.ASSETS_URL ?? "";

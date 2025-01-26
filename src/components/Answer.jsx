@@ -10,9 +10,9 @@ import {
 } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
 import { GlobalStateContext } from "../state";
-const AddressAutoComplete = "./AddressAutoComplete";
-const ServiceSelect = "./ServiceSelect";
-const PhoneField = "./PhoneField";
+import AddressAutoComplete from "./AddressAutoComplete";
+import ServiceSelect from "./ServiceSelect";
+import PhoneField from "./PhoneField";
 import parse from "html-react-parser";
 
 const Answer = ({ question }) => {

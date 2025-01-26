@@ -1,6 +1,6 @@
 import { useEffect, useState, Suspense } from "@wordpress/element";
 import questionData from "../utils/embed-form-data.js";
-const { requiredFields, isSubmissionComplete } = "../utils/validation";
+import { requiredFields, isSubmissionComplete } from "../utils/validation";
 const Box = MaterialUI.Box;
 const Button = MaterialUI.Button;
 const Card = MaterialUI.Card;
@@ -122,8 +122,6 @@ export default function EmbedForm() {
   const handleBlur = (submit = false) => {
     if (validPhoneNumber && turnstileToken) {
       void handleSubmit(submit);
-    } else {
-      return false;
     }
   };
 
@@ -229,7 +227,7 @@ export default function EmbedForm() {
                   variant="contained"
                   color="primary"
                   onClick={() => {
-                    void handleBlur(true);
+                    handleBlur(true);
                   }}
                   disabled={loading || !validPhoneNumber || !turnstileToken}
                 >

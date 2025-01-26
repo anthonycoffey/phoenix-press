@@ -4,7 +4,7 @@ const CardContent = MaterialUI.CardContent;
 const Stack = MaterialUI.Stack;
 const Box = MaterialUI.Box;
 const CardHeader = MaterialUI.CardHeader;
-const Cancel = (
+const Cancel = () => (
   <svg
     className="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1iirmgg"
     focusable="false"
