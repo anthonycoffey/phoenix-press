@@ -1,15 +1,14 @@
 {
 	"name": "phoenix-press",
-	"version": "1.2.2",
+	"version": "1.2.3",
 	"description": "WordPress Plugin for Phoenix Platform",
 	"author": "Anthony Coffey",
 	"license": "MIT",
 	"scripts": {
 		"build": "wp-scripts build --config ./webpack.config.js",
 		"start": "wp-scripts start --config ./webpack.config.js",
-		"lint": "prettier --write .",
-		"lint:check": "prettier --check .",
 		"format": "wp-scripts format && npm run clean:react",
+		"release": "wp-scripts plugin-zip",
 		"clean:react": "rimraf ./build"
 	},
 	"entry": {
