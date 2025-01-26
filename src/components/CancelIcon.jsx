@@ -2,8 +2,8 @@ export default function CancelIcon() {
 	return (
 		<svg
 			style={{
-				width: '20px',
-				height: '20px',
+				width: '48px',
+				height: '48px',
 				marginRight: '0.5rem',
 				fill: '#1976d2',
 			}}
