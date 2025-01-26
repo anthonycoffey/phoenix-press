@@ -10,12 +10,12 @@ const options = {};
 
 module.exports = merge(defaultConfig, {
 	mode: 'production',
-	devtool: false,
+	// devtool: false,
 	// mode: "development",
-	// devtool: "source-map",
+	devtool: 'source-map',
 	entry: ['./src/index.js'],
 	output: {
-		path: path.resolve(__dirname, 'build'),
+		path: path.resolve(__dirname, 'build/auto'),
 		filename: '[name].[contenthash].js',
 		chunkFilename: '[name].[contenthash].js',
 	},

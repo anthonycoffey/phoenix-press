@@ -1,8 +1,18 @@
 #phoenix-form-root {
   z-index: 100;
   position: fixed;
-  right: 1rem;
+  right: 1.5rem;
   bottom: 6rem;
+}
+
+@media screen and (max-width: 1024px) {
+  #phoenix-form-root{
+    right: 1rem!important;
+  }
+
+  [aria-label="Show Lead Form"] {
+    bottom: 6rem!important;
+  }
 }
 
 .phoenix-form-embed-root {
@@ -20,10 +30,10 @@
 
 #phoenix-show-form-button {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 60px;
-  height: 60px;
+  bottom: 1rem;
+  right: 1rem;
+  width: 75px;
+  height: 75px;
   border-radius: 50%;
   background-color: #4395ce;
   border: none;
