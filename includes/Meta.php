@@ -137,6 +137,43 @@ class Meta
 
     public static function enqueue_scripts()
     {
+
+
+      wp_enqueue_script(
+            "turnstile-api",
+            "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit",
+            [],
+            null,
+            true
+      );
+
+      wp_enqueue_script(
+          'mui-js',
+          'https://cdn.jsdelivr.net/npm/@mui/material@5.16.1/umd/material-ui.development.js',
+         ['react', 'react-dom'],
+          '5.16.1',
+          true
+      );
+
+      wp_enqueue_script(
+          'emotion-react-js',
+          'https://cdn.jsdelivr.net/npm/@emotion/react@11.13.3/dist/emotion-react.umd.min.js',
+          ['react', 'react-dom'],
+          '11.13.3',
+          true
+      );
+
+      wp_enqueue_script(
+          'emotion-styled-js',
+          'https://cdn.jsdelivr.net/npm/@emotion/styled@11.3.0/dist/emotion-styled.umd.min.js',
+          [],
+          '11.3.0',
+          true
+      );
+
+
+
+
         $gmaps_api_key = get_option("phoenix_gmaps_api_key", "");
         $phoenix_sms_consent_message = get_option(
             "phoenix_sms_consent_message",
@@ -212,13 +249,11 @@ class Meta
             );
         }
 
-        wp_enqueue_script(
-            "turnstile-api",
-            "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit",
-            [],
-            null,
-            true
-        );
+
+
+
+
+
     }
 
 public static function dequeue_phoenix_scripts() {

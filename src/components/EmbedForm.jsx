@@ -1,23 +1,21 @@
-import React, { useEffect, useState, lazy, Suspense } from "react";
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  CardActions,
-  Stack,
-  Typography,
-  LinearProgress,
-  CardHeader,
-} from "@mui/material";
-import questionData from "../utils/embed-form-data";
+const { useEffect, useState, Suspense } = React;
+import questionData from "../utils/embed-form-data.js";
 import "../styles.css";
-import { requiredFields, isSubmissionComplete } from "../utils/validation";
+const { requiredFields, isSubmissionComplete } = "../utils/validation";
 
-// Lazy load components
-const Prompt = lazy(() => import("./Prompt"));
-const InputField = lazy(() => import("./InputField"));
-const Disclaimer = lazy(() => import("./Disclaimer"));
+const Box = MaterialUI.Box;
+const Button = MaterialUI.Button;
+const Card = MaterialUI.Card;
+const CardContent = MaterialUI.CardContent;
+const CardActions = MaterialUI.CardActions;
+const Stack = MaterialUI.Stack;
+const Typography = MaterialUI.Typography;
+const LinearProgress = MaterialUI.LinearProgress;
+const CardHeader = MaterialUI.CardHeader;
+import Prompt from "./Prompt";
+import InputField from "./InputField";
+import Disclaimer from "./Disclaimer";
+import parse from "html-react-parser";
 
 export default function EmbedForm() {
   const [questions] = useState(questionData || false);
@@ -31,8 +29,9 @@ export default function EmbedForm() {
   const [turnstileToken, setTurnstileToken] = useState(null);
 
   useEffect(() => {
+    let id;
     if (window.turnstile) {
-      const id = window.turnstile.render("#turnstile-widget", {
+      id = window.turnstile.render("#turnstile-widget", {
         sitekey: LOCALIZED.TURNSTILE_SITE_KEY,
         callback: (token) => {
           setTurnstileToken(token);
@@ -42,6 +41,11 @@ export default function EmbedForm() {
         },
       });
     }
+    return () => {
+      if (id) {
+        window.turnstile.remove(id);
+      }
+    };
   }, []);
 
   const handleSubmit = async (submit = false) => {
@@ -63,8 +67,6 @@ export default function EmbedForm() {
     const source =
       window.location.origin.replace(/^https?:\/\//, "") +
       window.location.pathname.replace(/\/$/, "");
-
-    if (!turnstileToken) return false;
 
     try {
       const completed = isSubmissionComplete(submission, requiredFields);
@@ -136,89 +138,106 @@ export default function EmbedForm() {
 
   return (
     <section>
-      <Card className="phoenix-form">
-        {LOCALIZED.FORM_TITLE && (
-          <CardHeader
-            title={LOCALIZED.FORM_TITLE}
-            subheader={LOCALIZED.FORM_SUBTITLE}
-          />
-        )}
-        {submitted && (
-          <CardContent>
-            <Stack space={2}>
-              <Prompt
-                question={{
-                  prompt: LOCALIZED.SUBMISSION_MESSAGE,
-                }}
-              />
-            </Stack>
-          </CardContent>
-        )}
-
-        {!submitted && (
-          <form aria-label="Form Description" autoComplete="on" noValidate>
+      <Suspense fallback={<LinearProgress />}>
+        <Card className="phoenix-form">
+          {LOCALIZED.FORM_TITLE && (
+            <CardHeader
+              title={LOCALIZED.FORM_TITLE}
+              subheader={LOCALIZED.FORM_SUBTITLE}
+            />
+          )}
+          {submitted ? (
             <CardContent>
-              <Stack space={4}>
-                {questions?.map((question, index) => {
-                  if (question.type === "row") {
-                    return (
-                      <>
-                        <Typography
-                          variant="subtitle1"
-                          sx={{ mt: "1rem" }}
-                          color="textSecondary"
-                        >
-                          {question.title}
-                          <Typography variant="subtitle2" color="textSecondary">
-                            {question.label}
-                          </Typography>
-                        </Typography>
-
-                        <Box
-                          key={index}
-                          display="flex"
-                          flexDirection="row"
-                          sx={{ width: "100%" }}
-                          gap={2}
-                        >
-                          {question.inputs.map((input, index) => (
-                            <InputField
-                              key={index}
-                              input={input}
-                              handleTextChange={handleTextChange}
-                              handleDateChange={handleDateChange}
-                              handleConsentChange={handleConsentChange}
-                              selectedDate={selectedDate}
-                              setValidPhoneNumber={setValidPhoneNumber}
-                              checked={checked}
-                              setChecked={setChecked}
-                              handleBlur={handleBlur}
-                            />
-                          ))}
-                        </Box>
-                      </>
-                    );
-                  } else {
-                    return question.inputs.map((input, index) => (
-                      <InputField
-                        key={index}
-                        input={input}
-                        handleTextChange={handleTextChange}
-                        handleDateChange={handleDateChange}
-                        handleConsentChange={handleConsentChange}
-                        selectedDate={selectedDate}
-                        setValidPhoneNumber={setValidPhoneNumber}
-                        checked={checked}
-                        setChecked={setChecked}
-                        handleBlur={handleBlur}
-                      />
-                    ));
-                  }
-                })}
+              <Stack space={2}>
+                <Prompt
+                  question={{
+                    prompt: LOCALIZED.SUBMISSION_MESSAGE,
+                  }}
+                />
               </Stack>
-              <Box>
-                <Disclaimer index={0} />
-              </Box>
+            </CardContent>
+          ) : (
+            <form aria-label="Form Description" autoComplete="on" noValidate>
+              <CardContent>
+                <Stack space={4}>
+                  {questions?.map((question, index) => (
+                    <React.Fragment key={index}>
+                      {question.type === "row" ? (
+                        <>
+                          <Typography
+                            variant="subtitle1"
+                            sx={{ mt: "1rem" }}
+                            color="textSecondary"
+                          >
+                            {question.title}
+                            <Typography
+                              variant="subtitle2"
+                              color="textSecondary"
+                            >
+                              {question.label}
+                            </Typography>
+                          </Typography>
+                          <Box
+                            display="flex"
+                            flexDirection="row"
+                            sx={{ width: "100%" }}
+                            gap={2}
+                          >
+                            {question.inputs.map((input, index) => (
+                              <InputField
+                                key={index}
+                                input={input}
+                                handleTextChange={handleTextChange}
+                                handleDateChange={handleDateChange}
+                                handleConsentChange={handleConsentChange}
+                                selectedDate={selectedDate}
+                                setValidPhoneNumber={setValidPhoneNumber}
+                                checked={checked}
+                                setChecked={setChecked}
+                                handleBlur={handleBlur}
+                              />
+                            ))}
+                          </Box>
+                        </>
+                      ) : (
+                        question.inputs.map((input, index) => (
+                          <InputField
+                            key={index}
+                            input={input}
+                            handleTextChange={handleTextChange}
+                            handleDateChange={handleDateChange}
+                            handleConsentChange={handleConsentChange}
+                            selectedDate={selectedDate}
+                            setValidPhoneNumber={setValidPhoneNumber}
+                            checked={checked}
+                            setChecked={setChecked}
+                            handleBlur={handleBlur}
+                          />
+                        ))
+                      )}
+                    </React.Fragment>
+                  ))}
+                </Stack>
+                <Box>
+                  <Disclaimer index={0} />
+                </Box>
+
+                {loading && <LinearProgress />}
+              </CardContent>
+
+              <CardActions sx={{ justifyContent: "end" }}>
+                <Button
+                  size={"large"}
+                  variant="contained"
+                  color="primary"
+                  onClick={() => {
+                    void handleBlur(true);
+                  }}
+                  disabled={loading || !validPhoneNumber || !turnstileToken}
+                >
+                  Submit
+                </Button>
+              </CardActions>
               <div
                 id="turnstile-widget"
                 className="cf-turnstile"
@@ -230,24 +249,10 @@ export default function EmbedForm() {
                 }}
                 data-sitekey={LOCALIZED.TURNSTILE_SITE_KEY}
               ></div>
-              <>{loading && <LinearProgress />}</>
-            </CardContent>
-
-            <CardActions sx={{ justifyContent: "end" }}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => {
-                  void handleBlur(true);
-                }}
-                disabled={loading || !validPhoneNumber || !turnstileToken}
-              >
-                Submit
-              </Button>
-            </CardActions>
-          </form>
-        )}
-      </Card>
+            </form>
+          )}
+        </Card>
+      </Suspense>
     </section>
   );
 }

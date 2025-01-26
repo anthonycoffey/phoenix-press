@@ -7,36 +7,35 @@ const CompressionPlugin = require("compression-webpack-plugin");
 const { merge } = require("webpack-merge");
 const path = require("path");
 const options = {};
+
 module.exports = merge(defaultConfig, {
-  mode: "production",
-  devtool: "source-map",
-  // mode: "development",
-  // devtool: "eval",
+  // mode: "production",
+  // devtool: false,
+  mode: "development",
+  devtool: "eval",
   entry: ["./src/index.js"],
-  module: {
-    rules: [
-      {
-        test: /\.(js|jsx)$/,
-        exclude: /node_modules/,
-        use: {
-          loader: "babel-loader",
-          options: {
-            presets: ["@babel/preset-env", "@babel/preset-react"],
-          },
-        },
-      },
-    ],
-  },
   output: {
-    path: path.resolve(__dirname, "build"), // Convert to an absolute path
+    path: path.resolve(__dirname, "build"),
     filename: "[name].[contenthash].js",
     chunkFilename: "[name].[contenthash].js",
   },
   optimization: {
+    usedExports: true,
     moduleIds: "deterministic",
     chunkIds: "deterministic",
     splitChunks: {
       chunks: "all",
+      // cacheGroups: {
+      //   vendor: {
+      //     test: /[\\/]node_modules[\\/]/,
+      //     name(module) {
+      //       const packageName = module.context.match(
+      //         /[\\/]node_modules[\\/](.*?)([\\/]|$)/,
+      //       )[1];
+      //       return `npm.${packageName.replace("@", "")}`;
+      //     },
+      //   },
+      // },
     },
     minimize: true,
     minimizer: [
@@ -49,12 +48,13 @@ module.exports = merge(defaultConfig, {
     modules: ["src", "node_modules"],
     extensions: [".js", ".jsx"],
   },
-  externals: {
-    react: "React",
-    "react-dom": "ReactDOM",
-  },
   cache: {
     type: "filesystem",
+  },
+  externals: {
+    "@mui/material": "MaterialUI",
+    "@emotion/react": "emotionReact",
+    "@emotion/styled": "emotionStyled",
   },
   plugins: [
     new WebpackManifestPlugin(options),

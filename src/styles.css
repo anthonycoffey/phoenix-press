@@ -11,6 +11,13 @@
   position: relative;
 }
 
+.phoenix-no-select {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
 #phoenix-show-form-button {
   position: fixed;
   bottom: 20px;
