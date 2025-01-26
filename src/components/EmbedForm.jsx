@@ -223,7 +223,7 @@ export default function EmbedForm() {
                     setSubmitted(true);
                     handleSubmit();
                   }}
-                  disabled={loading || !validPhoneNumber || !turnstileToken}
+                  disabled={!validPhoneNumber || !turnstileToken}
                 >
                   Submit
                 </Button>
