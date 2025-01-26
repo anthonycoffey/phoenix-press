@@ -1,9 +1,8 @@
 const TextField = MaterialUI.TextField;
-const { useContext, useEffect } = React;
+import React, { useContext, useEffect } from "@wordpress/element";
 import { GlobalStateContext } from "../state";
 
 export default function PhoneField({ input, onChange }) {
-  console.log({ GlobalStateContext });
   const { errors, setErrors } = useContext(GlobalStateContext);
   const formatPhoneNumber = (value) => {
     const phoneNumber = value.replace(/\D/g, "");
@@ -27,7 +26,7 @@ export default function PhoneField({ input, onChange }) {
     const { value } = event.target;
     const formatted = formatPhoneNumber(value);
     const errorMessage = validatePhoneNumber(formatted);
-    setErrors({ ...errors, [input.name]: errorMessage });
+    setErrors({ ...errors, [input?.name]: errorMessage });
     onChange({ target: { name: "phone", value: formatted } });
   };
 

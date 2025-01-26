@@ -1,6 +1,11 @@
-const { useState, useEffect, useRef, useContext, Suspense } = React;
+import {
+  useState,
+  useEffect,
+  useRef,
+  useContext,
+  Suspense,
+} from "@wordpress/element";
 import { useLoadScript } from "@react-google-maps/api";
-
 const { GlobalStateContext } = "../state.js";
 const TextField = MaterialUI.TextField;
 const LinearProgress = MaterialUI.LinearProgress;

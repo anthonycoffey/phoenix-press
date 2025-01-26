@@ -5,7 +5,7 @@ const Checkbox = MaterialUI.Checkbox;
 const Box = MaterialUI.Box;
 const FormHelperText = MaterialUI.FormHelperText;
 const FormLabel = MaterialUI.FormLabel;
-const { useContext, useEffect, useState } = React;
+import { useContext, useEffect, useState } from "@wordpress/element";
 import { GlobalStateContext } from "../state";
 
 export default function ServiceSelect({ input }) {

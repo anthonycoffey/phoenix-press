@@ -1,4 +1,4 @@
-const { useContext, useEffect, useState } = React;
+import { useContext, useEffect, useState } from "@wordpress/element";
 const TextField = MaterialUI.TextField;
 const Stack = MaterialUI.Stack;
 const Checkbox = MaterialUI.Checkbox;
@@ -9,7 +9,7 @@ import {
   LocalizationProvider,
 } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
-const { GlobalStateContext } = "./state";
+import { GlobalStateContext } from "../state";
 const AddressAutoComplete = "./AddressAutoComplete";
 const ServiceSelect = "./ServiceSelect";
 const PhoneField = "./PhoneField";

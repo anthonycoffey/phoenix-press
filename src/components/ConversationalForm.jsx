@@ -19,7 +19,7 @@ const LinearProgress = MaterialUI.LinearProgress;
 import Prompt from "./Prompt";
 import Answer from "./Answer";
 import Disclaimer from "./Disclaimer";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "@wordpress/element";
 import { GlobalStateContext } from "../state";
 
 const ConversationalForm = () => {

@@ -150,7 +150,7 @@ class Meta
       wp_enqueue_script(
           'mui-js',
           'https://cdn.jsdelivr.net/npm/@mui/material@5.16.1/umd/material-ui.development.js',
-         ['react', 'react-dom'],
+           ['wp-element'],
           '5.16.1',
           true
       );
@@ -158,7 +158,7 @@ class Meta
       wp_enqueue_script(
           'emotion-react-js',
           'https://cdn.jsdelivr.net/npm/@emotion/react@11.13.3/dist/emotion-react.umd.min.js',
-          ['react', 'react-dom'],
+          ['wp-element'],
           '11.13.3',
           true
       );

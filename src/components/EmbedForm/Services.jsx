@@ -1,11 +1,11 @@
+import { useEffect, useState } from "@wordpress/element";
 const FormControl = MaterialUI.FormControl;
 const FormControlLabel = MaterialUI.FormControlLabel;
 const FormGroup = MaterialUI.FormGroup;
 const Checkbox = MaterialUI.Checkbox;
 const Box = MaterialUI.Box;
 const FormLabel = MaterialUI.FormLabel;
-const { useEffect, useState } = React;
-const services = services;
+import services from "../../utils/services";
 
 export default function Services({ input, handleBlur }) {
   const [selectedServices, setSelectedServices] = useState([]);

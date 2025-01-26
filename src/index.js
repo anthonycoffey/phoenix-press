@@ -1,5 +1,4 @@
-import { lazy, Suspense } from "@wordpress/element";
-import { createRoot } from "react-dom";
+import { lazy, Suspense, createRoot } from "@wordpress/element";
 import { GlobalStateProvider } from "./state";
 const LinearProgress = MaterialUI.LinearProgress;
 

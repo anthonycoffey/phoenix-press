@@ -1,5 +1,5 @@
+import { useState } from "@wordpress/element";
 const TextField = MaterialUI.TextField;
-const { useState } = React;
 
 export default function PhoneField({ input, setValidPhoneNumber, handleBlur }) {
   const [errors, setErrors] = useState({});

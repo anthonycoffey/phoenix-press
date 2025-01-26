@@ -1,4 +1,4 @@
-const { useEffect } = React;
+import { useEffect } from "@wordpress/element";
 import {
   DatePicker,
   TimePicker,

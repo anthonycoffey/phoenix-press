@@ -1,4 +1,4 @@
-const { useState, useEffect, useRef } = React;
+import { useState, useEffect, useRef } from "@wordpress/element";
 const TextField = MaterialUI.TextField;
 const Stack = MaterialUI.Stack;
 const Button = MaterialUI.Button;

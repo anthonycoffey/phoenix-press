@@ -1,8 +1,6 @@
-const { useEffect, useState, Suspense } = React;
+import { useEffect, useState, Suspense } from "@wordpress/element";
 import questionData from "../utils/embed-form-data.js";
-import "../styles.css";
 const { requiredFields, isSubmissionComplete } = "../utils/validation";
-
 const Box = MaterialUI.Box;
 const Button = MaterialUI.Button;
 const Card = MaterialUI.Card;
@@ -15,7 +13,7 @@ const CardHeader = MaterialUI.CardHeader;
 import Prompt from "./Prompt";
 import InputField from "./InputField";
 import Disclaimer from "./Disclaimer";
-import parse from "html-react-parser";
+import "../styles.css";
 
 export default function EmbedForm() {
   const [questions] = useState(questionData || false);
