@@ -46,11 +46,10 @@ export default function EmbedForm() {
     };
   }, []);
 
-  const handleSubmit = async (submit = false) => {
+  const handleSubmit = async () => {
+    setLoading(true);
     if (!turnstileToken && !validPhoneNumber) return false;
-
     try {
-      setLoading(true);
       const submission = questions.flatMap((question) =>
         question.inputs.map((input) => {
           const { name, value, obj } = input;
@@ -102,10 +101,6 @@ export default function EmbedForm() {
     } catch (error) {
       console.error("There was an error", error);
     } finally {
-      if (submit) {
-        setSubmitted(true);
-      }
-
       setLoading(false);
     }
   };
@@ -225,9 +220,10 @@ export default function EmbedForm() {
                   variant="contained"
                   color="primary"
                   onClick={() => {
-                    handleSubmit(true);
+                    setSubmitted(true);
+                    handleSubmit();
                   }}
-                  disabled={!validPhoneNumber || !turnstileToken}
+                  disabled={loading || !validPhoneNumber || !turnstileToken}
                 >
                   Submit
                 </Button>

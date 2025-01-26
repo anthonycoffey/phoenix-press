@@ -9,10 +9,10 @@ const path = require("path");
 const options = {};
 
 module.exports = merge(defaultConfig, {
-  // mode: "production",
-  // devtool: false,
-  mode: "development",
-  devtool: "source-map",
+  mode: "production",
+  devtool: false,
+  // mode: "development",
+  // devtool: "source-map",
   entry: ["./src/index.js"],
   output: {
     path: path.resolve(__dirname, "build"),
@@ -25,17 +25,6 @@ module.exports = merge(defaultConfig, {
     chunkIds: "deterministic",
     splitChunks: {
       chunks: "all",
-      // cacheGroups: {
-      //   vendor: {
-      //     test: /[\\/]node_modules[\\/]/,
-      //     name(module) {
-      //       const packageName = module.context.match(
-      //         /[\\/]node_modules[\\/](.*?)([\\/]|$)/,
-      //       )[1];
-      //       return `npm.${packageName.replace("@", "")}`;
-      //     },
-      //   },
-      // },
     },
     minimize: true,
     minimizer: [
