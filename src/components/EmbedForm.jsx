@@ -217,8 +217,6 @@ export default function EmbedForm() {
                 <Box>
                   <Disclaimer index={0} />
                 </Box>
-
-                {loading && <LinearProgress />}
               </CardContent>
 
               <CardActions sx={{ justifyContent: "end" }}>
@@ -229,11 +227,12 @@ export default function EmbedForm() {
                   onClick={() => {
                     handleSubmit(true);
                   }}
-                  disabled={loading || !validPhoneNumber || !turnstileToken}
+                  disabled={!validPhoneNumber || !turnstileToken}
                 >
                   Submit
                 </Button>
               </CardActions>
+              {loading || (!turnstileToken && <LinearProgress />)}
               <div
                 id="turnstile-widget"
                 className="cf-turnstile"
