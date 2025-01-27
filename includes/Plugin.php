@@ -16,7 +16,7 @@ class Plugin
     /**
     * Plugin version.
     */
-    private $version = '1.2.1';
+    private $version = '1.2.4';
 
     /**
     * The single instance of the class.

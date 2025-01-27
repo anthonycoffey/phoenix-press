@@ -15,31 +15,25 @@ class Assets {
     }
 
     private static function load_manifest($manifest_path) {
-        try {
-            if (!file_exists($manifest_path)) {
-                throw new \Exception('Manifest file not found: ' . $manifest_path);
-            }
-            
-            $manifest_content = file_get_contents($manifest_path);
-            if ($manifest_content === false) {
-                throw new \Exception('Unable to read manifest file');
-            }
-            
-            $manifest = json_decode($manifest_content, true);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new \Exception('Invalid JSON in manifest file: ' . json_last_error_msg());
-            }
-            
-            return $manifest;
-        } catch (\Exception $e) {
-            error_log('Phoenix Press: Error loading manifest: ' . $e->getMessage());
+        if (!file_exists($manifest_path)) {
             return [];
         }
+
+        $manifest_content = file_get_contents($manifest_path);
+        if ($manifest_content === false) {
+            return [];
+        }
+
+        $manifest = json_decode($manifest_content, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return [];
+        }
+
+        return $manifest;
     }
 
     public static function enqueue_scripts() {
         if (empty(self::$manifest)) {
-            error_log('Phoenix Press: No manifest loaded, skipping asset enqueuing');
             return;
         }
 
@@ -66,7 +60,7 @@ class Assets {
         );
 
         wp_enqueue_script(
-            'emotion-react-js', 
+            'emotion-react-js',
             'https://cdn.jsdelivr.net/npm/@emotion/react@11.13.3/dist/emotion-react.umd.min.js',
             ['wp-element'],
             '11.13.3',
@@ -83,71 +77,47 @@ class Assets {
     }
 
     private static function enqueue_webpack_assets() {
-        try {
-            // Main JS
-            $main_js = self::find_asset_by_prefix('main');
-            error_log($main_js);
-            if ($main_js) {
-                $asset_file = self::$plugin_dir . '/build/' . str_replace('.js', '.asset.php', $main_js);
-                error_log($asset_file);
-                error_log(self::$build_url . '/build/' . $main_js);
-                if (file_exists($asset_file)) {
-                    $main_asset = require $asset_file;
+        $main_js = self::find_asset_by_prefix('main');
+        if ($main_js) {
+            $asset_file = self::$plugin_dir . '/build/' . str_replace('.js', '.asset.php', $main_js);
+            if (file_exists($asset_file)) {
+                $main_asset = require $asset_file;
+                wp_enqueue_script(
+                    'phoenix-press-main-js',
+                    self::$build_url . '/' . $main_js,
+                    $main_asset['dependencies'] ?? [],
+                    $main_asset['version'] ?? '1.0',
+                    true
+                );
+            }
+        }
+
+        foreach (self::$manifest as $file => $path) {
+            if (preg_match('/^(\d+)\.js$/', $file, $matches)) {
+                $js_path = self::$plugin_dir . '/build/' . $path;
+                if (file_exists($js_path)) {
                     wp_enqueue_script(
-                        'phoenix-press-main-js',
-                        self::$build_url . '/' . $main_js,
-                        $main_asset['dependencies'] ?? [],
-                        $main_asset['version'] ?? '1.0',
+                        "phoenix-press-chunk-{$matches[1]}",
+                        self::$build_url . '/' . $path,
+                        ['phoenix-press-main-js'],
+                        filemtime($js_path),
                         true
                     );
                 }
             }
-            try {
-                // Chunk JS files
-                foreach (self::$manifest as $file => $path) {
-                    if (preg_match('/^(\d+)\.js$/', $file, $matches)) {
-                        $js_path = self::$plugin_dir . '/build/' . $path;
-                        if (!file_exists($js_path)) {
-                            error_log("Phoenix Press: JS file not found: {$js_path}");
-                            continue;
-                        }
-                        
-                        wp_enqueue_script(
-                            "phoenix-press-chunk-{$matches[1]}",
-                            self::$build_url . '/' . $path,
-                            ['phoenix-press-main-js'],
-                            filemtime($js_path),
-                            true
-                        );
-                     
-                    }
-                    
-                    if (preg_match('/^(\d+)\.css$/', $file, $matches)) {
-                        $css_path = self::$plugin_dir . '/build/' . $path;
-                        if (!file_exists($css_path)) {
-                            error_log("Phoenix Press: CSS file not found: {$css_path}");
-                            continue;
-                        }
-                        try {
-                            $handle = "phoenix-press-chunk-{$matches[1]}-css";
-                            wp_enqueue_style(
-                                $handle,
-                                self::$build_url . '/' . $path,
-                                [],
-                                filemtime($css_path)
-                            );
-                        } catch (\Exception $e) {
-                            error_log("Phoenix Press: Error enqueuing CSS {$css_path}: " . $e->getMessage());
-                        }
-                    }
+
+            if (preg_match('/^(\d+)\.css$/', $file, $matches)) {
+                $css_path = self::$plugin_dir . '/build/' . $path;
+                if (file_exists($css_path)) {
+                    $handle = "phoenix-press-chunk-{$matches[1]}-css";
+                    wp_enqueue_style(
+                        $handle,
+                        self::$build_url . '/' . $path,
+                        [],
+                        filemtime($css_path)
+                    );
                 }
-            } catch (\Exception $e) {
-                error_log('Phoenix Press: Error in asset enqueuing loop: ' . $e->getMessage());
             }
-
-
-        } catch (\Exception $e) {
-            error_log('Phoenix Press: Error enqueuing webpack assets: ' . $e->getMessage());
         }
     }
 
