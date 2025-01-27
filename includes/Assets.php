@@ -13,16 +13,6 @@ class Assets {
         add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_scripts' ] );
     }
 
-    // public static function deactivate()
-    // {
-    //     add_action( 'wp_enqueue_scripts', [ __CLASS__, 'dequeue_scripts' ] );
-    // }
-
-    // public static function activate()
-    // {
-    //     add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_scripts' ] );
-    // }
-
     private static function load_manifest( $manifest_path ) {
         if ( file_exists( $manifest_path ) ) {
             return json_decode( file_get_contents( $manifest_path ), true );
@@ -77,67 +67,59 @@ class Assets {
         );
     }
 
+
     private static function enqueue_webpack_assets() {
         // Main JS
-        $main_js = self::find_asset_by_prefix( 'main.js' );
-        if ( $main_js ) {
-            $asset_file = plugin_dir_path( dirname( __FILE__ ) ) . 'build/' . str_replace( '.js', '.asset.php', $main_js );
-            if ( !file_exists( $asset_file ) ) {
-                error_log( 'Phoenix Press: Main asset file not found: ' . $asset_file );
-                return;
-            }
-            $main_asset = include $asset_file;
-            error_log( 'Phoenix Press: Enqueuing main JS: ' . self::$build_url . $main_js );
+        // Find and enqueue main JS file
+        // Log the manifest content for debugging
+        error_log('Manifest content: ' . print_r(self::$manifest, true));
+
+        foreach (self::$manifest as $key => $path) {
+            if (preg_match('/main.js/', $key)) {
+            error_log('Found main JS file: ' . $key . ' => ' . $path);
             wp_enqueue_script(
                 'phoenix-press-main-js',
-                self::$build_url . $main_js,
-                $main_asset[ 'dependencies' ],
-                $main_asset[ 'version' ],
+                self::$build_url . $path,
+                ['wp-element'], // Default dependency
+                null,
                 true
             );
-        } else {
-            error_log( 'Phoenix Press: Main JS file not found in manifest' );
-        }
-
-        // Chunk JS files
-        foreach ( self::$manifest as $file => $path ) {
-            if ( preg_match( '/^(\d+)\$/', $file, $matches ) ) {
-                $chunk_asset_file = plugin_dir_path( dirname( __FILE__ ) ) . "build/auto/{$file}.asset.php";
-                if ( !file_exists( $chunk_asset_file ) ) {
-                    error_log( 'Phoenix Press: Chunk asset file not found: ' . $chunk_asset_file );
-                    continue;
-                }
-                $chunk_asset = include $chunk_asset_file;
-                error_log( 'Phoenix Press: Enqueuing chunk JS: ' . self::$build_url . $path );
-                wp_enqueue_script(
-                    "phoenix-press-chunk-{$matches[1]}",
-                    self::$build_url . $path,
-                    $chunk_asset[ 'dependencies' ],
-                    $chunk_asset[ 'version' ],
-                    true
-                );
+            break; // Stop after finding main file
             }
         }
+        
+        // Log if main JS file was not found
+        if (!wp_script_is('phoenix-press-main-js', 'registered')) {
+            error_log('Main JS file not found in manifest');
+        }
 
-        // Main CSS
-        $main_css = self::find_asset_by_prefix( 'css' );
-        if ( $main_css ) {
-            $css_file = plugin_dir_path( dirname( __FILE__ ) ) . 'build/auto/' . $main_css;
-            if ( !file_exists( $css_file ) ) {
-                error_log( 'Phoenix Press: CSS file not found: ' . $css_file );
-                return;
-            }
-            error_log( 'Phoenix Press: Enqueuing main CSS: ' . self::$build_url . $main_css );
-            wp_enqueue_style(
-                'phoenix-press-main-style',
-                self::$build_url . $main_css,
-                [],
-                filemtime( $css_file )
+        // Dynamically enqueue all chunk files
+        foreach (self::$manifest as $key => $path) {
+            if (preg_match('/^(\d+)\.js$/', $key, $matches)) {
+            $chunk_id = $matches[1];
+            wp_enqueue_script(
+                "phoenix-press-chunk-{$chunk_id}",
+                self::$build_url . $path,
+                ['wp-element'], // Default dependency
+                null,
+                true
             );
-        } else {
-            error_log( 'Phoenix Press: Main CSS file not found in manifest' );
+            }
+            
+            // Handle CSS files
+            if (preg_match('/(\d+)\.css$/', $key, $matches)) {
+                $css_id = $matches[1];
+                wp_enqueue_style(
+                    "phoenix-press-chunk-{$css_id}-css",
+                    self::$build_url . $path,
+                    [],
+                    null
+                );
+                error_log("Enqueued CSS file {$key} with handle phoenix-press-chunk-{$css_id}-css");
+            }
         }
-    }
+        }
+
 
     private static function find_asset_by_prefix( $prefix ) {
         foreach ( self::$manifest as $file => $path ) {
