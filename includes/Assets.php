@@ -4,35 +4,51 @@ namespace Phoenix\Press;
 class Assets {
     private static $manifest;
     private static $build_url;
+    private static $plugin_dir;
 
     public static function init() {
-        $plugin_dir = plugin_dir_path( dirname( __FILE__ ) );
-        self::$build_url = plugins_url( 'build/', dirname( __FILE__ ) );
-        self::$manifest = self::load_manifest( $plugin_dir . 'build/auto/manifest.json' );
+        self::$plugin_dir = rtrim(plugin_dir_path(dirname(__FILE__)), '/');
+        self::$build_url = rtrim(plugins_url('build/', dirname(__FILE__)), '/');
+        self::$manifest = self::load_manifest(self::$plugin_dir . '/build/auto/manifest.json');
 
-        add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_scripts' ] );
+        add_action('wp_enqueue_scripts', [__CLASS__, 'enqueue_scripts']);
     }
 
-    private static function load_manifest( $manifest_path ) {
-        if ( file_exists( $manifest_path ) ) {
-            return json_decode( file_get_contents( $manifest_path ), true );
+    private static function load_manifest($manifest_path) {
+        try {
+            if (!file_exists($manifest_path)) {
+                throw new \Exception('Manifest file not found: ' . $manifest_path);
+            }
+            
+            $manifest_content = file_get_contents($manifest_path);
+            if ($manifest_content === false) {
+                throw new \Exception('Unable to read manifest file');
+            }
+            
+            $manifest = json_decode($manifest_content, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new \Exception('Invalid JSON in manifest file: ' . json_last_error_msg());
+            }
+            
+            return $manifest;
+        } catch (\Exception $e) {
+            error_log('Phoenix Press: Error loading manifest: ' . $e->getMessage());
+            return [];
         }
-        return [];
     }
 
     public static function enqueue_scripts() {
-        // External CDN scripts
+        if (empty(self::$manifest)) {
+            error_log('Phoenix Press: No manifest loaded, skipping asset enqueuing');
+            return;
+        }
+
         self::enqueue_external_scripts();
-
-        // Dynamic webpack assets
         self::enqueue_webpack_assets();
-
-        // Localize script with dynamic data
         self::localize_script_data();
     }
 
     private static function enqueue_external_scripts() {
-        // Cloudflare Turnstile API
         wp_enqueue_script(
             'turnstile-api',
             'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit',
@@ -41,19 +57,18 @@ class Assets {
             true
         );
 
-        // MUI and Emotion scripts
         wp_enqueue_script(
             'mui-js',
             'https://cdn.jsdelivr.net/npm/@mui/material@5.16.1/umd/material-ui.development.js',
-            [ 'wp-element' ],
+            ['wp-element'],
             '5.16.1',
             true
         );
 
         wp_enqueue_script(
-            'emotion-react-js',
+            'emotion-react-js', 
             'https://cdn.jsdelivr.net/npm/@emotion/react@11.13.3/dist/emotion-react.umd.min.js',
-            [ 'wp-element' ],
+            ['wp-element'],
             '11.13.3',
             true
         );
@@ -67,106 +82,141 @@ class Assets {
         );
     }
 
-
     private static function enqueue_webpack_assets() {
-        // Main JS
-        // Find and enqueue main JS file
-        // Log the manifest content for debugging
-        error_log('Manifest content: ' . print_r(self::$manifest, true));
-
-        foreach (self::$manifest as $key => $path) {
-            if (preg_match('/main.js/', $key)) {
-            error_log('Found main JS file: ' . $key . ' => ' . $path);
-            wp_enqueue_script(
-                'phoenix-press-main-js',
-                self::$build_url . $path,
-                ['wp-element'], // Default dependency
-                null,
-                true
-            );
-            break; // Stop after finding main file
+        try {
+            // Main JS
+            $main_js = self::find_asset_by_prefix('main');
+            error_log($main_js);
+            if ($main_js) {
+                $asset_file = self::$plugin_dir . '/build/' . str_replace('.js', '.asset.php', $main_js);
+                error_log($asset_file);
+                error_log(self::$build_url . '/build/' . $main_js);
+                if (file_exists($asset_file)) {
+                    $main_asset = require $asset_file;
+                    wp_enqueue_script(
+                        'phoenix-press-main-js',
+                        self::$build_url . '/' . $main_js,
+                        $main_asset['dependencies'] ?? [],
+                        $main_asset['version'] ?? '1.0',
+                        true
+                    );
+                }
             }
-        }
-        
-        // Log if main JS file was not found
-        if (!wp_script_is('phoenix-press-main-js', 'registered')) {
-            error_log('Main JS file not found in manifest');
-        }
-
-        // Dynamically enqueue all chunk files
-        foreach (self::$manifest as $key => $path) {
-            if (preg_match('/^(\d+)\.js$/', $key, $matches)) {
-            $chunk_id = $matches[1];
-            wp_enqueue_script(
-                "phoenix-press-chunk-{$chunk_id}",
-                self::$build_url . $path,
-                ['wp-element'], // Default dependency
-                null,
-                true
-            );
+            try {
+                // Chunk JS files
+                foreach (self::$manifest as $file => $path) {
+                    if (preg_match('/^(\d+)\.js$/', $file, $matches)) {
+                        $js_path = self::$plugin_dir . '/build/' . $path;
+                        if (!file_exists($js_path)) {
+                            error_log("Phoenix Press: JS file not found: {$js_path}");
+                            continue;
+                        }
+                        
+                        wp_enqueue_script(
+                            "phoenix-press-chunk-{$matches[1]}",
+                            self::$build_url . '/' . $path,
+                            ['phoenix-press-main-js'],
+                            filemtime($js_path),
+                            true
+                        );
+                     
+                    }
+                    
+                    if (preg_match('/^(\d+)\.css$/', $file, $matches)) {
+                        $css_path = self::$plugin_dir . '/build/' . $path;
+                        if (!file_exists($css_path)) {
+                            error_log("Phoenix Press: CSS file not found: {$css_path}");
+                            continue;
+                        }
+                        try {
+                            $handle = "phoenix-press-chunk-{$matches[1]}-css";
+                            wp_enqueue_style(
+                                $handle,
+                                self::$build_url . '/' . $path,
+                                [],
+                                filemtime($css_path)
+                            );
+                        } catch (\Exception $e) {
+                            error_log("Phoenix Press: Error enqueuing CSS {$css_path}: " . $e->getMessage());
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                error_log('Phoenix Press: Error in asset enqueuing loop: ' . $e->getMessage());
             }
-            
-            // Handle CSS files
-            if (preg_match('/(\d+)\.css$/', $key, $matches)) {
-                $css_id = $matches[1];
-                wp_enqueue_style(
-                    "phoenix-press-chunk-{$css_id}-css",
-                    self::$build_url . $path,
-                    [],
-                    null
-                );
-                error_log("Enqueued CSS file {$key} with handle phoenix-press-chunk-{$css_id}-css");
-            }
-        }
-        }
 
 
-    private static function find_asset_by_prefix( $prefix ) {
-        foreach ( self::$manifest as $file => $path ) {
-            if ( strpos( $file, $prefix ) === 0 ) {
+        } catch (\Exception $e) {
+            error_log('Phoenix Press: Error enqueuing webpack assets: ' . $e->getMessage());
+        }
+    }
+
+    private static function find_asset_by_prefix($prefix) {
+        if (!is_array(self::$manifest)) {
+            return null;
+        }
+        foreach (self::$manifest as $file => $path) {
+            if (strpos($file, $prefix) === 0) {
                 return $path;
             }
         }
         return null;
     }
 
-    private static function localize_script_data() {
-        $localized_data = [
-            'NONCE' => wp_create_nonce( 'wp_rest' ),
-            'API_URL' => rest_url( 'phoenix-press/v1' ),
-            'ASSETS_URL' => plugins_url( 'assets', __DIR__ ),
-            'GMAPS_API_KEY' => get_option( 'phoenix_gmaps_api_key', '' ),
-            'SMS_CONSENT_MESSAGE' => get_option( 'phoenix_sms_consent_message', '' ),
-            'DISCLAIMER_MESSAGE' => get_option( 'phoenix_disclaimer_message', '' ),
-            'SUBMISSION_MESSAGE' => get_option( 'phoenix_submission_message', '' ),
-            'TURNSTILE_SITE_KEY' => get_option( 'phoenix_turnstile_site_key', '' ),
-        ];
-
-        wp_localize_script( 'phoenix-press-main-js', 'LOCALIZED', $localized_data );
+    private static function find_assets_by_pattern($pattern) {
+        if (!is_array(self::$manifest)) {
+            return [];
+        }
+        $matches = [];
+        foreach (self::$manifest as $file => $path) {
+            if (preg_match($pattern, $file)) {
+                $matches[$file] = $path;
+            }
+        }
+        return $matches;
     }
 
-    public function dequeue_scripts() {
-        // Main JS
-        $main_js = self::find_asset_by_prefix( 'main.js' );
-        if ( $main_js ) {
-            wp_dequeue_script( 'phoenix-press-main-js' );
-            wp_deregister_script( 'phoenix-press-main-js' );
+    private static function localize_script_data() {
+        if (!wp_script_is('phoenix-press-main-js', 'enqueued')) {
+            return;
         }
 
-        // Chunk JS files
-        foreach ( self::$manifest as $file => $path ) {
-            if ( preg_match( '/^(\d+)\.js$/', $file, $matches ) ) {
-                wp_dequeue_script( "phoenix-press-chunk-{$matches[1]}" );
-                wp_deregister_script( "phoenix-press-chunk-{$matches[1]}" );
+        $localized_data = [
+            'NONCE' => wp_create_nonce('wp_rest'),
+            'API_URL' => rest_url('phoenix-press/v1'),
+            'ASSETS_URL' => plugins_url('assets', __DIR__),
+            'GMAPS_API_KEY' => get_option('phoenix_gmaps_api_key', ''),
+            'SMS_CONSENT_MESSAGE' => get_option('phoenix_sms_consent_message', ''),
+            'DISCLAIMER_MESSAGE' => get_option('phoenix_disclaimer_message', ''),
+            'SUBMISSION_MESSAGE' => get_option('phoenix_submission_message', ''),
+            'TURNSTILE_SITE_KEY' => get_option('phoenix_turnstile_site_key', ''),
+        ];
+
+        wp_localize_script('phoenix-press-main-js', 'LOCALIZED', $localized_data);
+    }
+
+    public static function dequeue_scripts() {
+        if (!is_array(self::$manifest)) {
+            return;
+        }
+
+        wp_dequeue_script('phoenix-press-main-js');
+        wp_deregister_script('phoenix-press-main-js');
+
+        foreach (self::$manifest as $file => $path) {
+            if (preg_match('/^(\d+)\.js$/', $file, $matches)) {
+                $handle = "phoenix-press-chunk-{$matches[1]}";
+                wp_dequeue_script($handle);
+                wp_deregister_script($handle);
+            }
+            if (preg_match('/^(\d+)\.css$/', $file, $matches)) {
+                $handle = "phoenix-press-style-{$matches[1]}";
+                wp_dequeue_style($handle);
+                wp_deregister_style($handle);
             }
         }
 
-        // Main CSS
-        wp_dequeue_style( 'phoenix-press-main-style' );
-        wp_deregister_style( 'phoenix-press-main-style' );
-
-        // External scripts
-        wp_dequeue_script( 'turnstile-api' );
-        wp_deregister_script( 'turnstile-api' );
+        wp_dequeue_script('turnstile-api');
+        wp_deregister_script('turnstile-api');
     }
 }
