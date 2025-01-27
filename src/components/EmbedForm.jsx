@@ -47,9 +47,9 @@ export default function EmbedForm() {
 	}, []);
 
 	const handleSubmit = async () => {
-		setLoading(true);
-		if (!turnstileToken && !validPhoneNumber) return false;
+		if ((!turnstileToken && !validPhoneNumber) || loading) return false;
 		try {
+			setLoading(true);
 			const submission = questions.flatMap((question) =>
 				question.inputs.map((input) => {
 					const { name, value, obj } = input;
