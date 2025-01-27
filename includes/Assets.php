@@ -101,7 +101,7 @@ class Assets {
 
         // Chunk JS files
         foreach ( self::$manifest as $file => $path ) {
-            if ( preg_match( '/^(\d+)\.js$/', $file, $matches ) ) {
+            if ( preg_match( '/^(\d+)\$/', $file, $matches ) ) {
                 $chunk_asset_file = plugin_dir_path( dirname( __FILE__ ) ) . "build/auto/{$file}.asset.php";
                 if ( !file_exists( $chunk_asset_file ) ) {
                     error_log( 'Phoenix Press: Chunk asset file not found: ' . $chunk_asset_file );
