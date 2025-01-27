@@ -120,7 +120,7 @@ class Assets {
         }
 
         // Main CSS
-        $main_css = self::find_asset_by_prefix( 'main.css' );
+        $main_css = self::find_asset_by_prefix( 'css' );
         if ( $main_css ) {
             $css_file = plugin_dir_path( dirname( __FILE__ ) ) . 'build/auto/' . $main_css;
             if ( !file_exists( $css_file ) ) {
