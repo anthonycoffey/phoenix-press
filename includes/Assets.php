@@ -128,7 +128,6 @@ class Assets {
         }
 
         $localized_data = [
-            'NONCE' => wp_create_nonce('wp_rest'),
             'API_URL' => rest_url('phoenix-press/v1'),
             'ASSETS_URL' => plugins_url('assets', __DIR__),
             'GMAPS_API_KEY' => get_option('phoenix_gmaps_api_key', ''),
@@ -137,6 +136,8 @@ class Assets {
             'SUBMISSION_MESSAGE' => get_option('phoenix_submission_message', ''),
             'TURNSTILE_SITE_KEY' => get_option('phoenix_turnstile_site_key', ''),
             'CHAT_AVATAR' => get_option('phoenix_form_avatar',''),
+            'FORM_TITLE' => get_option('phoenix_form_title',''),
+            'FORM_SUBTITLE' => get_option('phoenix_form_subtitle',''),
         ];
 
         wp_localize_script('phoenix-press-main-js', 'LOCALIZED', $localized_data);
