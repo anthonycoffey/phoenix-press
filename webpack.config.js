@@ -6,13 +6,10 @@ const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 const { merge } = require('webpack-merge');
 const path = require('path');
-const options = {};
+const options = { filter: (file) => !file.path.includes('-rtl.css') };
 
 module.exports = merge(defaultConfig, {
 	mode: 'production',
-	// devtool: false,
-	// mode: "development",
-	devtool: 'source-map',
 	entry: ['./src/index.js'],
 	output: {
 		path: path.resolve(__dirname, 'build/auto'),
@@ -30,6 +27,7 @@ module.exports = merge(defaultConfig, {
 		minimizer: [
 			new TerserPlugin({
 				extractComments: true,
+				parallel: true,
 			}),
 		],
 	},
@@ -39,11 +37,6 @@ module.exports = merge(defaultConfig, {
 	},
 	cache: {
 		type: 'filesystem',
-	},
-	externals: {
-		'@mui/material': 'MaterialUI',
-		'@emotion/react': 'emotionReact',
-		'@emotion/styled': 'emotionStyled',
 	},
 	plugins: [
 		new WebpackManifestPlugin(options),

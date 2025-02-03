@@ -1,5 +1,5 @@
-const Avatar = MaterialUI.Avatar;
-const Stack = MaterialUI.Stack;
+import Avatar from '@mui/material/Avatar';
+import Stack from '@mui/material/Stack';
 import parse from 'html-react-parser';
 import SpeechBubble from './SpeechBubble';
 

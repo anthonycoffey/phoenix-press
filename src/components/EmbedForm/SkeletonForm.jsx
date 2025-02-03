@@ -1,9 +1,9 @@
-const Box = MaterialUI.Box;
-const Card = MaterialUI.Card;
-const CardContent = MaterialUI.CardContent;
-const Stack = MaterialUI.Stack;
-const CardHeader = MaterialUI.CardHeader;
-const Skeleton = MaterialUI.Skeleton;
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Stack from '@mui/material/Stack';
+import CardHeader from '@mui/material/CardHeader';
+import Skeleton from '@mui/material/Skeleton';
 
 const SkeletonForm = () => {
 	return (

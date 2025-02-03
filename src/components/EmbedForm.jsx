@@ -1,13 +1,13 @@
 import { useEffect, useState, Suspense } from '@wordpress/element';
-const Box = MaterialUI.Box;
-const Button = MaterialUI.Button;
-const Card = MaterialUI.Card;
-const CardContent = MaterialUI.CardContent;
-const CardActions = MaterialUI.CardActions;
-const Stack = MaterialUI.Stack;
-const Typography = MaterialUI.Typography;
-const LinearProgress = MaterialUI.LinearProgress;
-const CardHeader = MaterialUI.CardHeader;
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardActions from '@mui/material/CardActions';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import LinearProgress from '@mui/material/LinearProgress';
+import CardHeader from '@mui/material/CardHeader';
 import Prompt from './Prompt';
 import InputField from './InputField';
 import Disclaimer from './Disclaimer';
@@ -20,7 +20,6 @@ export default function EmbedForm() {
 	const [validPhoneNumber, setValidPhoneNumber] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [submitted, setSubmitted] = useState(false);
-	const [formStarted, setFormStarted] = useState(false);
 	const [formSubmissionId, setFormSubmissionId] = useState(null);
 	const [selectedDate, setSelectedDate] = useState(new Date());
 	const [checked, setChecked] = useState(false);
@@ -45,6 +44,15 @@ export default function EmbedForm() {
 			}
 		};
 	}, []);
+
+	useEffect(() => {
+		if (submitted) {
+			const name =
+				questions.find((q) => q.name === 'full_name')?.inputs[0]
+					?.value || '';
+			window.location.href = `/book-success?full_name=${encodeURIComponent(name)}`;
+		}
+	}, [submitted]);
 
 	const handleSubmit = async () => {
 		if ((!turnstileToken && !validPhoneNumber) || loading) return false;
@@ -83,15 +91,6 @@ export default function EmbedForm() {
 					}
 				);
 			} else {
-				if (!formStarted) {
-					setFormStarted(true);
-					if (window?.dataLayer) {
-						window.dataLayer.push({
-							event: 'form_start',
-						});
-					}
-				}
-
 				const response = await fetch(
 					`${LOCALIZED.API_URL}/submit-lead-form`,
 					{

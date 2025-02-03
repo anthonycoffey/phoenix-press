@@ -5,10 +5,10 @@ import {
 	useContext,
 	Suspense,
 } from '@wordpress/element';
-const TextField = MaterialUI.TextField;
-const LinearProgress = MaterialUI.LinearProgress;
-const Stack = MaterialUI.Stack;
-const Button = MaterialUI.Button;
+import TextField from '@mui/material/TextField';
+import LinearProgress from '@mui/material/LinearProgress';
+import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button';
 import LocationIcon from './LocationIcon';
 import { useLoadScript } from '@react-google-maps/api';
 import { GlobalStateContext } from '../state.js';

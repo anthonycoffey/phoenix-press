@@ -1,16 +1,17 @@
-const Button = MaterialUI.Button;
-const Card = MaterialUI.Card;
-const CardContent = MaterialUI.CardContent;
-const Stack = MaterialUI.Stack;
-const Box = MaterialUI.Box;
-const CardHeader = MaterialUI.CardHeader;
-const LinearProgress = MaterialUI.LinearProgress;
+import { useContext, useEffect, useState } from '@wordpress/element';
+import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Stack from '@mui/material/Stack';
+import Box from '@mui/material/Box';
+import CardHeader from '@mui/material/CardHeader';
+import LinearProgress from '@mui/material/LinearProgress';
 import Prompt from './Prompt';
 import Answer from './Answer';
 import Disclaimer from './Disclaimer';
 import CancelIcon from './CancelIcon';
-import { useContext, useEffect, useState } from '@wordpress/element';
 import { GlobalStateContext } from '../state';
+import '../styles.css';
 
 const ConversationalForm = () => {
 	const {
@@ -29,7 +30,6 @@ const ConversationalForm = () => {
 	const currentQuestion = questions[currentQuestionIndex];
 
 	const [invalid, setInvalid] = useState(true);
-	const [formStarted, setFormStarted] = useState(false);
 	const [formSubmissionId, setFormSubmissionId] = useState(null);
 	const [turnstileToken, setTurnstileToken] = useState(null);
 
@@ -61,6 +61,15 @@ const ConversationalForm = () => {
 		}
 	}, [isFormVisible]);
 
+	useEffect(() => {
+		if (submitted) {
+			const name =
+				questions.find((q) => q.name === 'full_name')?.inputs[0]
+					?.value || '';
+			window.location.href = `/book-success?full_name=${encodeURIComponent(name)}`;
+		}
+	}, [submitted]);
+
 	const toggleFormVisibility = () => {
 		setIsFormVisible(!isFormVisible);
 	};
@@ -88,15 +97,6 @@ const ConversationalForm = () => {
 				return await completeSubmission(submission, source);
 			} else {
 				setCurrentQuestionIndex(currentQuestionIndex + 1);
-			}
-
-			if (!formStarted) {
-				setFormStarted(true);
-				if (window?.dataLayer) {
-					window.dataLayer.push({
-						event: 'form_start',
-					});
-				}
 			}
 
 			if (formSubmissionId) {
@@ -133,34 +133,24 @@ const ConversationalForm = () => {
 	const completeSubmission = async (submission, source) => {
 		try {
 			setLoading(true);
+			if (!formSubmissionId) return false;
 
-			if (formSubmissionId) {
-				await fetch(
-					`${LOCALIZED.API_URL}/submit-lead-form/${formSubmissionId}`,
-					{
-						method: 'PUT',
-						headers: {
-							'Content-Type': 'application/json',
-							'X-Turnstile-Token': turnstileToken,
-						},
-						body: JSON.stringify({
-							submission,
-							completed: true,
-							submitted: true,
-							source,
-						}),
-					}
-				);
-			}
-
-			if (window?.dataLayer) {
-				window.dataLayer.push({
-					event: 'form_submit',
-					submission,
-					source,
-					completed: true,
-				});
-			}
+			await fetch(
+				`${LOCALIZED.API_URL}/submit-lead-form/${formSubmissionId}`,
+				{
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						'X-Turnstile-Token': turnstileToken,
+					},
+					body: JSON.stringify({
+						submission,
+						completed: true,
+						submitted: true,
+						source,
+					}),
+				}
+			);
 		} catch (error) {
 			console.error('There was an error', error);
 		} finally {

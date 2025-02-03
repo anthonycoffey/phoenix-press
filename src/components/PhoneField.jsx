@@ -1,5 +1,5 @@
-const TextField = MaterialUI.TextField;
 import React, { useContext, useEffect } from '@wordpress/element';
+import TextField from '@mui/material/TextField';
 import { GlobalStateContext } from '../state';
 
 export default function PhoneField({ input, onChange }) {

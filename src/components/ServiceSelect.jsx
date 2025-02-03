@@ -1,10 +1,10 @@
-const FormControl = MaterialUI.FormControl;
-const FormControlLabel = MaterialUI.FormControlLabel;
-const FormGroup = MaterialUI.FormGroup;
-const Checkbox = MaterialUI.Checkbox;
-const Box = MaterialUI.Box;
-const FormHelperText = MaterialUI.FormHelperText;
-const FormLabel = MaterialUI.FormLabel;
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormGroup from '@mui/material/FormGroup';
+import Checkbox from '@mui/material/Checkbox';
+import Box from '@mui/material/Box';
+import FormHelperText from '@mui/material/FormHelperText';
+import FormLabel from '@mui/material/FormLabel';
 import { useContext, useEffect, useState } from '@wordpress/element';
 import { GlobalStateContext } from '../state';
 

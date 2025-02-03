@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from '@wordpress/element';
-const TextField = MaterialUI.TextField;
-const Stack = MaterialUI.Stack;
-const Button = MaterialUI.Button;
-const CircularProgress = MaterialUI.CircularProgress;
-const LinearProgress = MaterialUI.LinearProgress;
+import TextField from '@mui/material/TextField';
+import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import LinearProgress from '@mui/material/LinearProgress';
 import LocationIcon from '../LocationIcon';
 import { useLoadScript } from '@react-google-maps/api';
 

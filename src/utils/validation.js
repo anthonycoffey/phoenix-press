@@ -6,15 +6,6 @@ const requiredFields = [
 	'service_type',
 ];
 
-const validateField = (field, submission) => {
-	const fieldData = submission.find((item) => item.name === field);
-	return fieldData && validationRules[field](fieldData.value);
-};
-
-const isSubmissionComplete = (submission, requiredFields) => {
-	return requiredFields.every((field) => validateField(field, submission));
-};
-
 const validationRules = {
 	full_name: (value) => {
 		return value.trim() !== '';
@@ -31,6 +22,15 @@ const validationRules = {
 	service_type: (value) => {
 		return Array.isArray(value) && value.length > 0;
 	},
+};
+
+const validateField = (field, submission) => {
+	const fieldData = submission.find((item) => item.name === field);
+	return fieldData && validationRules[field](fieldData.value);
+};
+
+const isSubmissionComplete = (submission, requiredFields) => {
+	return requiredFields.every((field) => validateField(field, submission));
 };
 
 export { requiredFields, validateField, isSubmissionComplete, validationRules };

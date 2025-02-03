@@ -50,30 +50,6 @@ class Assets {
             null,
             true
         );
-
-        wp_enqueue_script(
-            'mui-js',
-            'https://cdn.jsdelivr.net/npm/@mui/material@5.16.1/umd/material-ui.development.js',
-            ['wp-element'],
-            '5.16.1',
-            true
-        );
-
-        wp_enqueue_script(
-            'emotion-react-js',
-            'https://cdn.jsdelivr.net/npm/@emotion/react@11.13.3/dist/emotion-react.umd.min.js',
-            ['wp-element'],
-            '11.13.3',
-            true
-        );
-
-        wp_enqueue_script(
-            'emotion-styled-js',
-            'https://cdn.jsdelivr.net/npm/@emotion/styled@11.3.0/dist/emotion-styled.umd.min.js',
-            [],
-            '11.3.0',
-            true
-        );
     }
 
     private static function enqueue_webpack_assets() {

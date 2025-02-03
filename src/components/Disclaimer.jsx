@@ -1,4 +1,4 @@
-const Alert = MaterialUI.Alert;
+import Alert from '@mui/material/Alert';
 import parse from 'html-react-parser';
 
 const Disclaimer = ({ index }) => {

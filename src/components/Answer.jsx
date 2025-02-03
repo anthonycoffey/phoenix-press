@@ -1,8 +1,8 @@
 import { useContext, useEffect, useState } from '@wordpress/element';
-const TextField = MaterialUI.TextField;
-const Stack = MaterialUI.Stack;
-const Checkbox = MaterialUI.Checkbox;
-const FormControlLabel = MaterialUI.FormControlLabel;
+import TextField from '@mui/material/TextField';
+import Stack from '@mui/material/Stack';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import {
 	DatePicker,
 	TimePicker,
@@ -116,8 +116,6 @@ const Answer = ({ question }) => {
 							value={input.value}
 							onChange={handleInputChange}
 							fullWidth
-							multiline
-							rows={2}
 							required={!input.optional}
 							variant="outlined"
 							margin="normal"

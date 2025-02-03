@@ -1,6 +1,6 @@
-const StyledCardContent = MaterialUI.CardContent;
+import CardContent from '@mui/material/CardContent';
 const SpeechBubble = (props) => (
-	<StyledCardContent
+	<CardContent
 		sx={{
 			backgroundColor: '#f0f0f0',
 			borderRadius: '20px',

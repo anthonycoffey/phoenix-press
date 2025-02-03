@@ -8,10 +8,10 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import AddressAutoComplete from './EmbedForm/AddressAutoComplete';
 import PhoneField from './EmbedForm/PhoneField';
 import Services from './EmbedForm/Services';
-const TextField = MaterialUI.TextField;
-const FormControlLabel = MaterialUI.FormControlLabel;
-const Checkbox = MaterialUI.Checkbox;
-const Stack = MaterialUI.Stack;
+import TextField from '@mui/material/TextField';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
+import Stack from '@mui/material/Stack';
 import parse from 'html-react-parser';
 
 const InputField = ({

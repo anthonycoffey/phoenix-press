@@ -1,7 +1,7 @@
 import { lazy, Suspense, createRoot } from '@wordpress/element';
 import SkeletonForm from './components/EmbedForm/SkeletonForm';
 import { GlobalStateProvider } from './state';
-const LinearProgress = MaterialUI.LinearProgress;
+import LinearProgress from '@mui/material/LinearProgress';
 
 const EmbedForm = lazy(() => import('./components/EmbedForm'));
 const ConversationalForm = lazy(
