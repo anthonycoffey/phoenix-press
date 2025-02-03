@@ -61,15 +61,6 @@ const ConversationalForm = () => {
 		}
 	}, [isFormVisible]);
 
-	useEffect(() => {
-		if (submitted) {
-			const name =
-				questions.find((q) => q.name === 'full_name')?.inputs[0]
-					?.value || '';
-			window.location.href = `/book-success?full_name=${encodeURIComponent(name)}`;
-		}
-	}, [submitted]);
-
 	const toggleFormVisibility = () => {
 		setIsFormVisible(!isFormVisible);
 	};
@@ -151,11 +142,15 @@ const ConversationalForm = () => {
 					}),
 				}
 			);
+			setSubmitted(true);
 		} catch (error) {
 			console.error('There was an error', error);
 		} finally {
-			setSubmitted(true);
 			setLoading(false);
+			const name =
+				questions.find((q) => q.name === 'full_name')?.inputs[0]
+					?.value || '';
+			window.location.href = `/book-success?full_name=${encodeURIComponent(name)}`;
 		}
 	};
 
@@ -166,17 +161,28 @@ const ConversationalForm = () => {
 					onClick={toggleFormVisibility}
 					id="phoenix-show-form-button"
 					aria-label="Show Lead Form"
+					style={{
+						background: !LOCALIZED.CHAT_AVATAR ? '#4395ce' : 'none',
+					}}
 				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						className="e-font-icon-svg e-fas-comment-alt"
-						viewBox="0 0 512 512"
-						width="24"
-						height="24"
-						fill="#fff"
-					>
-						<path d="M448 0H64C28.7 0 0 28.7 0 64v288c0 35.3 28.7 64 64 64h96v84c0 9.8 11.2 15.5 19.1 9.7L304 416h144c35.3 0 64-28.7 64-64V64c0-35.3-28.7-64-64-64z" />
-					</svg>
+					{LOCALIZED.CHAT_AVATAR ? (
+						<img
+							className="phoenix-chat-avatar"
+							src={LOCALIZED.CHAT_AVATAR}
+							alt="Phoenix Lead Form Chat Avatar"
+						/>
+					) : (
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							className="e-font-icon-svg e-fas-comment-alt"
+							viewBox="0 0 512 512"
+							width="24"
+							height="24"
+							fill="#fff"
+						>
+							<path d="M448 0H64C28.7 0 0 28.7 0 64v288c0 35.3 28.7 64 64 64h96v84c0 9.8 11.2 15.5 19.1 9.7L304 416h144c35.3 0 64-28.7 64-64V64c0-35.3-28.7-64-64-64z" />
+						</svg>
+					)}
 				</button>
 			)}
 

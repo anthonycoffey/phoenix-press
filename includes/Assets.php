@@ -136,6 +136,7 @@ class Assets {
             'DISCLAIMER_MESSAGE' => get_option('phoenix_disclaimer_message', ''),
             'SUBMISSION_MESSAGE' => get_option('phoenix_submission_message', ''),
             'TURNSTILE_SITE_KEY' => get_option('phoenix_turnstile_site_key', ''),
+            'CHAT_AVATAR' => get_option('phoenix_form_avatar',''),
         ];
 
         wp_localize_script('phoenix-press-main-js', 'LOCALIZED', $localized_data);
