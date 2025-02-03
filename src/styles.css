@@ -31,7 +31,7 @@
   position: fixed;
   padding: 0;
   bottom: 1rem;
-  right: 1rem;
+  right: 2rem;
   width: 70px;
   height: 70px;
   border-radius: 50%;
@@ -75,7 +75,6 @@
 
 @media screen and (max-width: 1024px) {
   #phoenix-show-form-button{
-    right: 2rem;
     bottom: 6rem;
   }
 
