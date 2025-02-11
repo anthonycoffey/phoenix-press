@@ -92,5 +92,14 @@ div#conversation-turnstile-widget {
   #phoenix-show-form-button{
     bottom: 5rem;
   }
+
+  .phoenix-conversational-form__service-select label span {
+    font-size: 0.9rem;
+  }
+
+  .phoenix-conversational-form__consent-switch {
+    font-size: 1rem;
+  }
+
 }
 

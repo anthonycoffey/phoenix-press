@@ -14,6 +14,7 @@ import ServiceSelect from './ServiceSelect';
 import PhoneField from './PhoneField';
 import parse from 'html-react-parser';
 import { GlobalStateContext } from '../state';
+import { Switch } from '@mui/material';
 
 const Answer = ({ question }) => {
 	const { errors, setErrors } = useContext(GlobalStateContext);
@@ -95,6 +96,7 @@ const Answer = ({ question }) => {
 							error={!!errors[input.name]}
 							helperText={errors[input.name]}
 							required={!input.optional}
+							size="small"
 						/>
 					);
 				}
@@ -119,6 +121,7 @@ const Answer = ({ question }) => {
 							required={!input.optional}
 							variant="outlined"
 							margin="normal"
+							size="small"
 						/>
 					);
 				}
@@ -126,16 +129,17 @@ const Answer = ({ question }) => {
 				if (input.type === 'checkbox') {
 					return (
 						<FormControlLabel
-							sx={{ marginBottom: '1rem' }}
 							key={index}
 							control={
-								<Checkbox
+								<Switch
 									checked={input.value}
 									onChange={handleInputChange}
 									name={input.name}
 									required={!input.optional}
 								/>
 							}
+							disableTypography={true}
+							className="phoenix-conversational-form__consent-switch"
 							label={parse(
 								LOCALIZED.SMS_CONTENT_MESSAGE || input.label
 							)}

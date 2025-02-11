@@ -201,8 +201,12 @@ const ConversationalForm = () => {
 						}
 					/>
 
-					<CardContent>
-						<>
+					<CardContent sx={{ paddingBottom: 0 }}>
+						<form
+							aria-label="Booking Form"
+							autoComplete="on"
+							noValidate
+						>
 							{submitted && (
 								<Prompt
 									question={{
@@ -281,7 +285,7 @@ const ConversationalForm = () => {
 									<LinearProgress sx={{ width: '100%' }} />
 								)}
 							</Box>
-						</>
+						</form>
 					</CardContent>
 					<div
 						ref={turnstileRef}

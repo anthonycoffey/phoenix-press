@@ -3,8 +3,9 @@
   "main.js": "auto/main.js",
   "main.php": "auto/main.asset.php",
   "374.js": "auto/374.js",
-  "428.js": "auto/428.js",
-  "65.js": "auto/65.js",
+  "505.js": "auto/505.js",
+  "40.js": "auto/40.js",
   "625.js": "auto/625.js",
-  "625.asset.php": "auto/625.asset.php"
+  "625.asset.php": "auto/625.asset.php",
+  "605.js": "auto/605.js"
 }

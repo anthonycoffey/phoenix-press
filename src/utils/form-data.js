@@ -105,13 +105,6 @@ const options = [
 				value: '',
 				optional: true,
 			},
-			{
-				name: 'car_plate',
-				type: 'text',
-				label: 'License Plate',
-				value: '',
-				optional: true,
-			},
 		],
 	},
 	{

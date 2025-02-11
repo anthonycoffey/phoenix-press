@@ -63,16 +63,17 @@ export default function ServiceSelect({ input }) {
 			<FormLabel component="legend">Select desired service(s)</FormLabel>
 			<FormGroup>
 				<Box
+					className="phoenix-conversational-form__service-select"
 					sx={{
 						display: 'grid',
-						gridTemplateColumns: 'repeat(3, 1fr)',
+						gridTemplateColumns: 'repeat(2, 1fr)',
 						gap: 0,
 						padding: 0,
 					}}
 				>
 					{services.map((service) => (
 						<FormControlLabel
-							sx={{ margin: 0, padding: 0 }}
+							sx={{ margin: 0, padding: 0, lineHeight: 1 }}
 							control={
 								<Checkbox
 									value={service.value}

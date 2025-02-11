@@ -146,11 +146,7 @@ export default function EmbedForm() {
 						subheader={LOCALIZED.FORM_SUBTITLE}
 					/>
 				)}
-				<form
-					aria-label="Form Description"
-					autoComplete="on"
-					noValidate
-				>
+				<form aria-label="Booking Form" autoComplete="on" noValidate>
 					<CardContent>
 						<Stack space={4}>
 							{questions?.map((question, index) => (

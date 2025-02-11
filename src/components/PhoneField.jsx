@@ -50,6 +50,7 @@ export default function PhoneField({ input, onChange }) {
 			required={!input.optional}
 			error={!!errors[input.name]}
 			helperText={errors[input.name]}
+			size="small"
 		/>
 	);
 }
