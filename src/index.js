@@ -2,6 +2,7 @@ import { lazy, Suspense, createRoot } from '@wordpress/element';
 import SkeletonForm from './components/EmbedForm/SkeletonForm';
 import { GlobalStateProvider } from './state';
 import LinearProgress from '@mui/material/LinearProgress';
+import './styles.css';
 
 const EmbedForm = lazy(() => import('./components/EmbedForm'));
 const ConversationalForm = lazy(

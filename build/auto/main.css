@@ -64,7 +64,8 @@ div#conversation-turnstile-widget {
   height: 100%;
   overflow: hidden;
   border-radius: 50%;
-  object-fit: contain;
+  -o-object-fit: contain;
+     object-fit: contain;
 }
 
 #phoenix-form-root {
@@ -93,4 +94,5 @@ div#conversation-turnstile-widget {
     bottom: 5rem;
   }
 }
+
 

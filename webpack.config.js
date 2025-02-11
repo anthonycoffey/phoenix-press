@@ -13,8 +13,8 @@ module.exports = merge(defaultConfig, {
 	entry: ['./src/index.js'],
 	output: {
 		path: path.resolve(__dirname, 'build/auto'),
-		filename: '[name].[contenthash].js',
-		chunkFilename: '[name].[contenthash].js',
+		filename: '[name].js',
+		chunkFilename: '[name].js',
 	},
 	optimization: {
 		usedExports: true,

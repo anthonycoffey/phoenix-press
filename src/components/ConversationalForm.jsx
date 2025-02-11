@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from '@wordpress/element';
+import { useContext, useEffect, useRef, useState } from '@wordpress/element';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -11,24 +11,22 @@ import Answer from './Answer';
 import Disclaimer from './Disclaimer';
 import CancelIcon from './CancelIcon';
 import { GlobalStateContext } from '../state';
-import '../styles.css';
 
 const ConversationalForm = () => {
 	const {
 		questions,
 		currentQuestionIndex,
 		setCurrentQuestionIndex,
-		loading,
-		setLoading,
 		submitted,
 		setSubmitted,
+		loading,
+		setLoading,
 		isFormVisible,
 		setIsFormVisible,
 		errors,
 	} = useContext(GlobalStateContext);
-
+	const turnstileRef = useRef(null);
 	const currentQuestion = questions[currentQuestionIndex];
-
 	const [invalid, setInvalid] = useState(true);
 	const [formSubmissionId, setFormSubmissionId] = useState(null);
 	const [turnstileToken, setTurnstileToken] = useState(null);
@@ -45,20 +43,23 @@ const ConversationalForm = () => {
 	}, [errors]);
 
 	useEffect(() => {
-		if (isFormVisible && window.turnstile) {
-			const id = window.turnstile.render(
-				'#conversation-turnstile-widget',
-				{
-					sitekey: LOCALIZED.TURNSTILE_SITE_KEY,
-					callback: (token) => {
-						setTurnstileToken(token);
-					},
-					'expired-callback': () => {
-						window.turnstile.reset(id);
-					},
-				}
-			);
+		let id;
+		if (isFormVisible && window?.turnstile && turnstileRef.current) {
+			id = window.turnstile.render(turnstileRef.current, {
+				sitekey: LOCALIZED.TURNSTILE_SITE_KEY,
+				callback: (token) => {
+					setTurnstileToken(token);
+				},
+				'expired-callback': () => {
+					window.turnstile.reset(id);
+				},
+			});
 		}
+		return () => {
+			if (id) {
+				window.turnstile.remove(id);
+			}
+		};
 	}, [isFormVisible]);
 
 	const toggleFormVisibility = () => {
@@ -124,6 +125,7 @@ const ConversationalForm = () => {
 	const completeSubmission = async (submission, source) => {
 		try {
 			setLoading(true);
+			setSubmitted(true);
 			if (!formSubmissionId) return false;
 
 			await fetch(
@@ -137,20 +139,19 @@ const ConversationalForm = () => {
 					body: JSON.stringify({
 						submission,
 						completed: true,
-						submitted: true,
 						source,
 					}),
 				}
 			);
-			setSubmitted(true);
-		} catch (error) {
-			console.error('There was an error', error);
-		} finally {
-			setLoading(false);
+
 			const name =
 				questions.find((q) => q.name === 'full_name')?.inputs[0]
 					?.value || '';
-			window.location.href = `/book-success?full_name=${encodeURIComponent(name)}`;
+			window.location.assign(
+				`/book-success?full_name=${encodeURIComponent(name)}`
+			);
+		} catch (error) {
+			console.error('There was an error', error);
 		}
 	};
 
@@ -189,6 +190,7 @@ const ConversationalForm = () => {
 			{isFormVisible && (
 				<Card className="phoenix-form">
 					<CardHeader
+						id="phoenix-chat-form-header"
 						action={
 							<Button
 								onClick={toggleFormVisibility}
@@ -199,22 +201,17 @@ const ConversationalForm = () => {
 						}
 					/>
 
-					<>
-						{submitted && (
-							<CardContent>
-								<Stack space={2}>
-									<Prompt
-										question={{
-											prompt: LOCALIZED.SUBMISSION_MESSAGE,
-										}}
-									/>
-								</Stack>
-							</CardContent>
-						)}
-
-						{!submitted && (
-							<>
-								<CardContent>
+					<CardContent>
+						<>
+							{submitted && (
+								<Prompt
+									question={{
+										prompt: 'Saving your submission, please wait...',
+									}}
+								/>
+							)}
+							{!submitted && (
+								<>
 									<Stack space={2}>
 										<Prompt question={currentQuestion} />
 										<Answer question={currentQuestion} />
@@ -254,8 +251,9 @@ const ConversationalForm = () => {
 												onClick={() => {
 													handleSubmit();
 												}}
-												disabled={
-													invalid || !turnstileToken
+												disabled={invalid}
+												loading={
+													loading || !turnstileToken
 												}
 											>
 												{currentQuestionIndex + 1 ===
@@ -266,39 +264,29 @@ const ConversationalForm = () => {
 										</Stack>
 									)}
 									<Disclaimer index={currentQuestionIndex} />
-									<Box
-										spacing={2}
-										className={'phoenix-no-select'}
-										sx={{
-											width: '100%',
-											display: 'flex',
-											my: '1rem',
-											justifyContent: 'center',
-											alignItems: 'center',
-											minHeight: '1rem',
-										}}
-									>
-										{(loading || !turnstileToken) && (
-											<LinearProgress
-												sx={{ width: '100%' }}
-											/>
-										)}
-									</Box>
-								</CardContent>
-							</>
-						)}
-					</>
-
+								</>
+							)}
+							<Box
+								spacing={2}
+								className={'phoenix-no-select'}
+								sx={{
+									width: '100%',
+									display: 'flex',
+									justifyContent: 'center',
+									alignItems: 'center',
+									minHeight: '10px',
+								}}
+							>
+								{(loading || !turnstileToken) && (
+									<LinearProgress sx={{ width: '100%' }} />
+								)}
+							</Box>
+						</>
+					</CardContent>
 					<div
+						ref={turnstileRef}
 						id="conversation-turnstile-widget"
 						className="cf-turnstile"
-						style={{
-							display: 'flex',
-							justifyContent: 'center',
-							margin: '1rem 0',
-							padding: '1rem',
-						}}
-						data-sitekey={LOCALIZED.TURNSTILE_SITE_KEY}
 					></div>
 				</Card>
 			)}

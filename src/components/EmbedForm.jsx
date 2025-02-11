@@ -1,4 +1,4 @@
-import { useEffect, useState, Suspense } from '@wordpress/element';
+import { useEffect, useState, useRef } from '@wordpress/element';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -8,12 +8,10 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import LinearProgress from '@mui/material/LinearProgress';
 import CardHeader from '@mui/material/CardHeader';
-import Prompt from './Prompt';
 import InputField from './InputField';
 import Disclaimer from './Disclaimer';
 import questionData from '../utils/embed-form-data.js';
 import { requiredFields, isSubmissionComplete } from '../utils/validation';
-import '../styles.css';
 
 export default function EmbedForm() {
 	const [questions] = useState(questionData || false);
@@ -24,11 +22,12 @@ export default function EmbedForm() {
 	const [selectedDate, setSelectedDate] = useState(new Date());
 	const [checked, setChecked] = useState(false);
 	const [turnstileToken, setTurnstileToken] = useState(null);
+	const turnstileRef = useRef(null);
 
 	useEffect(() => {
 		let id;
-		if (window.turnstile) {
-			id = window.turnstile.render('#turnstile-widget', {
+		if (window?.turnstile && turnstileRef.current) {
+			id = window.turnstile.render(turnstileRef.current, {
 				sitekey: LOCALIZED.TURNSTILE_SITE_KEY,
 				callback: (token) => {
 					setTurnstileToken(token);
@@ -45,17 +44,8 @@ export default function EmbedForm() {
 		};
 	}, []);
 
-	useEffect(() => {
-		if (submitted) {
-			const name =
-				questions.find((q) => q.name === 'full_name')?.inputs[0]
-					?.value || '';
-			window.location.href = `/book-success?full_name=${encodeURIComponent(name)}`;
-		}
-	}, [submitted]);
-
-	const handleSubmit = async () => {
-		if ((!turnstileToken && !validPhoneNumber) || loading) return false;
+	const handleSubmit = async (submit = false) => {
+		if (!turnstileToken || !validPhoneNumber || loading) return false;
 		try {
 			setLoading(true);
 			const submission = questions.flatMap((question) =>
@@ -86,7 +76,6 @@ export default function EmbedForm() {
 							submission,
 							source,
 							completed,
-							submitted,
 						}),
 					}
 				);
@@ -100,7 +89,6 @@ export default function EmbedForm() {
 							submission,
 							source,
 							completed,
-							submitted,
 						}),
 					}
 				);
@@ -109,6 +97,16 @@ export default function EmbedForm() {
 				if (result?.id) {
 					setFormSubmissionId(result?.id);
 				}
+			}
+
+			console.log('submit', { submit });
+			if (submit) {
+				const name =
+					questions.find((q) => q.name === 'full_name')?.inputs[0]
+						?.value || '';
+				window.location.assign(
+					`/book-success?full_name=${encodeURIComponent(name)}`
+				);
 			}
 		} catch (error) {
 			console.error('There was an error', error);
@@ -141,93 +139,44 @@ export default function EmbedForm() {
 
 	return (
 		<section>
-			<Suspense fallback={<LinearProgress />}>
-				<Card className="phoenix-form">
-					{LOCALIZED.FORM_TITLE && (
-						<CardHeader
-							title={LOCALIZED.FORM_TITLE}
-							subheader={LOCALIZED.FORM_SUBTITLE}
-						/>
-					)}
-					{submitted ? (
-						<CardContent>
-							<Stack space={2}>
-								<Prompt
-									question={{
-										prompt: LOCALIZED.SUBMISSION_MESSAGE,
-									}}
-								/>
-							</Stack>
-						</CardContent>
-					) : (
-						<form
-							aria-label="Form Description"
-							autoComplete="on"
-							noValidate
-						>
-							<CardContent>
-								<Stack space={4}>
-									{questions?.map((question, index) => (
-										<React.Fragment key={index}>
-											{question.type === 'row' ? (
-												<>
-													<Typography
-														variant="subtitle1"
-														sx={{ mt: '1rem' }}
-														color="textSecondary"
-													>
-														{question.title}
-														<Typography
-															variant="subtitle2"
-															color="textSecondary"
-														>
-															{question.label}
-														</Typography>
-													</Typography>
-													<Box
-														display="flex"
-														flexDirection="row"
-														sx={{ width: '100%' }}
-														gap={2}
-													>
-														{question.inputs.map(
-															(input, index) => (
-																<InputField
-																	key={index}
-																	input={
-																		input
-																	}
-																	handleTextChange={
-																		handleTextChange
-																	}
-																	handleDateChange={
-																		handleDateChange
-																	}
-																	handleConsentChange={
-																		handleConsentChange
-																	}
-																	selectedDate={
-																		selectedDate
-																	}
-																	setValidPhoneNumber={
-																		setValidPhoneNumber
-																	}
-																	checked={
-																		checked
-																	}
-																	setChecked={
-																		setChecked
-																	}
-																	handleBlur={
-																		handleBlur
-																	}
-																/>
-															)
-														)}
-													</Box>
-												</>
-											) : (
-												question.inputs.map(
+			<Card className="phoenix-form">
+				{LOCALIZED.FORM_TITLE && (
+					<CardHeader
+						title={LOCALIZED.FORM_TITLE}
+						subheader={LOCALIZED.FORM_SUBTITLE}
+					/>
+				)}
+				<form
+					aria-label="Form Description"
+					autoComplete="on"
+					noValidate
+				>
+					<CardContent>
+						<Stack space={4}>
+							{questions?.map((question, index) => (
+								<React.Fragment key={index}>
+									{question.type === 'row' ? (
+										<>
+											<Typography
+												variant="subtitle1"
+												sx={{ mt: '1rem' }}
+												color="textSecondary"
+											>
+												{question.title}
+												<Typography
+													variant="subtitle2"
+													color="textSecondary"
+												>
+													{question.label}
+												</Typography>
+											</Typography>
+											<Box
+												display="flex"
+												flexDirection="row"
+												sx={{ width: '100%' }}
+												gap={2}
+											>
+												{question.inputs.map(
 													(input, index) => (
 														<InputField
 															key={index}
@@ -256,48 +205,64 @@ export default function EmbedForm() {
 															}
 														/>
 													)
-												)
-											)}
-										</React.Fragment>
-									))}
-								</Stack>
-								<Box>
-									<Disclaimer index={0} />
-								</Box>
-							</CardContent>
+												)}
+											</Box>
+										</>
+									) : (
+										question.inputs.map((input, index) => (
+											<InputField
+												key={index}
+												input={input}
+												handleTextChange={
+													handleTextChange
+												}
+												handleDateChange={
+													handleDateChange
+												}
+												handleConsentChange={
+													handleConsentChange
+												}
+												selectedDate={selectedDate}
+												setValidPhoneNumber={
+													setValidPhoneNumber
+												}
+												checked={checked}
+												setChecked={setChecked}
+												handleBlur={handleBlur}
+											/>
+										))
+									)}
+								</React.Fragment>
+							))}
+						</Stack>
+						<Box>
+							<Disclaimer index={0} />
+						</Box>
+					</CardContent>
 
-							<CardActions sx={{ justifyContent: 'end' }}>
-								<Button
-									size={'large'}
-									variant="contained"
-									color="primary"
-									onClick={() => {
-										setSubmitted(true);
-										handleSubmit();
-									}}
-									disabled={
-										!validPhoneNumber || !turnstileToken
-									}
-								>
-									Submit
-								</Button>
-							</CardActions>
-							{loading || (!turnstileToken && <LinearProgress />)}
-							<div
-								id="turnstile-widget"
-								className="cf-turnstile"
-								style={{
-									display: 'flex',
-									justifyContent: 'center',
-									margin: '1rem 0',
-									padding: '1rem',
-								}}
-								data-sitekey={LOCALIZED.TURNSTILE_SITE_KEY}
-							></div>
-						</form>
-					)}
-				</Card>
-			</Suspense>
+					<CardActions sx={{ justifyContent: 'end' }}>
+						<Button
+							size={'large'}
+							variant="contained"
+							color="primary"
+							onClick={() => {
+								setSubmitted(true);
+								handleSubmit(true);
+							}}
+							loading={loading || submitted}
+							disabled={!validPhoneNumber || !turnstileToken}
+						>
+							Submit
+						</Button>
+					</CardActions>
+					{loading || (!turnstileToken && <LinearProgress />)}
+					<div
+						ref={turnstileRef}
+						id="turnstile-widget"
+						className="cf-turnstile"
+					></div>
+				</form>
+			</Card>
 		</section>
 	);
 }

@@ -1,4 +1,4 @@
-import React, { createContext, useState } from '@wordpress/element';
+import { createContext, useState } from '@wordpress/element';
 export const GlobalStateContext = createContext();
 
 import questionData from './utils/form-data';

@@ -1,6 +1,6 @@
 {
 	"name": "phoenix-press",
-	"version": "1.2.5",
+	"version": "1.2.6",
 	"description": "WordPress Plugin for Phoenix Platform",
 	"author": "Anthony Coffey",
 	"license": "MIT",
@@ -9,7 +9,8 @@
 		"start": "wp-scripts start --config ./webpack.config.js",
 		"format": "wp-scripts format && npm run clean:react",
 		"release": "wp-scripts plugin-zip",
-		"clean:react": "rimraf ./build"
+		"clean:react": "rimraf ./build",
+		"reset": "rimraf node_modules package-lock.json vendor composer.lock"
 	},
 	"entry": {
 		"index": "./src/index.js"
@@ -21,42 +22,40 @@
 		"not ie 11"
 	],
 	"devDependencies": {
+		"@wordpress/scripts": "^30.10.0",
 		"@babel/core": "^7.25.2",
 		"@babel/preset-env": "^7.25.4",
 		"@babel/preset-react": "^7.24.7",
-		"@wordpress/scripts": "^27.6.0",
-		"ajv": "^8.17.1",
-		"ajv-keywords": "^5.1.0",
+		"autoprefixer": "^10.4.20",
+		"babel-plugin-import": "^1.13.8",
 		"babel-loader": "^9.2.1",
 		"clean-webpack-plugin": "^4.0.0",
-		"compression-webpack-plugin": "^11.1.0",
 		"css-loader": "^7.1.2",
 		"prettier": "^3.3.3",
-		"sass": "^1.79.4",
-		"sass-loader": "^16.0.2",
 		"style-loader": "^4.0.0",
+		"mini-css-extract-plugin": "^2.9.2",
 		"webpack": "^5.95.0",
 		"webpack-bundle-analyzer": "^4.10.2",
 		"webpack-cli": "^5.1.4",
 		"webpack-dev-server": "^5.1.0",
 		"webpack-manifest-plugin": "^5.0.0",
 		"webpack-merge": "^6.0.1",
-		"webpack-nano": "^1.1.1"
+		"terser-webpack-plugin": "^5.3.11",
+		"compression-webpack-plugin": "^11.1.0"
 	},
 	"dependencies": {
-		"@date-io/date-fns": "^3.0.0",
-		"@emotion/react": "^11.13.3",
-		"@emotion/styled": "^11.13.0",
-		"@mui/icons-material": "^5.16.7",
-		"@mui/material": "^5.16.7",
-		"@mui/x-date-pickers": "^7.19.0",
-		"@react-google-maps/api": "^2.19.3",
-		"@wordpress/element": "^6.16.0",
+		"@date-io/date-fns": "^3.2.0",
+		"@emotion/react": "^11.14.0",
+		"@emotion/styled": "^11.14.0",
+		"@mui/icons-material": "^6.4.3",
+		"@mui/material": "^6.4.3",
+		"@mui/x-date-pickers": "^7.26.0",
+		"@react-google-maps/api": "^2.20.5",
+		"@wordpress/element": "^6.17.0",
 		"axios": "^1.7.7",
-		"date-fns": "^3.6.0",
+		"date-fns": "3.2.0",
 		"html-react-parser": "^5.2.2",
 		"react": "^18.3.1",
-		"react-dom": "^18.3.1",
-		"terser-webpack-plugin": "^5.3.11"
+		"react-dom": "^18.3.1"
 	}
 }

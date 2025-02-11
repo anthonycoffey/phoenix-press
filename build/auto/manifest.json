@@ -1,11 +1,10 @@
 {
-  "main.js": "auto/main.5f88c8ab2335375e3413.js",
-  "main.php": "auto/main.5f88c8ab2335375e3413.asset.php",
-  "483.css": "auto/483.css",
-  "483.js": "auto/483.de9ff52fea37f14b4b4c.js",
-  "937.css": "auto/937.css",
-  "937.js": "auto/937.5084551442120a8ca063.js",
-  "303.js": "auto/303.e01ae16c29f20d26f5ce.js",
-  "264.js": "auto/264.404c983d8c051dfa6f0c.js",
-  "264.asset.php": "auto/264.404c983d8c051dfa6f0c.asset.php"
+  "main.css": "auto/main.css",
+  "main.js": "auto/main.js",
+  "main.php": "auto/main.asset.php",
+  "374.js": "auto/374.js",
+  "428.js": "auto/428.js",
+  "65.js": "auto/65.js",
+  "625.js": "auto/625.js",
+  "625.asset.php": "auto/625.asset.php"
 }

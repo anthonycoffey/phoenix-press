@@ -17,8 +17,8 @@ div#conversation-turnstile-widget {
   content: 'Get Help Now!';
   position: absolute;
   bottom: 100%;
-  right: 50%;
-  transform: translateX(50%);
+  left: 50%;
+  transform: translateX(-50%);
   background-color: #fff;
   color: #1c1c1c;
   padding: 0.5rem;
@@ -33,11 +33,11 @@ div#conversation-turnstile-widget {
   content: '';
   position: absolute;
   bottom: calc(100% - 0.25rem);
-  left: 50%;
+  right: 50%;
   top: -8px;
-  transform: translateX(-50%);
-  border-left: 0.25rem solid transparent;
+  transform: translateX(50%);
   border-right: 0.25rem solid transparent;
+  border-left: 0.25rem solid transparent;
   border-top: 0.25rem solid #fff;
   z-index: 11;
 }
@@ -46,7 +46,7 @@ div#conversation-turnstile-widget {
   position: fixed;
   padding: 0;
   bottom: 1rem;
-  right: 2rem;
+  left: 2rem;
   width: 70px;
   height: 70px;
   border-radius: 50%;
@@ -64,19 +64,20 @@ div#conversation-turnstile-widget {
   height: 100%;
   overflow: hidden;
   border-radius: 50%;
-  object-fit: contain;
+  -o-object-fit: contain;
+     object-fit: contain;
 }
 
 #phoenix-form-root {
   position: fixed;
   bottom: 10px!important;
-  margin-left: 10px;
-  right: 0.5em !important;
+  margin-right: 10px;
+  left: 0.5em !important;
   z-index: 9999 !important;
 }
 
 .phoenix-form-embed-root {
-  right: auto;
+  left: auto;
   bottom: auto;
   position: relative;
 }
@@ -93,4 +94,5 @@ div#conversation-turnstile-widget {
     bottom: 5rem;
   }
 }
+
 

@@ -53,7 +53,7 @@ class Assets {
     }
 
     private static function enqueue_webpack_assets() {
-        $main_js = self::find_asset_by_prefix('main');
+        $main_js = self::find_asset_by_prefix('main.js');
         if ($main_js) {
             $asset_file = self::$plugin_dir . '/build/' . str_replace('.js', '.asset.php', $main_js);
             if (file_exists($asset_file)) {
@@ -82,10 +82,10 @@ class Assets {
                 }
             }
 
-            if (preg_match('/^(\d+)\.css$/', $file, $matches)) {
+            if (preg_match('/main.css$/', $file, $matches)) {
                 $css_path = self::$plugin_dir . '/build/' . $path;
                 if (file_exists($css_path)) {
-                    $handle = "phoenix-press-chunk-{$matches[1]}-css";
+                    $handle = "phoenix-press-css";
                     wp_enqueue_style(
                         $handle,
                         self::$build_url . '/' . $path,

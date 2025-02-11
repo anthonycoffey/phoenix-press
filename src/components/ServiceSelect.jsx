@@ -65,14 +65,14 @@ export default function ServiceSelect({ input }) {
 				<Box
 					sx={{
 						display: 'grid',
-						gridTemplateColumns: 'repeat(2, 1fr)',
-						gap: 1,
+						gridTemplateColumns: 'repeat(3, 1fr)',
+						gap: 0,
 						padding: 0,
 					}}
 				>
 					{services.map((service) => (
 						<FormControlLabel
-							sx={{ margin: 0 }}
+							sx={{ margin: 0, padding: 0 }}
 							control={
 								<Checkbox
 									value={service.value}
