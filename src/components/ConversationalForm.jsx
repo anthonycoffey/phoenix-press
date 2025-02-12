@@ -139,6 +139,7 @@ const ConversationalForm = () => {
 					body: JSON.stringify({
 						submission,
 						completed: true,
+						submitted: true,
 						source,
 					}),
 				}
