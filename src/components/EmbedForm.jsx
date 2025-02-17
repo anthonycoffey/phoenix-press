@@ -55,7 +55,7 @@ export default function EmbedForm() {
 		if (!turnstileToken || !validPhoneNumber) {
 			setSubmitted(false);
 			setStatusMessage('');
-			setError('Please complete the form before submitting.');
+			setError('Please provide valid phone number.');
 			return false;
 		}
 
