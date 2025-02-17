@@ -3,7 +3,7 @@
         'name' => 'phoenix/press',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '78f322f742113770070b92ef4904166a347c0f93',
+        'reference' => '7bb91f8c8c77c4b0e3206aff9c585f9f8c6de1fa',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'phoenix/press' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '78f322f742113770070b92ef4904166a347c0f93',
+            'reference' => '7bb91f8c8c77c4b0e3206aff9c585f9f8c6de1fa',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

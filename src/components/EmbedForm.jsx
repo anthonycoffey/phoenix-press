@@ -1,27 +1,34 @@
-import { useEffect, useState, useRef } from '@wordpress/element';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import CardActions from '@mui/material/CardActions';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import LinearProgress from '@mui/material/LinearProgress';
-import CardHeader from '@mui/material/CardHeader';
+import React, { useEffect, useState, useRef } from 'react';
+import {
+	Box,
+	Button,
+	Card,
+	CardContent,
+	CardActions,
+	Stack,
+	Typography,
+	LinearProgress,
+	CardHeader,
+	Alert,
+} from '@mui/material';
 import InputField from './InputField';
 import Disclaimer from './Disclaimer';
 import questionData from '../utils/embed-form-data.js';
 import { requiredFields, isSubmissionComplete } from '../utils/validation';
 
 export default function EmbedForm() {
-	const [questions] = useState(questionData || false);
-	const [validPhoneNumber, setValidPhoneNumber] = useState(false);
-	const [loading, setLoading] = useState(false);
-	const [submitted, setSubmitted] = useState(false);
-	const [formSubmissionId, setFormSubmissionId] = useState(null);
-	const [selectedDate, setSelectedDate] = useState(new Date());
-	const [checked, setChecked] = useState(false);
-	const [turnstileToken, setTurnstileToken] = useState(null);
+	const [formState, setFormState] = useState({
+		questions: questionData || [],
+		validPhoneNumber: false,
+		loading: false,
+		submitted: false,
+		formSubmissionId: null,
+		selectedDate: new Date(),
+		checked: false,
+		turnstileToken: null,
+		error: '',
+	});
+
 	const turnstileRef = useRef(null);
 
 	useEffect(() => {
@@ -30,7 +37,10 @@ export default function EmbedForm() {
 			id = window.turnstile.render(turnstileRef.current, {
 				sitekey: LOCALIZED.TURNSTILE_SITE_KEY,
 				callback: (token) => {
-					setTurnstileToken(token);
+					setFormState((prevState) => ({
+						...prevState,
+						turnstileToken: token,
+					}));
 				},
 				'expired-callback': () => {
 					window.turnstile.reset(id);
@@ -45,10 +55,20 @@ export default function EmbedForm() {
 	}, []);
 
 	const handleSubmit = async (submit = false) => {
-		if (!turnstileToken || !validPhoneNumber || loading) return false;
+		if (!formState.validPhoneNumber) {
+			setFormState((prevState) => ({
+				...prevState,
+				error: 'Phone number is required.',
+				submitted: submit ? false : prevState.submitted,
+			}));
+			return false;
+		}
+		if (submit) {
+			setFormState((prevState) => ({ ...prevState, submitted: true }));
+		}
 		try {
-			setLoading(true);
-			const submission = questions.flatMap((question) =>
+			setFormState((prevState) => ({ ...prevState, loading: true }));
+			const submission = formState.questions.flatMap((question) =>
 				question.inputs.map((input) => {
 					const { name, value, obj } = input;
 					return obj ? { name, value, obj } : { name, value };
@@ -57,7 +77,7 @@ export default function EmbedForm() {
 
 			const headers = {
 				'Content-Type': 'application/json',
-				'X-Turnstile-Token': turnstileToken,
+				'X-Turnstile-Token': formState.turnstileToken,
 			};
 
 			const source =
@@ -66,9 +86,9 @@ export default function EmbedForm() {
 
 			const completed = isSubmissionComplete(submission, requiredFields);
 
-			if (formSubmissionId) {
+			if (formState.formSubmissionId) {
 				await fetch(
-					`${LOCALIZED.API_URL}/submit-lead-form/${formSubmissionId}`,
+					`${LOCALIZED.API_URL}/submit-lead-form/${formState.formSubmissionId}`,
 					{
 						method: 'PUT',
 						headers,
@@ -97,15 +117,17 @@ export default function EmbedForm() {
 
 				const result = await response.json();
 				if (result?.id) {
-					setFormSubmissionId(result?.id);
+					setFormState((prevState) => ({
+						...prevState,
+						formSubmissionId: result.id,
+					}));
 				}
 			}
 
-			console.log('submit', { submit });
 			if (submit) {
 				const name =
-					questions.find((q) => q.name === 'full_name')?.inputs[0]
-						?.value || '';
+					formState.questions.find((q) => q.name === 'full_name')
+						?.inputs[0]?.value || '';
 				window.location.assign(
 					`/book-success?full_name=${encodeURIComponent(name)}`
 				);
@@ -113,7 +135,7 @@ export default function EmbedForm() {
 		} catch (error) {
 			console.error('There was an error', error);
 		} finally {
-			setLoading(false);
+			setFormState((prevState) => ({ ...prevState, loading: false }));
 		}
 	};
 
@@ -123,11 +145,15 @@ export default function EmbedForm() {
 
 	const handleDateChange = ({ input, event }) => {
 		input.value = event;
-		setSelectedDate(event);
+		setFormState((prevState) => ({ ...prevState, selectedDate: event }));
 	};
 
 	const handleBlur = () => {
-		if (validPhoneNumber && turnstileToken) {
+		if (
+			formState.validPhoneNumber &&
+			formState.turnstileToken &&
+			!formState.loading
+		) {
 			void handleSubmit();
 		}
 	};
@@ -135,7 +161,7 @@ export default function EmbedForm() {
 	const handleConsentChange = ({ input, event }) => {
 		const { checked } = event?.target;
 		input.value = checked;
-		setChecked(checked);
+		setFormState((prevState) => ({ ...prevState, checked }));
 		handleBlur();
 	};
 
@@ -151,7 +177,7 @@ export default function EmbedForm() {
 				<form aria-label="Booking Form" autoComplete="on" noValidate>
 					<CardContent>
 						<Stack space={4}>
-							{questions?.map((question, index) => (
+							{formState.questions?.map((question, index) => (
 								<React.Fragment key={index}>
 									{question.type === 'row' ? (
 										<>
@@ -189,14 +215,35 @@ export default function EmbedForm() {
 																handleConsentChange
 															}
 															selectedDate={
-																selectedDate
+																formState.selectedDate
 															}
-															setValidPhoneNumber={
-																setValidPhoneNumber
+															setValidPhoneNumber={(
+																valid
+															) =>
+																setFormState(
+																	(
+																		prevState
+																	) => ({
+																		...prevState,
+																		validPhoneNumber:
+																			valid,
+																	})
+																)
 															}
-															checked={checked}
-															setChecked={
-																setChecked
+															checked={
+																formState.checked
+															}
+															setChecked={(
+																checked
+															) =>
+																setFormState(
+																	(
+																		prevState
+																	) => ({
+																		...prevState,
+																		checked,
+																	})
+																)
 															}
 															handleBlur={
 																handleBlur
@@ -220,12 +267,27 @@ export default function EmbedForm() {
 												handleConsentChange={
 													handleConsentChange
 												}
-												selectedDate={selectedDate}
-												setValidPhoneNumber={
-													setValidPhoneNumber
+												selectedDate={
+													formState.selectedDate
 												}
-												checked={checked}
-												setChecked={setChecked}
+												setValidPhoneNumber={(valid) =>
+													setFormState(
+														(prevState) => ({
+															...prevState,
+															validPhoneNumber:
+																valid,
+														})
+													)
+												}
+												checked={formState.checked}
+												setChecked={(checked) =>
+													setFormState(
+														(prevState) => ({
+															...prevState,
+															checked,
+														})
+													)
+												}
 												handleBlur={handleBlur}
 											/>
 										))
@@ -236,24 +298,38 @@ export default function EmbedForm() {
 						<Box>
 							<Disclaimer index={0} />
 						</Box>
+						{formState.error && (
+							<Box sx={{ mt: 2 }}>
+								<Alert severity="warning">
+									{formState.error}
+								</Alert>
+							</Box>
+						)}
 					</CardContent>
 
 					<CardActions sx={{ justifyContent: 'end' }}>
+						<Box>
+							{formState.loading && !formState.submitted && (
+								<Typography>Autosaving...</Typography>
+							)}
+							{formState.loading && formState.submitted && (
+								<Typography>Submitting...</Typography>
+							)}
+						</Box>
 						<Button
 							size={'large'}
 							variant="contained"
 							color="primary"
 							onClick={() => {
-								setSubmitted(true);
-								handleSubmit(true);
+								void handleSubmit(true);
 							}}
-							loading={loading || submitted}
-							disabled={!validPhoneNumber || !turnstileToken}
+							loading={formState.submitted}
 						>
 							Submit
 						</Button>
 					</CardActions>
-					{loading || (!turnstileToken && <LinearProgress />)}
+					{formState.loading ||
+						(!formState.turnstileToken && <LinearProgress />)}
 					<div
 						ref={turnstileRef}
 						id="turnstile-widget"
