@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from '@wordpress/element';
+import { useEffect, useState, useRef, useCallback } from '@wordpress/element';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -26,6 +26,7 @@ export default function EmbedForm() {
 	const [statusMessage, setStatusMessage] = useState('');
 	const [error, setError] = useState('');
 	const turnstileRef = useRef(null);
+	const blurTimeoutRef = useRef(null);
 
 	useEffect(() => {
 		let id;
@@ -50,94 +51,97 @@ export default function EmbedForm() {
 		};
 	}, []);
 
-	const handleSubmit = async (submit = false) => {
-		if (loading) return;
-		if (!turnstileToken || !validPhoneNumber) {
-			setSubmitted(false);
-			setStatusMessage('');
-			setError('Please provide valid phone number.');
-			return false;
-		}
-
-		try {
-			setError('');
-			setLoading(true);
-
-			if (!submit) setStatusMessage('Autosaving form data...');
-
-			const submission = questions.flatMap((question) =>
-				question.inputs.map((input) => {
-					const { name, value, obj } = input;
-					return obj ? { name, value, obj } : { name, value };
-				})
-			);
-
-			const headers = {
-				'Content-Type': 'application/json',
-				'X-Turnstile-Token': turnstileToken,
-			};
-
-			const source =
-				window.location.origin.replace(/^https?:\/\//, '') +
-				window.location.pathname.replace(/\/$/, '');
-
-			const completed = isSubmissionComplete(submission, requiredFields);
-
-			if (formSubmissionId) {
-				await fetch(
-					`${LOCALIZED.API_URL}/submit-lead-form/${formSubmissionId}`,
-					{
-						method: 'PUT',
-						headers,
-						body: JSON.stringify({
-							submission,
-							source,
-							completed,
-							submitted: submit,
-						}),
-					}
-				);
-			} else {
-				const response = await fetch(
-					`${LOCALIZED.API_URL}/submit-lead-form`,
-					{
-						method: 'POST',
-						headers,
-						body: JSON.stringify({
-							submission,
-							source,
-							completed,
-							submitted: submit,
-						}),
-					}
-				);
-
-				const result = await response.json();
-				if (result?.id) {
-					setFormSubmissionId(result?.id);
-				}
-			}
-
-			console.log('submit', { submit });
-			if (submit) {
-				const name =
-					questions.find((q) => q.name === 'full_name')?.inputs[0]
-						?.value || '';
-				window.location.assign(
-					`/book-success?full_name=${encodeURIComponent(name)}`
-				);
-			} else {
+	const handleSubmit = useCallback(
+		async (submit = false) => {
+			if (loading) return;
+			if (!turnstileToken || !validPhoneNumber) {
+				setSubmitted(false);
 				setStatusMessage('');
+				setError('Please provide valid phone number.');
+				return false;
 			}
-		} catch (error) {
-			console.error('There was an error', error);
-			setError(
-				'There was an error submitting the form. Please try again.'
-			);
-		} finally {
-			setLoading(false);
-		}
-	};
+
+			try {
+				setError('');
+				setLoading(true);
+
+				const submission = questions.flatMap((question) =>
+					question.inputs.map((input) => {
+						const { name, value, obj } = input;
+						return obj ? { name, value, obj } : { name, value };
+					})
+				);
+
+				const headers = {
+					'Content-Type': 'application/json',
+					'X-Turnstile-Token': turnstileToken,
+				};
+
+				const source =
+					window.location.origin.replace(/^https?:\/\//, '') +
+					window.location.pathname.replace(/\/$/, '');
+
+				const completed = isSubmissionComplete(
+					submission,
+					requiredFields
+				);
+
+				if (formSubmissionId) {
+					await fetch(
+						`${LOCALIZED.API_URL}/submit-lead-form/${formSubmissionId}`,
+						{
+							method: 'PUT',
+							headers,
+							body: JSON.stringify({
+								submission,
+								source,
+								completed,
+								submitted: submit,
+							}),
+						}
+					);
+				} else {
+					const response = await fetch(
+						`${LOCALIZED.API_URL}/submit-lead-form`,
+						{
+							method: 'POST',
+							headers,
+							body: JSON.stringify({
+								submission,
+								source,
+								completed,
+								submitted: submit,
+							}),
+						}
+					);
+
+					const result = await response.json();
+					if (result?.id) {
+						setFormSubmissionId(result?.id);
+					}
+				}
+
+				if (submit) {
+					const name =
+						questions.find((q) => q.name === 'full_name')?.inputs[0]
+							?.value || '';
+					window.location.assign(
+						`/book-success?full_name=${encodeURIComponent(name)}`
+					);
+				} else {
+					setStatusMessage('');
+				}
+			} catch (error) {
+				console.error('There was an error', error);
+				setError(
+					'There was an error submitting the form. Please try again.'
+				);
+			} finally {
+				setLoading(false);
+			}
+		},
+		[loading, turnstileToken, validPhoneNumber, questions, formSubmissionId]
+	);
 
 	const handleTextChange = ({ input, event }) => {
 		input.value = event?.target?.value;
@@ -149,10 +153,13 @@ export default function EmbedForm() {
 	};
 
 	const handleBlur = () => {
-		if (validPhoneNumber && turnstileToken && !submitted) {
-			setStatusMessage('Saving your progress, please wait...');
-			void handleSubmit();
-		}
+		if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
+		blurTimeoutRef.current = setTimeout(() => {
+			if (validPhoneNumber && turnstileToken && !submitted) {
+				setStatusMessage('Saving your progress, please wait...');
+				void handleSubmit();
+			}
+		}, 3000);
 	};
 
 	const handleConsentChange = ({ input, event }) => {
