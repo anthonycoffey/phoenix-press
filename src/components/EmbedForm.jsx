@@ -159,7 +159,7 @@ export default function EmbedForm() {
 				setStatusMessage('Saving your progress, please wait...');
 				void handleSubmit();
 			}
-		}, 3000);
+		}, 10000);
 	};
 
 	const handleConsentChange = ({ input, event }) => {
