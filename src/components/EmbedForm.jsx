@@ -101,6 +101,12 @@ export default function EmbedForm() {
 						}
 					);
 				} else {
+					// GTAG: Trigger form_start on initial submission attempt
+					if (typeof window?.dataLayer !== 'undefined') {
+						window.dataLayer.push({
+							event: 'form_start',
+						});
+					}
 					const response = await fetch(
 						`${LOCALIZED.API_URL}/submit-lead-form`,
 						{
@@ -119,6 +125,14 @@ export default function EmbedForm() {
 					if (result?.id) {
 						setFormSubmissionId(result?.id);
 					}
+				}
+
+				// GTAG: Trigger form_submit after successful API call (PUT or POST)
+				if (typeof window?.dataLayer !== 'undefined') {
+					window.dataLayer.push({
+						event: 'form_submit',
+						// Optionally add relevant data here if needed
+					});
 				}
 
 				if (submit) {

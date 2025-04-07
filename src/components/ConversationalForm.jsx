@@ -101,6 +101,12 @@ const ConversationalForm = () => {
 					}
 				);
 			} else {
+				// GTAG: Trigger form_start on initial submission attempt
+				if (typeof window?.dataLayer !== 'undefined') {
+					window.dataLayer.push({
+						event: 'form_start',
+					});
+				}
 				const response = await fetch(
 					`${LOCALIZED.API_URL}/submit-lead-form`,
 					{
@@ -144,6 +150,16 @@ const ConversationalForm = () => {
 					}),
 				}
 			);
+
+			// GTAG: Trigger form_submit immediately after successful API call
+			if (typeof window?.dataLayer !== 'undefined') {
+				window.dataLayer.push({
+					event: 'form_submit',
+					// Optionally add relevant data here if needed
+					// submission, // Example: include submission data
+					// source, // Example: include source
+				});
+			}
 
 			const name =
 				questions.find((q) => q.name === 'full_name')?.inputs[0]
