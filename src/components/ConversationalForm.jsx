@@ -161,12 +161,8 @@ const ConversationalForm = () => {
 				});
 			}
 
-			const name =
-				questions.find((q) => q.name === 'full_name')?.inputs[0]
-					?.value || '';
-			window.location.assign(
-				`/book-success?full_name=${encodeURIComponent(name)}`
-			);
+			// Removed window.location.assign redirect
+			// Success message is shown via the existing conditional rendering below
 		} catch (error) {
 			console.error('There was an error', error);
 		}
@@ -227,7 +223,7 @@ const ConversationalForm = () => {
 							{submitted && (
 								<Prompt
 									question={{
-										prompt: 'Saving your submission, please wait...',
+										prompt: LOCALIZED.SUBMISSION_MESSAGE, // Use localized success message
 									}}
 								/>
 							)}

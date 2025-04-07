@@ -10,6 +10,7 @@
     * Frontend build pipeline using `@wordpress/scripts`.
     * Settings page infrastructure likely exists (`includes/Settings.php`, `readme-plugin-settings.png`).
     * Google Analytics `gtag` event tracking (`form_start`, `form_submit`) implemented in `EmbedForm.jsx` and `ConversationalForm.jsx`.
+    * Form submission UX updated to show an inline success message (`LOCALIZED.SUBMISSION_MESSAGE`) instead of redirecting in both `EmbedForm.jsx` and `ConversationalForm.jsx`.
 * **What's Left:** 
     * Full implementation details of backend logic (API interactions, settings handling).
     * Complete implementation and integration of frontend React components.
@@ -22,3 +23,4 @@
     * **[Date of Memory Bank Init - e.g., 2025-04-06]:** Initialized Memory Bank structure.
     * **[Date of Memory Bank Init - e.g., 2025-04-06]:** Populated Memory Bank based on `README.md` and `package.json`.
     * **2025-04-06:** Restored `gtag` event tracking (`form_start`, `form_submit`) to `EmbedForm.jsx` and `ConversationalForm.jsx` based on user-provided code snippets, ensuring only tracking logic was reintroduced.
+    * **2025-04-06:** Changed form submission behavior from redirecting to displaying an inline success message (`LOCALIZED.SUBMISSION_MESSAGE`) in both `EmbedForm.jsx` and `ConversationalForm.jsx`.

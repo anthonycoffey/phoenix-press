@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import LinearProgress from '@mui/material/LinearProgress';
 import CardHeader from '@mui/material/CardHeader';
 import InputField from './InputField';
+import Prompt from './Prompt'; // Added import for success message display
 import Disclaimer from './Disclaimer';
 import questionData from '../utils/embed-form-data.js';
 import { requiredFields, isSubmissionComplete } from '../utils/validation';
@@ -136,12 +137,9 @@ export default function EmbedForm() {
 				}
 
 				if (submit) {
-					const name =
-						questions.find((q) => q.name === 'full_name')?.inputs[0]
-							?.value || '';
-					window.location.assign(
-						`/book-success?full_name=${encodeURIComponent(name)}`
-					);
+					// Removed window.location.assign redirect
+					// Success message will be shown via conditional rendering based on 'submitted' state
+					setStatusMessage(''); // Clear any intermediate status
 				} else {
 					setStatusMessage('');
 				}
@@ -192,10 +190,19 @@ export default function EmbedForm() {
 						subheader={LOCALIZED.FORM_SUBTITLE}
 					/>
 				)}
-				<form aria-label="Booking Form" autoComplete="on" noValidate>
+				{submitted ? (
 					<CardContent>
-						<Stack space={4}>
-							{questions?.map((question, index) => (
+						<Stack space={2}>
+							<Prompt
+								question={{ prompt: LOCALIZED.SUBMISSION_MESSAGE }}
+							/>
+						</Stack>
+					</CardContent>
+				) : (
+					<form aria-label="Booking Form" autoComplete="on" noValidate>
+						<CardContent>
+							<Stack space={4}>
+								{questions?.map((question, index) => (
 								<React.Fragment key={index}>
 									{question.type === 'row' ? (
 										<>
@@ -315,9 +322,10 @@ export default function EmbedForm() {
 					<div
 						ref={turnstileRef}
 						id="turnstile-widget"
-						className="cf-turnstile"
-					></div>
-				</form>
+							className="cf-turnstile"
+						></div>
+					</form>
+				)}
 			</Card>
 		</section>
 	);

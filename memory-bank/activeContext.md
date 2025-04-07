@@ -1,14 +1,15 @@
 # Active Context
 
-* **Current Focus:** Restoring Google Analytics `gtag` event tracking (`form_start`, `form_submit`) to the React form components.
+* **Current Focus:** Updating form submission UX to show an inline success message instead of redirecting.
 * **Recent Changes:** 
-    * Added `gtag('event', 'form_start')` and `gtag('event', 'form_submit')` calls to `src/components/EmbedForm.jsx`.
-    * Added `gtag('event', 'form_start')` and `gtag('event', 'form_submit')` calls to `src/components/ConversationalForm.jsx`.
-* **Next Steps:** Update `progress.md` to reflect the restored functionality. Verify tracking implementation.
+    * Modified `src/components/EmbedForm.jsx` to remove `window.location.assign` and display `LOCALIZED.SUBMISSION_MESSAGE` upon successful submission.
+    * Modified `src/components/ConversationalForm.jsx` to remove `window.location.assign` and use `LOCALIZED.SUBMISSION_MESSAGE` in the final prompt upon successful submission.
+    * Created new branch `feature/inline-success-message`.
+* **Next Steps:** Update `progress.md` to reflect the changed submission UX. Commit changes to the new branch.
 * **Active Decisions:** 
-    * Restored specific `gtag` logic based on previously removed code provided by the user.
-    * Placed `form_start` event trigger on initial form submission attempt (before `formSubmissionId` is set).
-    * Placed `form_submit` event trigger after successful API submission (PUT or POST) in both forms.
+    * Reverted form submission behavior from redirect to inline success message display using `LOCALIZED.SUBMISSION_MESSAGE`.
+    * Implemented conditional rendering in `EmbedForm.jsx` to show the message.
+    * Updated the existing success prompt in `ConversationalForm.jsx` to use the localized message.
 * **Key Patterns/Preferences:** 
     * WordPress plugin structure.
     * PHP for backend/WordPress integration.
