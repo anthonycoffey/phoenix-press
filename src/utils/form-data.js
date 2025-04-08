@@ -20,6 +20,19 @@ const options = [
 		],
 	},
 	{
+		name: 'email',
+		prompt: "Just in case we can't reach you on your phone, what is a good email address to contact you?",
+		inputs: [
+			{
+				name: 'email',
+				type: 'email',
+				label: 'Email Address',
+				value: '',
+				optional: true,
+			},
+		],
+	},
+	{
 		name: 'full_name',
 		prompt: 'What is your name?',
 		inputs: [

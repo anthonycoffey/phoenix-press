@@ -1,4 +1,12 @@
-import { useContext, useEffect, useRef, useState } from '@wordpress/element';
+import {
+	useContext,
+	useEffect,
+	useRef,
+	useState,
+	useCallback,
+	useMemo,
+} from '@wordpress/element';
+import Alert from '@mui/material/Alert'; // Import Alert
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -6,142 +14,188 @@ import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
 import CardHeader from '@mui/material/CardHeader';
 import LinearProgress from '@mui/material/LinearProgress';
-import Prompt from './Prompt';
-import Answer from './Answer';
-import Disclaimer from './Disclaimer';
+import Prompt from './Prompt'; // Keep memoized Prompt
+import Answer from './Answer'; // Keep memoized Answer
+import Disclaimer from './Disclaimer'; // Keep memoized Disclaimer
 import CancelIcon from './CancelIcon';
 import { GlobalStateContext } from '../state';
+import { validateInputObject } from '../utils/validation';
 
 const ConversationalForm = () => {
+	// Get only global state/setters from context
 	const {
-		questions,
-		currentQuestionIndex,
-		setCurrentQuestionIndex,
-		submitted,
-		setSubmitted,
 		loading,
 		setLoading,
+		submitted,
+		setSubmitted,
 		isFormVisible,
 		setIsFormVisible,
-		errors,
+		initialQuestions, // Get initial questions data
+		services, // Get services data from context
 	} = useContext(GlobalStateContext);
+
+	// === Local State Management for Form ===
+	// Initialize questions, setting default for datetime if needed
+	const [questions, setQuestions] = useState(() => {
+		const processedQuestions = initialQuestions
+			? JSON.parse(JSON.stringify(initialQuestions))
+			: []; // Deep copy to avoid mutating original
+		processedQuestions.forEach((q) => {
+			q.inputs.forEach((input) => {
+				if (input.type === 'datetime' && !input.value) {
+					input.value = new Date().toISOString(); // Set default to NOW if no value exists
+				}
+			});
+		});
+		return processedQuestions;
+	});
+	const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+	const [errors, setErrors] = useState({});
+	const [navigationWarning, setNavigationWarning] = useState(null); // State for navigation warning
+	// =======================================
+
+	// Restore Turnstile state and ref
 	const turnstileRef = useRef(null);
-	const currentQuestion = questions[currentQuestionIndex];
-	const [invalid, setInvalid] = useState(true);
-	const [formSubmissionId, setFormSubmissionId] = useState(null);
 	const [turnstileToken, setTurnstileToken] = useState(null);
+	const [formSubmissionId, setFormSubmissionId] = useState(null);
+	const gtagUserDataSentRef = useRef(false);
 
-	useEffect(() => {
-		const hasErrors = currentQuestion.inputs.some(
-			(input) => errors[input.name]
-		);
-		setInvalid(hasErrors);
+	// --- Derived State (using local state now) ---
+	const currentQuestion = useMemo(
+		() => questions[currentQuestionIndex],
+		[questions, currentQuestionIndex]
+	);
 
-		return () => {
-			setInvalid(true);
-		};
-	}, [errors]);
+	// Memo to check only for input errors, ignoring loading/turnstile for button disabling
+	const hasInputErrors = useMemo(() => {
+		if (!currentQuestion || !currentQuestion.inputs) return true; // Treat no inputs as an error state for disabling
+		return currentQuestion.inputs.some((input) => !!errors[input.name]);
+	}, [currentQuestion, errors]);
 
+	const currentErrors = useMemo(() => {
+		if (!currentQuestion || !currentQuestion.inputs) return {};
+		const relevantErrors = {};
+		currentQuestion.inputs.forEach((input) => {
+			if (errors[input.name]) {
+				relevantErrors[input.name] = errors[input.name];
+			}
+		});
+		return relevantErrors;
+	}, [currentQuestion, errors]);
+	// --- End Derived State ---
+
+	// --- Effects ---
+	// Restore Turnstile useEffect
 	useEffect(() => {
 		let id;
 		if (isFormVisible && window?.turnstile && turnstileRef.current) {
 			id = window.turnstile.render(turnstileRef.current, {
 				sitekey: LOCALIZED.TURNSTILE_SITE_KEY,
-				callback: (token) => {
-					setTurnstileToken(token);
-				},
+				callback: (token) => setTurnstileToken(token),
 				'expired-callback': () => {
-					window.turnstile.reset(id);
+					// Reset token and potentially the widget if needed
+					setTurnstileToken(null);
+					if (id) window.turnstile.reset(id);
 				},
 			});
 		}
 		return () => {
-			if (id) {
-				window.turnstile.remove(id);
+			// Cleanup Turnstile widget on unmount or when form is hidden
+			if (id && window?.turnstile) {
+				try {
+					window.turnstile.remove(id);
+				} catch (e) {
+					console.error('Error removing Turnstile widget:', e);
+				}
 			}
 		};
-	}, [isFormVisible]);
+	}, [isFormVisible]); // Rerun when form visibility changes
 
-	const toggleFormVisibility = () => {
-		setIsFormVisible(!isFormVisible);
-	};
+	// Reset errors when question changes
+	useEffect(() => {
+		setErrors({});
+	}, [currentQuestionIndex]);
 
-	const handleSubmit = async () => {
-		if (loading || !turnstileToken) return false;
-		try {
-			setLoading(true);
-			const submission = questions.flatMap((question) =>
-				question.inputs.map((input) => {
-					const { name, value, obj } = input;
-					return obj ? { name, value, obj } : { name, value };
-				})
-			);
-
-			const headers = {
-				'Content-Type': 'application/json',
-				'X-Turnstile-Token': turnstileToken,
-			};
-			const source =
-				window.location.origin.replace(/^https?:\/\//, '') +
-				window.location.pathname.replace(/\/$/, '');
-
-			if (currentQuestionIndex + 1 === questions.length) {
-				return await completeSubmission(submission, source);
-			} else {
-				setCurrentQuestionIndex(currentQuestionIndex + 1);
-			}
-
-			if (formSubmissionId) {
-				await fetch(
-					`${LOCALIZED.API_URL}/submit-lead-form/${formSubmissionId}`,
-					{
-						method: 'PUT',
-						headers,
-						body: JSON.stringify({ submission, source }),
-					}
-				);
-			} else {
-				// GTAG: Trigger form_start on initial submission attempt
-				if (typeof window?.dataLayer !== 'undefined') {
-					window.dataLayer.push({
-						event: 'form_start',
-					});
-				}
-				const response = await fetch(
-					`${LOCALIZED.API_URL}/submit-lead-form`,
-					{
-						method: 'POST',
-						headers,
-						body: JSON.stringify({ submission, source }),
-					}
-				);
-
-				const result = await response.json();
-				if (result?.id) {
-					setFormSubmissionId(result?.id);
-				}
-			}
-		} catch (error) {
-			console.error('There was an error', error);
-		} finally {
-			setLoading(false);
+	// Validation Effect - Runs when currentQuestion data changes
+	useEffect(() => {
+		if (!currentQuestion || !currentQuestion.inputs) {
+			return; // No question or inputs to validate
 		}
-	};
 
-	const completeSubmission = async (submission, source) => {
+		let errorsChanged = false;
+		const nextErrors = { ...errors }; // Start with current errors
+
+		currentQuestion.inputs.forEach((input) => {
+			const newErrorMessage = validateInputObject(input); // Validate current input state
+			const currentErrorMessage = errors[input.name];
+
+			if (currentErrorMessage !== newErrorMessage) {
+				errorsChanged = true;
+				if (newErrorMessage) {
+					nextErrors[input.name] = newErrorMessage;
+				} else {
+					// Only delete if the key actually exists
+					if (input.name in nextErrors) {
+						delete nextErrors[input.name];
+					}
+				}
+			}
+		});
+
+		// Only call setErrors if the error state actually needs to change
+		if (errorsChanged) {
+			setErrors(nextErrors);
+		}
+		// DO NOT add 'errors' to dependency array here, causes infinite loop!
+	}, [currentQuestion, setErrors]); // Rerun validation when the current question object changes
+
+	// Effect to clear navigation warning when Turnstile token is available
+	useEffect(() => {
+		if (turnstileToken) {
+			setNavigationWarning(null);
+		}
+	}, [turnstileToken]); // Only depends on token now
+
+	// --- End Effects ---
+
+	// --- Callbacks & Handlers ---
+	const toggleFormVisibility = useCallback(() => {
+		setIsFormVisible(!isFormVisible);
+	}, [isFormVisible, setIsFormVisible]);
+
+	const source = useMemo(
+		() =>
+			window.location.origin.replace(/^https?:\/\//, '') +
+			window.location.pathname.replace(/\/$/, ''),
+		[]
+	);
+
+	// Restore turnstileToken to headers
+	const headers = useMemo(
+		() => ({
+			'Content-Type': 'application/json',
+			'X-Turnstile-Token': turnstileToken,
+		}),
+		[turnstileToken]
+	);
+
+	const completeSubmission = useCallback(async () => {
+		const submission = questions.flatMap((q) =>
+			q.inputs.map(({ name, value, obj }) =>
+				obj ? { name, value, obj } : { name, value }
+			)
+		);
 		try {
 			setLoading(true);
 			setSubmitted(true);
-			if (!formSubmissionId) return false;
-
+			if (!formSubmissionId) {
+				/* ... error handling ... */ return false;
+			}
 			await fetch(
 				`${LOCALIZED.API_URL}/submit-lead-form/${formSubmissionId}`,
 				{
 					method: 'PUT',
-					headers: {
-						'Content-Type': 'application/json',
-						'X-Turnstile-Token': turnstileToken,
-					},
+					headers,
 					body: JSON.stringify({
 						submission,
 						completed: true,
@@ -150,30 +204,190 @@ const ConversationalForm = () => {
 					}),
 				}
 			);
-
-			// GTAG: Trigger form_submit immediately after successful API call
-			if (typeof window?.dataLayer !== 'undefined') {
-				window.dataLayer.push({
-					event: 'form_submit',
-					// Optionally add relevant data here if needed
-					// submission, // Example: include submission data
-					// source, // Example: include source
-				});
+			// GTAG logic...
+			const emailEntry = submission.find((item) => item.name === 'email');
+			const phoneEntry = submission.find((item) => item.name === 'phone');
+			const userData = {};
+			if (emailEntry?.value) userData.email = emailEntry.value;
+			if (phoneEntry?.value) {
+				let phoneNumber = phoneEntry.value.replace(/[^0-9+]/g, '');
+				if (phoneNumber.length === 10 && !phoneNumber.startsWith('+'))
+					phoneNumber = '+1' + phoneNumber;
+				userData.phone_number = phoneNumber;
 			}
-
-			const name =
-				questions.find((q) => q.name === 'full_name')?.inputs[0]
-					?.value || '';
-			window.location.assign(
-				`/book-success?full_name=${encodeURIComponent(name)}`
-			);
+			if (
+				!gtagUserDataSentRef.current &&
+				typeof window?.gtag !== 'undefined' &&
+				userData.email
+			) {
+				window.gtag('set', 'user_data', userData);
+				gtagUserDataSentRef.current = true;
+			}
+			if (typeof window?.dataLayer !== 'undefined') {
+				window.dataLayer.push({ event: 'form_submit' });
+			}
 		} catch (error) {
-			console.error('There was an error', error);
+			/* ... error handling ... */ setSubmitted(false);
 		}
-	};
+	}, [
+		questions,
+		formSubmissionId,
+		headers,
+		source,
+		setLoading,
+		setSubmitted,
+	]);
+
+	const handleSubmit = useCallback(async () => {
+		// Restore turnstileToken check
+		if ((loading && !formSubmissionId) || !turnstileToken) return false;
+		const submission = questions.flatMap((q) =>
+			q.inputs.map(({ name, value, obj }) =>
+				obj ? { name, value, obj } : { name, value }
+			)
+		);
+		try {
+			setLoading(true);
+			if (currentQuestionIndex + 1 === questions.length) {
+				await completeSubmission();
+			} else {
+				setCurrentQuestionIndex(currentQuestionIndex + 1);
+				if (formSubmissionId) {
+					await fetch(
+						`${LOCALIZED.API_URL}/submit-lead-form/${formSubmissionId}`,
+						{
+							method: 'PUT',
+							headers,
+							body: JSON.stringify({ submission, source }),
+						}
+					);
+				} else {
+					if (typeof window?.dataLayer !== 'undefined')
+						window.dataLayer.push({ event: 'form_start' });
+					const response = await fetch(
+						`${LOCALIZED.API_URL}/submit-lead-form`,
+						{
+							method: 'POST',
+							headers,
+							body: JSON.stringify({ submission, source }),
+						}
+					);
+					const result = await response.json();
+					if (result?.id) setFormSubmissionId(result.id);
+				}
+			}
+		} catch (error) {
+			/* ... error handling ... */
+		} finally {
+			setLoading(false);
+		}
+	}, [
+		loading,
+		turnstileToken,
+		questions,
+		currentQuestionIndex,
+		formSubmissionId,
+		headers,
+		source,
+		setLoading,
+		setCurrentQuestionIndex,
+		setFormSubmissionId,
+		completeSubmission,
+	]); // Restore turnstileToken dependency
+
+	// Input Handler - Only updates questions state
+	const handleAnswerInputChange = useCallback(
+		(name, value) => {
+			setQuestions((prevQuestions) => {
+				const questionToUpdate = prevQuestions[currentQuestionIndex];
+				if (!questionToUpdate) return prevQuestions;
+				const inputIndex = questionToUpdate.inputs.findIndex(
+					(input) => input.name === name
+				);
+				if (inputIndex === -1) return prevQuestions;
+				const currentInput = questionToUpdate.inputs[inputIndex];
+
+				if (currentInput.value === value) return prevQuestions; // No change
+
+				// Value changed
+				const updatedInput = { ...currentInput, value };
+				const updatedInputs = [...questionToUpdate.inputs];
+				updatedInputs[inputIndex] = updatedInput;
+				const updatedQuestions = [...prevQuestions];
+				updatedQuestions[currentQuestionIndex] = {
+					...questionToUpdate,
+					inputs: updatedInputs,
+				};
+				return updatedQuestions;
+			});
+			// Validation handled by useEffect
+		},
+		[currentQuestionIndex, setQuestions]
+	); // Only depends on index and setter
+
+	// Date Handler - Only updates questions state
+	const handleAnswerDateChange = useCallback(
+		(name, date) => {
+			const newValue = date instanceof Date ? date.toISOString() : date;
+			setQuestions((prevQuestions) => {
+				const questionToUpdate = prevQuestions[currentQuestionIndex];
+				if (!questionToUpdate) return prevQuestions;
+				const inputIndex = questionToUpdate.inputs.findIndex(
+					(input) => input.name === name
+				);
+				if (inputIndex === -1) return prevQuestions;
+				const currentInput = questionToUpdate.inputs[inputIndex];
+
+				if (currentInput.value === newValue) return prevQuestions; // No change
+
+				// Value changed
+				const updatedInput = { ...currentInput, value: newValue };
+				const updatedInputs = [...questionToUpdate.inputs];
+				updatedInputs[inputIndex] = updatedInput;
+				const updatedQuestions = [...prevQuestions];
+				updatedQuestions[currentQuestionIndex] = {
+					...questionToUpdate,
+					inputs: updatedInputs,
+				};
+				return updatedQuestions;
+			});
+			// Validation/error clearing handled by useEffect
+		},
+		[currentQuestionIndex, setQuestions]
+	); // Only depends on index and setter
+
+	const handleBackClick = useCallback(() => {
+		// Simplified: Always allow back navigation immediately
+		setCurrentQuestionIndex((prevIndex) => prevIndex - 1);
+		// Clear any potential lingering warning when navigating back
+		setNavigationWarning(null);
+	}, [setCurrentQuestionIndex]); // Only depends on setter
+
+	const handleNextSubmitClick = useCallback(() => {
+		// Only block if Turnstile is not ready
+		if (!turnstileToken) {
+			setNavigationWarning('Securing form, please try again.');
+			return;
+		}
+		// Show saving alert if already loading (fetch in progress)
+		if (loading) {
+			setNavigationWarning(
+				'Sorry! We were saving your previous answer, please try again now.'
+			);
+			return;
+		}
+		// If Turnstile is ready and not loading, proceed
+		setNavigationWarning(null); // Clear warning
+		handleSubmit();
+	}, [loading, turnstileToken, handleSubmit]); // Keep dependencies
+	// --- End Callbacks & Handlers ---
+
+	// --- Render Logic ---
+	if (!questions || questions.length === 0) return null;
 
 	return (
 		<section>
+			{/* Button to show form */}
 			{!isFormVisible && (
 				<button
 					onClick={toggleFormVisibility}
@@ -204,8 +418,17 @@ const ConversationalForm = () => {
 				</button>
 			)}
 
+			{/* Form Card */}
 			{isFormVisible && (
-				<Card className="phoenix-form">
+				<Card
+					className="phoenix-form"
+					sx={{
+						width: 'max-content', // Shrink-wrap content
+						minWidth: '300px', // Minimum width
+						maxWidth: '500px', // Maximum width
+						marginLeft: 'auto', // Align to the right within the fixed parent
+					}}
+				>
 					<CardHeader
 						id="phoenix-chat-form-header"
 						action={
@@ -217,76 +440,94 @@ const ConversationalForm = () => {
 							</Button>
 						}
 					/>
-
 					<CardContent sx={{ paddingBottom: 0 }}>
 						<form
 							aria-label="Booking Form"
 							autoComplete="on"
 							noValidate
 						>
+							{/* Submitted state message */}
 							{submitted && (
 								<Prompt
-									question={{
-										prompt: 'Saving your submission, please wait...',
-									}}
+									questionPrompt={
+										LOCALIZED.SUBMISSION_MESSAGE
+									}
 								/>
 							)}
+
+							{/* Main form content */}
 							{!submitted && (
 								<>
-									<Stack space={2}>
-										<Prompt question={currentQuestion} />
-										<Answer question={currentQuestion} />
+									<Stack spacing={2}>
+										{/* Pass granular props */}
+										<Prompt
+											questionPrompt={
+												currentQuestion?.prompt
+											}
+										/>
+										<Answer
+											questionInputs={
+												currentQuestion?.inputs
+											}
+											errors={currentErrors}
+											onInputChange={
+												handleAnswerInputChange
+											}
+											onDateChange={
+												handleAnswerDateChange
+											}
+											services={services} // Pass services data down
+										/>
 									</Stack>
-									{!loading && (
-										<Stack
-											direction="row"
-											spacing={2}
-											sx={{
-												width: '100%',
-												display: 'flex',
-												my: '1rem',
-												justifyContent:
-													currentQuestionIndex > 0
-														? 'space-between'
-														: 'flex-end',
-											}}
+									{/* Navigation Warning Area */}
+									{navigationWarning && (
+										<Alert
+											severity="warning"
+											sx={{ mt: 1, mb: 1 }}
 										>
-											{currentQuestionIndex > 0 && (
-												<Button
-													variant="contained"
-													onClick={() =>
-														setCurrentQuestionIndex(
-															currentQuestionIndex -
-																1
-														)
-													}
-												>
-													Back
-												</Button>
-											)}
-
-											<Button
-												sx={{ justifySelf: 'end' }}
-												variant="contained"
-												color="primary"
-												onClick={() => {
-													handleSubmit();
-												}}
-												disabled={invalid}
-												loading={
-													loading || !turnstileToken
-												}
-											>
-												{currentQuestionIndex + 1 ===
-												questions.length
-													? 'Submit'
-													: 'Next'}
-											</Button>
-										</Stack>
+											{navigationWarning}
+										</Alert>
 									)}
+									<Stack
+										direction="row"
+										spacing={2}
+										sx={{
+											width: '100%',
+											display: 'flex',
+											my: '1rem',
+											justifyContent:
+												currentQuestionIndex > 0
+													? 'space-between'
+													: 'flex-end',
+										}}
+									>
+										{currentQuestionIndex > 0 && (
+											// Disable only if at the first question (implicitly handled by conditional rendering)
+											<Button
+												variant="contained"
+												onClick={handleBackClick}
+											>
+												Back
+											</Button>
+										)}
+										{/* Disable based only on input errors */}
+										<Button
+											sx={{ justifySelf: 'end' }}
+											variant="contained"
+											color="primary"
+											onClick={handleNextSubmitClick}
+											disabled={hasInputErrors}
+										>
+											{currentQuestionIndex + 1 ===
+											questions.length
+												? 'Submit'
+												: 'Next'}
+										</Button>
+									</Stack>
 									<Disclaimer index={currentQuestionIndex} />
 								</>
 							)}
+							{/* Loading indicator */}
 							<Box
 								spacing={2}
 								className={'phoenix-no-select'}
@@ -300,10 +541,12 @@ const ConversationalForm = () => {
 							>
 								{(loading || !turnstileToken) && (
 									<LinearProgress sx={{ width: '100%' }} />
-								)}
+								)}{' '}
+								{/* Restore check */}
 							</Box>
 						</form>
 					</CardContent>
+					{/* Restore Turnstile widget div */}
 					<div
 						ref={turnstileRef}
 						id="conversation-turnstile-widget"

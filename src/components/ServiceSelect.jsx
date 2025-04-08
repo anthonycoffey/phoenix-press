@@ -5,62 +5,63 @@ import Checkbox from '@mui/material/Checkbox';
 import Box from '@mui/material/Box';
 import FormHelperText from '@mui/material/FormHelperText';
 import FormLabel from '@mui/material/FormLabel';
-import { useContext, useEffect, useState } from '@wordpress/element';
-import { GlobalStateContext } from '../state';
+import { useCallback } from '@wordpress/element'; // Removed useContext, useEffect, useState
+// Removed: import { GlobalStateContext } from '../state';
 
-export default function ServiceSelect({ input }) {
-	const {
-		questions,
-		currentQuestionIndex,
-		setQuestions,
-		services,
-		errors,
-		setErrors,
-	} = useContext(GlobalStateContext);
+// Accept input (containing current value), services, onInputChange, and errors via props
+export default function ServiceSelect({
+	input,
+	services,
+	onInputChange,
+	errors,
+}) {
+	// Removed context usage
+	// Removed internal selectedServices state
+	// Removed useEffect hook
 
-	const [selectedServices, setSelectedServices] = useState([]);
-	const handleCheckboxChange = (event) => {
-		const { value, checked } = event.target;
-		setSelectedServices((prev) =>
-			checked
-				? [...prev, value]
-				: prev.filter((service) => service !== value)
-		);
-	};
+	// Ensure services is an array
+	const availableServices = Array.isArray(services) ? services : [];
+	// Ensure the current value from the input prop is an array
+	// The parent (ConversationalForm) should store the value for 'service_type' as an array of selected service *values* (e.g., ['service_a', 'service_b'])
+	const currentSelectedValues = Array.isArray(input?.value)
+		? input.value
+		: [];
 
-	useEffect(() => {
-		const updatedQuestions = [...questions];
-		const currentInput = updatedQuestions[currentQuestionIndex].inputs.find(
-			(input) => input.name === 'service_type'
-		);
+	const handleCheckboxChange = useCallback(
+		(event) => {
+			const { value, checked } = event.target; // 'value' here is the service.value
 
-		const matchedServices = services.filter((service) =>
-			selectedServices.includes(service.value)
-		);
-		currentInput.value = matchedServices.map((service) => ({
-			value: service.value,
-			id: service.id,
-		}));
+			// Calculate the next array of selected service values
+			const nextSelectedValues = checked
+				? [...currentSelectedValues, value] // Add the value if checked
+				: currentSelectedValues.filter(
+						(serviceValue) => serviceValue !== value
+					); // Remove the value if unchecked
 
-		setQuestions(updatedQuestions);
+			// Call the parent's handler with the correct input name and the new array of values
+			if (onInputChange && input?.name) {
+				onInputChange(input.name, nextSelectedValues);
+			}
+		},
+		[input?.name, currentSelectedValues, onInputChange]
+	); // Depend on current value and callback
 
-		const errorMessage = validateSelection(currentInput);
-		setErrors({ ...errors, [currentInput.name]: errorMessage });
-	}, [selectedServices]);
+	// Removed validateSelection function
 
-	const validateSelection = (input) => {
-		if (!input.optional)
-			return input.value.length < 1 ? 'This field is required' : '';
-	};
+	// Use error from props, checking specifically for this input's name
+	const error = errors?.[input?.name];
 
 	return (
 		<FormControl
 			component="fieldset"
 			fullWidth
 			margin="dense"
-			error={errors['service_type']}
+			error={!!error} // Use error state from props
+			sx={{ mt: 2 }} // Add some top margin
 		>
-			<FormLabel component="legend">Select desired service(s)</FormLabel>
+			<FormLabel component="legend">
+				{input?.label || 'Select desired service(s)'}
+			</FormLabel>
 			<FormGroup>
 				<Box
 					className="phoenix-conversational-form__service-select"
@@ -71,17 +72,22 @@ export default function ServiceSelect({ input }) {
 						padding: 0,
 					}}
 				>
-					{services.map((service) => (
+					{/* Map over services received from props */}
+					{availableServices.map((service) => (
 						<FormControlLabel
+							key={service.value} // Use service.value as key
 							sx={{ margin: 0, padding: 0, lineHeight: 1 }}
 							control={
 								<Checkbox
-									value={service.value}
-									checked={selectedServices.includes(
+									value={service.value} // The value associated with this checkbox
+									// Check if the current value array (from props) includes this service's value
+									checked={currentSelectedValues.includes(
 										service.value
 									)}
 									onChange={handleCheckboxChange}
-									name={service.name}
+									// The name attribute on checkbox isn't strictly necessary here as we use value
+									// name={service.name} // Original code had service.name, but service.value seems more appropriate
+									name={input?.name || 'service_type'} // Use the group name
 									size="small"
 								/>
 							}
@@ -90,7 +96,8 @@ export default function ServiceSelect({ input }) {
 					))}
 				</Box>
 			</FormGroup>
-			<FormHelperText>{errors['service_type']}</FormHelperText>
+			{/* Display error message from props */}
+			{error && <FormHelperText>{error}</FormHelperText>}
 		</FormControl>
 	);
 }

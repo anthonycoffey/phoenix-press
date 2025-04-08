@@ -55,6 +55,20 @@ const InputField = ({
 					required={!input.optional}
 				/>
 			);
+		case 'email':
+			return (
+				<TextField
+					label={input.label}
+					name={input.name}
+					onChange={(event) => handleTextChange({ input, event })}
+					onBlur={handleBlur}
+					fullWidth
+					autoCapitalize="email"
+					variant="outlined"
+					margin="normal"
+					required={!input.optional}
+				/>
+			);
 		case 'geo':
 			return (
 				<AddressAutoComplete input={input} handleBlur={handleBlur} />

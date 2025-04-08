@@ -1,4 +1,4 @@
-># Progress
+What are you or excessions bringing in I love you I love you I have a fluttering that uses an icon microservice powered by Google Vision and Gemini API that scares captured or upward probes for price data and extracts the price and inverse description of the chance is dated to weather app wire clutter climbing simply keeps her running entirely at all scary prices and you can save the list s september was calculated. I went to the grocery store and I did in the Philadelphia so I'm not going to be able to get a lot of money. i'm going to be a little bit more. i'm going to go to the bathroom.. Face book login face book Good morning my love I love you Don't call me around Anyway I'll be right back Clean Weenie Baby Bailey keeping baby Any page in a in Canada baking in a day all right I don't think I'm gay All right so how do you do it   ># Progress
 
 * **Current Status:** The project exists with a basic structure, build system, and dependencies defined. Version 1.3.0 according to `package.json`. Core PHP classes for API, Assets, Meta, Plugin, and Settings are present. React components for various form elements exist. The Memory Bank has just been initialized and populated with baseline information.
 * **What Works:** 
@@ -10,9 +10,41 @@
     * Frontend build pipeline using `@wordpress/scripts`.
     * Settings page infrastructure likely exists (`includes/Settings.php`, `readme-plugin-settings.png`).
     * Google Analytics `gtag` event tracking (`form_start`, `form_submit`) implemented in `EmbedForm.jsx` and `ConversationalForm.jsx`.
-* **What's Left:** 
-    * Full implementation details of backend logic (API interactions, settings handling).
-    * Complete implementation and integration of frontend React components.
+    * Form submission UX updated to show an inline success message (`LOCALIZED.SUBMISSION_MESSAGE`) instead of redirecting in both `EmbedForm.jsx` and `ConversationalForm.jsx`.
+    * Conversational form (`ConversationalForm.jsx`) navigation button UX updated: Back button is always responsive. Next/Submit button clicks show "Securing form..." alert if Turnstile is not ready (`turnstileToken` null). If a fetch is active (`loading` true), clicking now shows a "Saving, please wait...." alert. Button disabling is based solely on input validation errors.
+    * Optional 'email' field added to both conversational (`src/utils/form-data.js`) and embed (`src/utils/embed-form-data.js`) form definitions.
+    * Google Analytics Enhanced Conversions tracking (`gtag('set', 'user_data', ...)`) implemented in `ConversationalForm.jsx` and `EmbedForm.jsx`, using email and phone data from form state.
+    * `EmbedForm.jsx` and `ConversationalForm.jsx` refactored to use `useCallback` and `useMemo` for performance optimization (memoizing event handlers, submission logic, and derived values).
+    * Corrected `EmbedForm.jsx` to ensure the Google Analytics `form_submit` event only fires on final, explicit submission (not on auto-saves).
+    * Optimized auto-save logic in `EmbedForm.jsx` using debouncing (2.5s delay after change) and tracking data changes (`isDirty` state), replacing the previous `onBlur` trigger.
+    * Corrected `gtag('set', 'user_data', ...)` logic in `EmbedForm.jsx` and `ConversationalForm.jsx` to use a `useRef` flag, ensuring it only fires once per component instance during submission when email is present.
+    * Optimized `ConversationalForm` performance:
+        * Memoized `GlobalStateContext` value in `src/state.js`.
+        * Refactored `Answer.jsx` to use `React.memo` and callback props, removing direct state manipulation.
+        * Updated `ConversationalForm.jsx` to use memoized callbacks for handling `Answer` inputs and centralized state/validation logic.
+        * Added and utilized `validateInputObject` in `src/utils/validation.js`.
+    * Further debugging on `ConversationalForm` performance:
+        * Localized form state (`questions`, `errors`, `currentQuestionIndex`).
+        * Removed Turnstile integration and debouncing temporarily.
+        * Passed granular props to children (`Prompt`, `Answer`).
+        * Refined input handlers with strict immutable update checks.
+        * Temporarily commented out `AddressAutoComplete` in `Answer.jsx` for isolation testing.
+        * Further simplified `Answer.jsx` by commenting out most specific input components, which resolved the infinite re-rendering issue.
+    * Incrementally re-enabled and refactored components in `Answer.jsx`:
+        * `PhoneField`: Refactored to remove context dependency, fix errors. No performance regression observed.
+        * `AddressAutoComplete`: Refactored to remove context dependency, fix errors. No performance regression observed.
+        * `Switch` (via `FormControlLabel`): Re-enabled. No performance regression observed.
+        * `ServiceSelect`: Refactored to remove context dependency, fix errors. No performance regression observed.
+        * `DatePicker`/`TimePicker`: Re-enabled. No performance regression observed.
+    * Updated `ConversationalForm.jsx` state initialization to default `datetime` inputs to current time.
+    * Updated `validateInputObject` to improve email validation immediacy (check required status).
+    * Corrected phone number validation logic in `validateInputObject` to check raw digit length.
+    * Re-introduced validation `useEffect` hook in `ConversationalForm.jsx`.
+    * Restored Cloudflare Turnstile integration in `ConversationalForm.jsx`.
+    * Conversational form (`ConversationalForm.jsx`) styled via inline `sx` prop on the `<Card>` component to have `width: max-content`, `minWidth: 300px`, `maxWidth: 500px`, and `marginLeft: auto` for chatbox-like width behavior (reverted global CSS approach).
+* **What's Left:**
+    * Full implementation details of backend logic (API interactions, settings handling, processing new 'email' field).
+    * Complete implementation and integration of frontend React components (ensuring 'email' field renders correctly).
     * Defining specific interactions with the Phoenix CRM API.
     * Unit tests (`phpunit.xml` exists, but extent of tests unknown).
     * Detailed documentation beyond the README and initial Memory Bank.
@@ -22,3 +54,19 @@
     * **[Date of Memory Bank Init - e.g., 2025-04-06]:** Initialized Memory Bank structure.
     * **[Date of Memory Bank Init - e.g., 2025-04-06]:** Populated Memory Bank based on `README.md` and `package.json`.
     * **2025-04-06:** Restored `gtag` event tracking (`form_start`, `form_submit`) to `EmbedForm.jsx` and `ConversationalForm.jsx` based on user-provided code snippets, ensuring only tracking logic was reintroduced.
+    * **2025-04-06:** Changed form submission behavior from redirecting to displaying an inline success message (`LOCALIZED.SUBMISSION_MESSAGE`) in both `EmbedForm.jsx` and `ConversationalForm.jsx`.
+    * **2025-04-06:** Modified `ConversationalForm.jsx` to keep navigation buttons visible but disabled during loading states.
+    * **2025-04-07:** Added an optional 'email' field to the data definitions for both the conversational (`src/utils/form-data.js`) and embed (`src/utils/embed-form-data.js`) forms.
+    * **2025-04-07:** Implemented Google Analytics Enhanced Conversions tracking (`gtag('set', 'user_data', ...)`) in `ConversationalForm.jsx` and `EmbedForm.jsx` before the `form_submit` event.
+    * **2025-04-07:** Applied `useCallback` and `useMemo` hooks to `EmbedForm.jsx` and `ConversationalForm.jsx` to optimize performance.
+    * **2025-04-07:** Fixed multiple `form_submit` event triggers in `EmbedForm.jsx` by making the event conditional on explicit submission.
+    * **2025-04-07:** Optimized auto-save logic in `EmbedForm.jsx` with debouncing and dirty state tracking.
+    * **2025-04-07:** Corrected `gtag('set', 'user_data', ...)` calls in `EmbedForm.jsx` and `ConversationalForm.jsx` to fire only once per component instance during submission using a `useRef` flag.
+    * **2025-04-07:** Addressed `ConversationalForm` performance issues through multiple refactoring steps (context memoization, localized state, callback memoization, functional updates, strict immutable updates, granular props, component isolation).
+    * **2025-04-07:** Refactored `PhoneField`, `AddressAutoComplete`, and `ServiceSelect` to remove context dependencies and fix errors.
+    * **2025-04-07:** Set default value for `datetime` inputs.
+    * **2025-04-07:** Improved email validation immediacy in `validateInputObject`.
+    * **2025-04-07:** Corrected phone number validation logic in `validateInputObject`.
+    * **2025-04-07:** Re-introduced validation `useEffect` and restored Turnstile integration in `ConversationalForm.jsx`.
+    * **2025-04-07:** Reverted CSS rules added to `src/styles.css` and instead applied inline styles (`sx` prop) to the `<Card>` in `ConversationalForm.jsx` to constrain width (min/max/max-content) for chatbox appearance without affecting the embed form.
+    * **2025-04-07:** Updated `ConversationalForm.jsx` navigation button behavior: Back button (`handleBackClick`) made always responsive. Next/Submit button (`handleNextSubmitClick`) now shows "Saving, please wait...." alert if `loading` is true (instead of ignoring click), and shows "Securing form..." alert only if `turnstileToken` is null.
