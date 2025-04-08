@@ -1,10 +1,9 @@
 import { useCallback } from '@wordpress/element'; // Removed useContext, useEffect
 import TextField from '@mui/material/TextField';
-import {formatPhoneNumber} from '../utils/validation'; // Import the formatting utility
+import { formatPhoneNumber } from '../utils/validation'; // Import the formatting utility
 
 // Accept errors via props now (passed down from ConversationalForm -> Answer)
 export default function PhoneField({ input, onChange, errors }) {
-
 	const handleInputChange = useCallback(
 		(event) => {
 			const { value } = event.target;

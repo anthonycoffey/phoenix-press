@@ -172,18 +172,21 @@ const ConversationalForm = () => {
 	);
 
 	const completeSubmission = useCallback(async () => {
-    // Import formatPhoneNumber function
+		// Import formatPhoneNumber function
 
-    const submission = questions.flatMap((q) =>
-      q.inputs.map(({ name, value, obj }) => {
-        // Apply formatPhoneNumber only to phone fields
-        const formattedValue = name === 'phone' ? formatPhoneNumber(value) : value;
-        return obj ? { name, value: formattedValue, obj } : { name, value: formattedValue };
-      })
-    );
+		const submission = questions.flatMap((q) =>
+			q.inputs.map(({ name, value, obj }) => {
+				// Apply formatPhoneNumber only to phone fields
+				const formattedValue =
+					name === 'phone' ? formatPhoneNumber(value) : value;
+				return obj
+					? { name, value: formattedValue, obj }
+					: { name, value: formattedValue };
+			})
+		);
 		try {
 			setLoading(true);
-			
+
 			if (!formSubmissionId) {
 				return false;
 			}
@@ -224,11 +227,11 @@ const ConversationalForm = () => {
 			}
 		} catch (error) {
 			setSubmitted(false);
-      console.log(error);
+			console.log(error);
 		} finally {
-      setSubmitted(true);
-      setLoading(false);
-    }
+			setSubmitted(true);
+			setLoading(false);
+		}
 	}, [
 		questions,
 		formSubmissionId,
@@ -242,9 +245,14 @@ const ConversationalForm = () => {
 		// Restore turnstileToken check
 		if ((loading && !formSubmissionId) || !turnstileToken) return false;
 		const submission = questions.flatMap((q) =>
-			q.inputs.map(({ name, value, obj }) =>
-				obj ? { name, value, obj } : { name, value }
-			)
+			q.inputs.map(({ name, value, obj }) => {
+				// Apply formatPhoneNumber only to phone fields
+				const formattedValue =
+					name === 'phone' ? formatPhoneNumber(value) : value;
+				return obj
+					? { name, value: formattedValue, obj }
+					: { name, value: formattedValue };
+			})
 		);
 		try {
 			setLoading(true);
@@ -277,7 +285,7 @@ const ConversationalForm = () => {
 				}
 			}
 		} catch (error) {
-      console.log(error);
+			console.log(error);
 		} finally {
 			setLoading(false);
 		}
@@ -493,15 +501,23 @@ const ConversationalForm = () => {
 											</Button>
 										)}
 										{/* Spacer to push button/text to the right if Back is hidden */}
-										{currentQuestionIndex === 0 && <Box sx={{ flexGrow: 1 }} />}
+										{currentQuestionIndex === 0 && (
+											<Box sx={{ flexGrow: 1 }} />
+										)}
 
 										{/* Inline Status Text */}
-										<Typography variant="caption" sx={{ color: 'text.secondary', mr: 1 }}>
+										<Typography
+											variant="caption"
+											sx={{
+												color: 'text.secondary',
+												mr: 1,
+											}}
+										>
 											{loading
 												? 'Saving your answer, please wait...'
 												: !turnstileToken
-												? 'Securing form, please wait...'
-												: ''}
+													? 'Securing form, please wait...'
+													: ''}
 										</Typography>
 
 										{/* Next/Submit Button */}
@@ -509,9 +525,14 @@ const ConversationalForm = () => {
 											variant="contained"
 											color="primary"
 											onClick={handleNextSubmitClick}
-											disabled={hasInputErrors || loading || !turnstileToken} // Updated disabled logic
+											disabled={
+												hasInputErrors ||
+												loading ||
+												!turnstileToken
+											} // Updated disabled logic
 										>
-											{currentQuestionIndex + 1 === questions.length
+											{currentQuestionIndex + 1 ===
+											questions.length
 												? 'Submit'
 												: 'Next'}
 										</Button>
