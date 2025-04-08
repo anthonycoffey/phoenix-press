@@ -14,12 +14,12 @@ import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
 import CardHeader from '@mui/material/CardHeader';
 import LinearProgress from '@mui/material/LinearProgress';
-import Prompt from './Prompt'; // Keep memoized Prompt
-import Answer from './Answer'; // Keep memoized Answer
-import Disclaimer from './Disclaimer'; // Keep memoized Disclaimer
+import Prompt from './Prompt';
+import Answer from './Answer';
+import Disclaimer from './Disclaimer';
 import CancelIcon from './CancelIcon';
 import { GlobalStateContext } from '../state';
-import { validateInputObject } from '../utils/validation';
+import { validateInputObject, formatPhoneNumber } from '../utils/validation';
 
 const ConversationalForm = () => {
 	// Get only global state/setters from context
@@ -180,16 +180,20 @@ const ConversationalForm = () => {
 	);
 
 	const completeSubmission = useCallback(async () => {
-		const submission = questions.flatMap((q) =>
-			q.inputs.map(({ name, value, obj }) =>
-				obj ? { name, value, obj } : { name, value }
-			)
-		);
+    // Import formatPhoneNumber function
+
+    const submission = questions.flatMap((q) =>
+      q.inputs.map(({ name, value, obj }) => {
+        // Apply formatPhoneNumber only to phone fields
+        const formattedValue = name === 'phone' ? formatPhoneNumber(value) : value;
+        return obj ? { name, value: formattedValue, obj } : { name, value: formattedValue };
+      })
+    );
 		try {
 			setLoading(true);
-			setSubmitted(true);
+			
 			if (!formSubmissionId) {
-				/* ... error handling ... */ return false;
+				return false;
 			}
 			await fetch(
 				`${LOCALIZED.API_URL}/submit-lead-form/${formSubmissionId}`,
@@ -227,8 +231,12 @@ const ConversationalForm = () => {
 				window.dataLayer.push({ event: 'form_submit' });
 			}
 		} catch (error) {
-			/* ... error handling ... */ setSubmitted(false);
-		}
+			setSubmitted(false);
+      console.log(error);
+		} finally {
+      setSubmitted(true);
+      setLoading(false);
+    }
 	}, [
 		questions,
 		formSubmissionId,
@@ -277,7 +285,7 @@ const ConversationalForm = () => {
 				}
 			}
 		} catch (error) {
-			/* ... error handling ... */
+      console.log(error);
 		} finally {
 			setLoading(false);
 		}
@@ -372,7 +380,7 @@ const ConversationalForm = () => {
 		// Show saving alert if already loading (fetch in progress)
 		if (loading) {
 			setNavigationWarning(
-				'Sorry! We were saving your previous answer, please try again now.'
+				'Sorry! We were saving your answer, please try again.'
 			);
 			return;
 		}
