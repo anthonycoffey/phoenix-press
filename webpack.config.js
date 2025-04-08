@@ -28,6 +28,11 @@ module.exports = merge(defaultConfig, {
 			new TerserPlugin({
 				extractComments: true,
 				parallel: true,
+				terserOptions: {
+					compress: {
+						drop_console: true, // Removes all console statements
+					},
+				},
 			}),
 		],
 	},
