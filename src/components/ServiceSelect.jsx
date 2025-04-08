@@ -21,30 +21,46 @@ export default function ServiceSelect({
 
 	// Ensure services is an array
 	const availableServices = Array.isArray(services) ? services : [];
-	// Ensure the current value from the input prop is an array
-	// The parent (ConversationalForm) should store the value for 'service_type' as an array of selected service *values* (e.g., ['service_a', 'service_b'])
-	const currentSelectedValues = Array.isArray(input?.value)
+	// The parent (ConversationalForm) now stores the value for 'service_type' as an array of objects: [{value: ..., id: ...}]
+	// We need to extract the 'value' strings from this array to determine the checked state.
+	const currentSelectedObjects = Array.isArray(input?.value)
 		? input.value
 		: [];
+	const currentSelectedValues = currentSelectedObjects.map(
+		(obj) => obj.value
+	);
 
 	const handleCheckboxChange = useCallback(
 		(event) => {
 			const { value, checked } = event.target; // 'value' here is the service.value
 
-			// Calculate the next array of selected service values
+			// Calculate the next array of selected service values (strings)
 			const nextSelectedValues = checked
 				? [...currentSelectedValues, value] // Add the value if checked
 				: currentSelectedValues.filter(
 						(serviceValue) => serviceValue !== value
 					); // Remove the value if unchecked
 
-			// Call the parent's handler with the correct input name and the new array of values
+			// Format the output to match the target structure: [{value: ..., id: ...}]
+			const formattedOutputArray = availableServices
+				.filter((service) => nextSelectedValues.includes(service.value))
+				.map((service) => ({
+					value: service.value,
+					id: service.id,
+				}));
+
+			// Call the parent's handler with the correct input name and the formatted array of objects
 			if (onInputChange && input?.name) {
-				onInputChange(input.name, nextSelectedValues);
+				onInputChange(input.name, formattedOutputArray);
 			}
 		},
-		[input?.name, currentSelectedValues, onInputChange]
-	); // Depend on current value and callback
+		[
+			input?.name,
+			currentSelectedValues,
+			onInputChange,
+			availableServices, // Add availableServices as a dependency
+		]
+	); // Depend on current value, callback, and the services list
 
 	// Removed validateSelection function
 
@@ -80,7 +96,7 @@ export default function ServiceSelect({
 							control={
 								<Checkbox
 									value={service.value} // The value associated with this checkbox
-									// Check if the current value array (from props) includes this service's value
+									// Check if the array of selected *values* includes this service's value
 									checked={currentSelectedValues.includes(
 										service.value
 									)}
