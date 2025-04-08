@@ -2,8 +2,9 @@ import {
 	useState,
 	useEffect,
 	useRef,
-	useContext,
+	// useContext, // Removed
 	Suspense,
+	useCallback, // Added
 } from '@wordpress/element';
 import TextField from '@mui/material/TextField';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -11,19 +12,18 @@ import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import LocationIcon from './LocationIcon';
 import { useLoadScript } from '@react-google-maps/api';
-import { GlobalStateContext } from '../state.js';
+// Removed: import { GlobalStateContext } from '../state.js';
 
+// Helper function remains the same
 const getAddressObject = (address_components) => {
 	const obj = {};
 	if (!address_components) return obj;
-
 	const number = address_components.find((c) =>
 		c.types.includes('street_number')
 	)?.long_name;
 	const street = address_components.find((c) =>
 		c.types.includes('route')
 	)?.short_name;
-
 	obj.address_1 = number && street ? `${number} ${street}` : '';
 	obj.city =
 		address_components.find((c) => c.types.includes('locality'))
@@ -38,34 +38,80 @@ const getAddressObject = (address_components) => {
 	obj.zipcode =
 		address_components.find((c) => c.types.includes('postal_code'))
 			?.long_name || '';
-
 	return obj;
 };
 
 const libraries = ['places'];
 
-export default function AddressAutoComplete({ input }) {
-	const { questions, currentQuestionIndex, setQuestions, errors, setErrors } =
-		useContext(GlobalStateContext);
+// Accept onInputChange and errors via props
+export default function AddressAutoComplete({ input, onInputChange, errors }) {
+	// Removed context usage
+	// const { questions, currentQuestionIndex, setQuestions, errors, setErrors } = useContext(GlobalStateContext);
 	const [loadingLocation, setLoadingLocation] = useState(false);
 	const inputRef = useRef(null);
+	const autocompleteRef = useRef(null); // Ref to store autocomplete instance
 
 	const { isLoaded, loadError } = useLoadScript({
 		googleMapsApiKey: LOCALIZED?.GMAPS_API_KEY,
 		libraries,
 	});
 
+	// Internal handler to call the parent's onInputChange
+	const triggerParentOnChange = useCallback(
+		(value, isObject = false) => {
+			if (onInputChange && input?.name) {
+				// If it's an address object, pass it along. Otherwise, pass the text value.
+				// The parent handler needs to be aware of this structure.
+				// For simplicity now, let's always pass the formatted string value,
+				// and maybe store the object separately if needed later.
+				let stringValue = '';
+				if (isObject && value) {
+					stringValue =
+						`${value.address_1 || ''}, ${value.city || ''}, ${value.state || ''} ${value.zipcode || ''}`
+							.replace(/^, |, $/g, '')
+							.trim();
+				} else {
+					stringValue = value;
+				}
+				// Call parent's handler with the input's actual name and the string value
+				onInputChange(input.name, stringValue);
+				// Optionally pass the object too if parent needs it:
+				// onInputChange(input.name, stringValue, isObject ? value : null);
+			}
+			// Removed: setErrors logic
+		},
+		[onInputChange, input?.name]
+	);
+
 	useEffect(() => {
-		if (!inputRef.current || !window.google) return;
+		if (
+			!isLoaded ||
+			!inputRef.current ||
+			!window.google ||
+			autocompleteRef.current
+		)
+			return; // Don't re-init
 
 		const autocomplete = new window.google.maps.places.Autocomplete(
 			inputRef.current
 		);
+		autocompleteRef.current = autocomplete; // Store instance
+
 		const handlePlaceChanged = () => {
 			try {
 				const place = autocomplete.getPlace();
-				const addressObj = getAddressObject(place.address_components);
-				handleInputChange(addressObj);
+				if (place && place.address_components) {
+					const addressObj = getAddressObject(
+						place.address_components
+					);
+					triggerParentOnChange(addressObj, true); // Pass object to handler
+				} else {
+					console.warn(
+						'Place changed, but no address components found.'
+					);
+					// Optionally trigger update with current input text if needed
+					// triggerParentOnChange(inputRef.current.value, false);
+				}
 			} catch (error) {
 				console.error('Error handling place_changed event:', error);
 			}
@@ -73,14 +119,20 @@ export default function AddressAutoComplete({ input }) {
 
 		autocomplete.addListener('place_changed', handlePlaceChanged);
 
-		return () => {
-			window.google.maps.event.clearInstanceListeners(autocomplete);
-		};
-	}, [isLoaded]);
+		// Cleanup function
+		// Note: Standard cleanup might remove the listener, but Google Maps API handles this differently.
+		// We might not need explicit listener removal if the component unmounts cleanly.
+		// However, keeping it for safety if needed:
+		// return () => {
+		// 	if (autocomplete) {
+		//         window.google.maps.event.clearInstanceListeners(autocomplete);
+		//     }
+		// };
+	}, [isLoaded, triggerParentOnChange]); // Depend on isLoaded and the stable callback
 
-	const handleUseGps = () => {
-		if (!navigator.geolocation) {
-			console.error('Geolocation is not supported by your browser.');
+	const handleUseGps = useCallback(() => {
+		if (!navigator.geolocation || !window.google) {
+			console.error('Geolocation or Google Maps API not available.');
 			return;
 		}
 
@@ -89,7 +141,6 @@ export default function AddressAutoComplete({ input }) {
 			(pos) => {
 				const { latitude, longitude } = pos.coords;
 				const geocoder = new window.google.maps.Geocoder();
-
 				geocoder.geocode(
 					{ location: { lat: latitude, lng: longitude } },
 					(results, status) => {
@@ -98,7 +149,7 @@ export default function AddressAutoComplete({ input }) {
 							const addressObj = getAddressObject(
 								results[0].address_components
 							);
-							handleInputChange(addressObj);
+							triggerParentOnChange(addressObj, true); // Pass object to handler
 						} else {
 							console.error('Geocoder failed due to:', status);
 						}
@@ -110,35 +161,17 @@ export default function AddressAutoComplete({ input }) {
 				console.error('Error in getting geolocation:', err);
 			}
 		);
-	};
+	}, [triggerParentOnChange]); // Depend on stable callback
 
-	const handleInputChange = (event) => {
-		try {
-			const updatedQuestions = [...questions];
-			const currentInput = updatedQuestions[
-				currentQuestionIndex
-			].inputs.find((input) => input.name === 'location');
+	// Handler for direct text input changes in the TextField
+	const handleTextInputChange = useCallback(
+		(event) => {
+			triggerParentOnChange(event.target.value, false); // Pass text value to handler
+		},
+		[triggerParentOnChange]
+	); // Depend on stable callback
 
-			if (event.nativeEvent instanceof Event) {
-				currentInput.value = event.target.value;
-			} else {
-				currentInput.obj = event;
-				currentInput.value = `${event.address_1}, ${event.city}, ${event.state} ${event.zipcode}`;
-			}
-
-			setQuestions(updatedQuestions);
-
-			const errorMessage = validateLocation(currentInput);
-			setErrors({ ...errors, [currentInput.name]: errorMessage });
-		} catch (error) {
-			console.error('Error handling input change:', error);
-		}
-	};
-
-	const validateLocation = (input) => {
-		if (!input.optional)
-			return !input.value.trim() ? 'This field is required' : '';
-	};
+	// Removed: validateLocation function
 
 	if (loadError) {
 		console.error('Error loading maps:', loadError);
@@ -150,37 +183,42 @@ export default function AddressAutoComplete({ input }) {
 	}
 
 	return (
-		<Suspense fallback={<LinearProgress />}>
-			<Stack spacing={2} direction="column" sx={{ marginTop: '1rem' }}>
-				<TextField
-					label={input.label}
-					name={input.name}
-					value={input.value}
-					onChange={handleInputChange}
-					variant="outlined"
-					margin="normal"
-					fullWidth
-					inputRef={inputRef}
-					InputProps={{
-						endAdornment: loadingLocation ? (
-							<LinearProgress />
-						) : null,
-					}}
-					required={!input.optional}
-					error={!!errors[input.name]}
-					helperText={errors[input.name]}
-				/>
-				<Button
-					variant="contained"
-					aria-label="Use my location"
-					color="primary"
-					onClick={handleUseGps}
-					disabled={loadingLocation}
-				>
-					{loadingLocation ? <LinearProgress /> : <LocationIcon />}
-					Use My Current Location
-				</Button>
-			</Stack>
-		</Suspense>
+		// Suspense might not be strictly necessary here unless loading child components
+		// <Suspense fallback={<LinearProgress />}>
+		<Stack spacing={2} direction="column" sx={{ marginTop: '1rem' }}>
+			<TextField
+				label={input?.label || 'Address'}
+				name={input?.name || 'location'}
+				// Use the value from the parent state
+				value={input?.value || ''}
+				onChange={handleTextInputChange} // Use specific handler for text changes
+				variant="outlined"
+				margin="normal"
+				fullWidth
+				inputRef={inputRef} // Ref for Google Autocomplete
+				InputProps={{
+					endAdornment: loadingLocation ? (
+						<LinearProgress sx={{ width: '50px' }} />
+					) : null, // Show progress in adornment
+				}}
+				required={!input?.optional}
+				// Use errors passed via props
+				error={!!errors?.[input?.name]}
+				helperText={errors?.[input?.name] || ''}
+				size="small" // Added size small
+			/>
+			<Button
+				variant="contained"
+				aria-label="Use my location"
+				color="primary"
+				onClick={handleUseGps}
+				disabled={loadingLocation}
+				startIcon={<LocationIcon />} // Use startIcon
+			>
+				{/* Removed icon from here */}
+				Use My Current Location
+			</Button>
+		</Stack>
+		// </Suspense>
 	);
 }

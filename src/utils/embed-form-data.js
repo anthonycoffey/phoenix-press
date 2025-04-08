@@ -34,6 +34,18 @@ const options = [
 		],
 	},
 	{
+		name: 'email',
+		inputs: [
+			{
+				name: 'email',
+				type: 'email',
+				label: 'Enter your email address',
+				value: '',
+				optional: true,
+			},
+		],
+	},
+	{
 		name: 'service_time',
 		type: 'row',
 		title: 'When do you need service?',
