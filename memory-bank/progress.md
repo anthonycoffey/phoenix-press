@@ -11,7 +11,7 @@ What are you or excessions bringing in I love you I love you I have a fluttering
     * Settings page infrastructure likely exists (`includes/Settings.php`, `readme-plugin-settings.png`).
     * Google Analytics `gtag` event tracking (`form_start`, `form_submit`) implemented in `EmbedForm.jsx` and `ConversationalForm.jsx`.
     * Form submission UX updated to show an inline success message (`LOCALIZED.SUBMISSION_MESSAGE`) instead of redirecting in both `EmbedForm.jsx` and `ConversationalForm.jsx`.
-    * Conversational form (`ConversationalForm.jsx`) navigation button UX updated: Back button is always responsive. Next/Submit button clicks show "Securing form..." alert if Turnstile is not ready (`turnstileToken` null). If a fetch is active (`loading` true), clicking now shows a "Saving, please wait...." alert. Button disabling is based solely on input validation errors.
+    * Conversational form (`ConversationalForm.jsx`) navigation UX improved: Replaced disruptive alerts for loading/Turnstile states with inline `Typography` messages ("Saving your answer, please wait...", "Securing form, please wait..."). The Next/Submit button is now disabled based on input validation errors (`hasInputErrors`), API loading state (`loading`), and Turnstile readiness (`!turnstileToken`). The Back button remains always enabled when visible.
     * Optional 'email' field added to both conversational (`src/utils/form-data.js`) and embed (`src/utils/embed-form-data.js`) form definitions.
     * Google Analytics Enhanced Conversions tracking (`gtag('set', 'user_data', ...)`) implemented in `ConversationalForm.jsx` and `EmbedForm.jsx`, using email and phone data from form state.
     * `EmbedForm.jsx` and `ConversationalForm.jsx` refactored to use `useCallback` and `useMemo` for performance optimization (memoizing event handlers, submission logic, and derived values).
@@ -42,6 +42,7 @@ What are you or excessions bringing in I love you I love you I have a fluttering
     * Re-introduced validation `useEffect` hook in `ConversationalForm.jsx`.
     * Restored Cloudflare Turnstile integration in `ConversationalForm.jsx`.
     * Conversational form (`ConversationalForm.jsx`) styled via inline `sx` prop on the `<Card>` component to have `width: max-content`, `minWidth: 300px`, `maxWidth: 500px`, and `marginLeft: auto` for chatbox-like width behavior (reverted global CSS approach).
+    * `ServiceSelect.jsx` (used in `ConversationalForm`) now formats its output data as an array of objects `[{value: ..., id: ...}]` before passing it up via `onInputChange`, aligning its data structure with `EmbedForm/Services.jsx`.
 * **What's Left:**
     * Full implementation details of backend logic (API interactions, settings handling, processing new 'email' field).
     * Complete implementation and integration of frontend React components (ensuring 'email' field renders correctly).
@@ -70,3 +71,5 @@ What are you or excessions bringing in I love you I love you I have a fluttering
     * **2025-04-07:** Re-introduced validation `useEffect` and restored Turnstile integration in `ConversationalForm.jsx`.
     * **2025-04-07:** Reverted CSS rules added to `src/styles.css` and instead applied inline styles (`sx` prop) to the `<Card>` in `ConversationalForm.jsx` to constrain width (min/max/max-content) for chatbox appearance without affecting the embed form.
     * **2025-04-07:** Updated `ConversationalForm.jsx` navigation button behavior: Back button (`handleBackClick`) made always responsive. Next/Submit button (`handleNextSubmitClick`) now shows "Saving, please wait...." alert if `loading` is true (instead of ignoring click), and shows "Securing form..." alert only if `turnstileToken` is null.
+    * **2025-04-08:** Modified `ServiceSelect.jsx` to format its output data as `[{value: ..., id: ...}]` before calling `onInputChange`, aligning its data structure with `EmbedForm/Services.jsx`.
+    * **2025-04-08:** Refactored `ConversationalForm.jsx` navigation UX: Replaced `Alert` component for loading/Turnstile states with inline `Typography` messages. Updated Next/Submit button `disabled` logic to include `loading` and `!turnstileToken` checks. Removed `navigationWarning` state.

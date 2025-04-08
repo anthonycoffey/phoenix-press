@@ -54,6 +54,8 @@
     * Added inline styles (`width: max-content`, `minWidth: 300px`, `maxWidth: 500px`, `marginLeft: auto`) to the `<Card>` component in `src/components/ConversationalForm.jsx` using the `sx` prop to constrain its width like a chatbox.
     * Simplified `src/components/ConversationalForm.jsx` navigation logic: Back button always navigates immediately. Next/Submit button only shows "Securing form, please wait..." alert if `turnstileToken` is null; if `loading` is true (fetch active), clicks are ignored (no alert, no action).
     * Modified `src/components/ConversationalForm.jsx` `handleNextSubmitClick` function to show a "Saving, please wait...." alert when `loading` is true, instead of ignoring the click.
+    * Modified `src/components/ServiceSelect.jsx` to format its output data as an array of objects `[{value: ..., id: ...}]` before passing it to the parent via `onInputChange`, aligning it with the data structure used by `EmbedForm/Services.jsx`.
+    * Refactored `src/components/ConversationalForm.jsx` navigation UX: Replaced the `Alert` component for loading/Turnstile states with inline `Typography` messages ("Saving...", "Securing..."). Updated the Next/Submit button's `disabled` state to include `loading` and `!turnstileToken` checks. Removed the `navigationWarning` state and associated logic.
 * **Next Steps:** Update `progress.md`.
 * **Active Decisions:**
     * Added an optional 'email' field to both form types. (Previous task)
@@ -79,7 +81,8 @@
     * Separated validation logic into a `useEffect` hook in `ConversationalForm`.
     * Restored Turnstile integration.
     * Styled the conversational form (`ConversationalForm.jsx`) to behave like a chatbox (min/max width, shrink-wrap content) using inline styles (`sx` prop) on the main `<Card>` component, ensuring styles do not affect the embed form.
-    * Updated UX in `ConversationalForm.jsx` for navigation during processing: Back button is always responsive. Next/Submit button clicks show "Securing form, please wait..." alert if Turnstile is not ready (`turnstileToken` is null). If a fetch is already in progress (`loading` is true), clicking Next/Submit now shows a "Saving, please wait...." alert. Button `disabled` state remains based only on input validation (`hasInputErrors`).
+    * Updated UX in `ConversationalForm.jsx` for navigation during processing: Replaced disruptive alerts for loading/Turnstile states with inline `Typography` messages ("Saving your answer, please wait...", "Securing form, please wait..."). The Next/Submit button is now disabled based on input validation errors (`hasInputErrors`), API loading state (`loading`), and Turnstile readiness (`!turnstileToken`). The Back button remains always enabled when visible.
+    * Aligned the data structure passed up by `ServiceSelect.jsx` (used in `ConversationalForm`) to match the structure used by `EmbedForm/Services.jsx`. The `ServiceSelect` component now formats the selected services into an array of objects `[{value: ..., id: ...}]` within its `handleCheckboxChange` function before calling the `onInputChange` prop.
 * **Key Patterns/Preferences:**
     * WordPress plugin structure.
     * PHP for backend/WordPress integration.
