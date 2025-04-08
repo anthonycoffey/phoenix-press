@@ -6,7 +6,7 @@ import {
 	useCallback,
 	useMemo,
 } from '@wordpress/element';
-import Alert from '@mui/material/Alert'; // Import Alert
+import Typography from '@mui/material/Typography'; // Import Typography
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -51,7 +51,6 @@ const ConversationalForm = () => {
 	});
 	const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 	const [errors, setErrors] = useState({});
-	const [navigationWarning, setNavigationWarning] = useState(null); // State for navigation warning
 	// =======================================
 
 	// Restore Turnstile state and ref
@@ -148,13 +147,6 @@ const ConversationalForm = () => {
 		}
 		// DO NOT add 'errors' to dependency array here, causes infinite loop!
 	}, [currentQuestion, setErrors]); // Rerun validation when the current question object changes
-
-	// Effect to clear navigation warning when Turnstile token is available
-	useEffect(() => {
-		if (turnstileToken) {
-			setNavigationWarning(null);
-		}
-	}, [turnstileToken]); // Only depends on token now
 
 	// --- End Effects ---
 
@@ -367,27 +359,16 @@ const ConversationalForm = () => {
 	const handleBackClick = useCallback(() => {
 		// Simplified: Always allow back navigation immediately
 		setCurrentQuestionIndex((prevIndex) => prevIndex - 1);
-		// Clear any potential lingering warning when navigating back
-		setNavigationWarning(null);
 	}, [setCurrentQuestionIndex]); // Only depends on setter
 
 	const handleNextSubmitClick = useCallback(() => {
-		// Only block if Turnstile is not ready
-		if (!turnstileToken) {
-			setNavigationWarning('Securing form, please try again.');
+		// Prevent action if loading, turnstile not ready, or errors exist
+		if (loading || !turnstileToken || hasInputErrors) {
 			return;
 		}
-		// Show saving alert if already loading (fetch in progress)
-		if (loading) {
-			setNavigationWarning(
-				'Sorry! We were saving your answer, please try again.'
-			);
-			return;
-		}
-		// If Turnstile is ready and not loading, proceed
-		setNavigationWarning(null); // Clear warning
+		// Proceed with submission
 		handleSubmit();
-	}, [loading, turnstileToken, handleSubmit]); // Keep dependencies
+	}, [loading, turnstileToken, hasInputErrors, handleSubmit]); // Keep dependencies
 	// --- End Callbacks & Handlers ---
 
 	// --- Render Logic ---
@@ -487,18 +468,10 @@ const ConversationalForm = () => {
 											services={services} // Pass services data down
 										/>
 									</Stack>
-									{/* Navigation Warning Area */}
-									{navigationWarning && (
-										<Alert
-											severity="warning"
-											sx={{ mt: 1, mb: 1 }}
-										>
-											{navigationWarning}
-										</Alert>
-									)}
+									{/* Navigation Area */}
 									<Stack
 										direction="row"
-										spacing={2}
+										spacing={1} // Reduced spacing slightly
 										sx={{
 											width: '100%',
 											display: 'flex',
@@ -506,28 +479,39 @@ const ConversationalForm = () => {
 											justifyContent:
 												currentQuestionIndex > 0
 													? 'space-between'
-													: 'flex-end',
+													: 'flex-end', // Keep alignment logic
+											alignItems: 'center', // Vertically align items
 										}}
 									>
 										{currentQuestionIndex > 0 && (
-											// Disable only if at the first question (implicitly handled by conditional rendering)
 											<Button
 												variant="contained"
 												onClick={handleBackClick}
+												// Back button is never disabled by loading/turnstile
 											>
 												Back
 											</Button>
 										)}
-										{/* Disable based only on input errors */}
+										{/* Spacer to push button/text to the right if Back is hidden */}
+										{currentQuestionIndex === 0 && <Box sx={{ flexGrow: 1 }} />}
+
+										{/* Inline Status Text */}
+										<Typography variant="caption" sx={{ color: 'text.secondary', mr: 1 }}>
+											{loading
+												? 'Saving your answer, please wait...'
+												: !turnstileToken
+												? 'Securing form, please wait...'
+												: ''}
+										</Typography>
+
+										{/* Next/Submit Button */}
 										<Button
-											sx={{ justifySelf: 'end' }}
 											variant="contained"
 											color="primary"
 											onClick={handleNextSubmitClick}
-											disabled={hasInputErrors}
+											disabled={hasInputErrors || loading || !turnstileToken} // Updated disabled logic
 										>
-											{currentQuestionIndex + 1 ===
-											questions.length
+											{currentQuestionIndex + 1 === questions.length
 												? 'Submit'
 												: 'Next'}
 										</Button>
