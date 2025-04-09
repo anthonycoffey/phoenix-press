@@ -13,7 +13,6 @@ export default function ServiceSelect({
 	onInputChange,
 	errors,
 }) {
-
 	const availableServices = Array.isArray(services) ? services : [];
 
 	const currentSelectedObjects = Array.isArray(input?.value)
@@ -25,10 +24,10 @@ export default function ServiceSelect({
 
 	const handleCheckboxChange = useCallback(
 		(event) => {
-			const { value, checked } = event.target; 
+			const { value, checked } = event.target;
 
 			const nextSelectedValues = checked
-				? [...currentSelectedValues, value] 
+				? [...currentSelectedValues, value]
 				: currentSelectedValues.filter(
 						(serviceValue) => serviceValue !== value
 					);
@@ -44,12 +43,7 @@ export default function ServiceSelect({
 				onInputChange(input.name, formattedOutputArray);
 			}
 		},
-		[
-			input?.name,
-			currentSelectedValues,
-			onInputChange,
-			availableServices,
-		]
+		[input?.name, currentSelectedValues, onInputChange, availableServices]
 	);
 
 	// Use error from props, checking specifically for this input's name

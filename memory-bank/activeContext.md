@@ -56,6 +56,8 @@
     * Modified `src/components/ConversationalForm.jsx` `handleNextSubmitClick` function to show a "Saving, please wait...." alert when `loading` is true, instead of ignoring the click.
     * Modified `src/components/ServiceSelect.jsx` to format its output data as an array of objects `[{value: ..., id: ...}]` before passing it to the parent via `onInputChange`, aligning it with the data structure used by `EmbedForm/Services.jsx`.
     * Refactored `src/components/ConversationalForm.jsx` navigation UX: Replaced the `Alert` component for loading/Turnstile states with inline `Typography` messages ("Saving...", "Securing..."). Updated the Next/Submit button's `disabled` state to include `loading` and `!turnstileToken` checks. Removed the `navigationWarning` state and associated logic.
+    * Modified `src/components/EmbedForm.jsx` success message display: Replaced the `<Prompt>` component with a styled MUI `<Alert>` component within a `<Box>` to provide more vertical space and a standard success UI, while still parsing HTML from `LOCALIZED.SUBMISSION_MESSAGE` using `html-react-parser`.
+    * Modified `src/components/EmbedForm.jsx` to add a `useEffect` hook that scrolls the page smoothly to the `#submission-success` element upon successful submission.
 * **Next Steps:** Update `progress.md`.
 * **Active Decisions:**
     * Added an optional 'email' field to both form types. (Previous task)
@@ -83,6 +85,8 @@
     * Styled the conversational form (`ConversationalForm.jsx`) to behave like a chatbox (min/max width, shrink-wrap content) using inline styles (`sx` prop) on the main `<Card>` component, ensuring styles do not affect the embed form.
     * Updated UX in `ConversationalForm.jsx` for navigation during processing: Replaced disruptive alerts for loading/Turnstile states with inline `Typography` messages ("Saving your answer, please wait...", "Securing form, please wait..."). The Next/Submit button is now disabled based on input validation errors (`hasInputErrors`), API loading state (`loading`), and Turnstile readiness (`!turnstileToken`). The Back button remains always enabled when visible.
     * Aligned the data structure passed up by `ServiceSelect.jsx` (used in `ConversationalForm`) to match the structure used by `EmbedForm/Services.jsx`. The `ServiceSelect` component now formats the selected services into an array of objects `[{value: ..., id: ...}]` within its `handleCheckboxChange` function before calling the `onInputChange` prop.
+    * Replaced the success message implementation in `EmbedForm.jsx` from using the custom `Prompt` component to using standard MUI components (`Box`, `Alert`, `AlertTitle`, `CheckCircleOutlineIcon`, `Typography`) for a more conventional and vertically substantial success display, utilizing `html-react-parser` to render the `LOCALIZED.SUBMISSION_MESSAGE`.
+    * Implemented smooth scrolling to the success message (`#submission-success`) in `EmbedForm.jsx` using a `useEffect` hook triggered by the `submitted` state.
 * **Key Patterns/Preferences:**
     * WordPress plugin structure.
     * PHP for backend/WordPress integration.

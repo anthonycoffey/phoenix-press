@@ -9,7 +9,10 @@ import Typography from '@mui/material/Typography';
 import LinearProgress from '@mui/material/LinearProgress';
 import CardHeader from '@mui/material/CardHeader';
 import InputField from './InputField';
-import Prompt from './Prompt'; // Added import for success message display
+import parse from 'html-react-parser';
+import AlertTitle from '@mui/material/AlertTitle';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import CheckCircleOutlineTwoTone from '@mui/icons-material/CheckCircleOutlineTwoTone';
 import Disclaimer from './Disclaimer';
 import questionData from '../utils/embed-form-data.js';
 import { requiredFields, isSubmissionComplete } from '../utils/validation';
@@ -26,10 +29,21 @@ export default function EmbedForm() {
 	const [turnstileToken, setTurnstileToken] = useState(null);
 	const [statusMessage, setStatusMessage] = useState('');
 	const [error, setError] = useState('');
-	const [isDirty, setIsDirty] = useState(false); // Track if form data has changed
+	const [isDirty, setIsDirty] = useState(false);
 	const turnstileRef = useRef(null);
-	const debounceTimeoutRef = useRef(null); // For debouncing saves
-	const gtagUserDataSentRef = useRef(false); // Track if gtag user_data has been set for this instance
+	const debounceTimeoutRef = useRef(null);
+	const gtagUserDataSentRef = useRef(false);
+
+	// Scroll to success message when submitted
+	useEffect(() => {
+		if (submitted) {
+			const successElement =
+				document.getElementById('submission-success');
+			if (successElement) {
+				successElement.scrollIntoView({ behavior: 'smooth' });
+			}
+		}
+	}, [submitted]);
 
 	useEffect(() => {
 		let id;
@@ -142,7 +156,7 @@ export default function EmbedForm() {
 					userData.email = emailEntry.value;
 				}
 				if (phoneEntry?.value) {
-					// Basic E.164 formatting attempt
+					// E.164 formatting
 					let phoneNumber = phoneEntry.value.replace(/[^0-9+]/g, '');
 					if (
 						phoneNumber.length === 10 &&
@@ -160,21 +174,18 @@ export default function EmbedForm() {
 					userData.email
 				) {
 					window.gtag('set', 'user_data', userData);
-					gtagUserDataSentRef.current = true; // Mark as sent for this instance
+					gtagUserDataSentRef.current = true;
 				}
 
 				// GTAG: Trigger form_submit ONLY on final, explicit submission
 				if (submit && typeof window?.dataLayer !== 'undefined') {
 					window.dataLayer.push({
 						event: 'form_submit',
-						// Optionally add relevant data here if needed
 					});
 				}
 
 				if (submit) {
-					// Removed window.location.assign redirect
-					// Success message will be shown via conditional rendering based on 'submitted' state
-					setStatusMessage(''); // Clear any intermediate status
+					setStatusMessage('');
 				} else {
 					setStatusMessage('');
 				}
@@ -285,89 +296,56 @@ export default function EmbedForm() {
 		handleSubmit(true);
 	}, [setStatusMessage, setSubmitted, handleSubmit]); // Depends on setters and the main submit handler
 
+	if (submitted) {
+		return (
+			<Alert
+				id="submission-success"
+				severity="success"
+				icon={<CheckCircleOutlineTwoTone sx={{ fontSize: 32 }} />}
+			>
+				<AlertTitle>We have received your information!</AlertTitle>
+
+				{parse(LOCALIZED.SUBMISSION_MESSAGE)}
+			</Alert>
+		);
+	}
+
 	return (
-			<Card className="phoenix-form">
-				{LOCALIZED.FORM_TITLE && (
-					<CardHeader
-						title={LOCALIZED.FORM_TITLE}
-						subheader={LOCALIZED.FORM_SUBTITLE}
-					/>
-				)}
-				{submitted ? (
-					<CardContent>
-						<Stack space={2}>
-							<Prompt
-								questionPrompt={LOCALIZED.SUBMISSION_MESSAGE}
-							/>
-						</Stack>
-					</CardContent>
-				) : (
-					<form
-						aria-label="Booking Form"
-						autoComplete="on"
-						noValidate
-					>
-						<CardContent>
-							<Stack space={4}>
-								{questions?.map((question, index) => (
-									<React.Fragment key={index}>
-										{question.type === 'row' ? (
-											<>
-												<Typography
-													variant="subtitle1"
-													sx={{ mt: '1rem' }}
-													color="textSecondary"
-												>
-													{question.title}
-													<Typography
-														variant="subtitle2"
-														color="textSecondary"
-													>
-														{question.label}
-													</Typography>
-												</Typography>
-												<Box
-													display="flex"
-													flexDirection="row"
-													sx={{ width: '100%' }}
-													gap={2}
-												>
-													{question.inputs.map(
-														(input, index) => (
-															<InputField
-																key={index}
-																input={input}
-																handleTextChange={
-																	handleTextChange
-																}
-																handleDateChange={
-																	handleDateChange
-																}
-																handleConsentChange={
-																	handleConsentChange
-																}
-																selectedDate={
-																	selectedDate
-																}
-																setValidPhoneNumber={
-																	setValidPhoneNumber
-																}
-																checked={
-																	checked
-																}
-																setChecked={
-																	setChecked
-																}
-																handleBlur={
-																	handleBlur
-																}
-															/>
-														)
-													)}
-												</Box>
-											</>
-										) : (
-											question.inputs.map(
+		<Card className="phoenix-form">
+			{LOCALIZED.FORM_TITLE && (
+				<CardHeader
+					title={LOCALIZED.FORM_TITLE}
+					subheader={LOCALIZED.FORM_SUBTITLE}
+				/>
+			)}
+
+			<form aria-label="Booking Form" autoComplete="on" noValidate>
+				<CardContent>
+					<Stack space={4}>
+						{questions?.map((question, index) => (
+							<React.Fragment key={index}>
+								{question.type === 'row' ? (
+									<>
+										<Typography
+											variant="subtitle1"
+											sx={{ mt: '1rem' }}
+											color="textSecondary"
+										>
+											{question.title}
+											<Typography
+												variant="subtitle2"
+												color="textSecondary"
+											>
+												{question.label}
+											</Typography>
+										</Typography>
+										<Box
+											display="flex"
+											flexDirection="row"
+											sx={{ width: '100%' }}
+											gap={2}
+										>
+											{question.inputs.map(
 												(input, index) => (
 													<InputField
 														key={index}
@@ -392,49 +370,67 @@ export default function EmbedForm() {
 														handleBlur={handleBlur}
 													/>
 												)
-											)
-										)}
-									</React.Fragment>
-								))}
-							</Stack>
-							<Box>
-								<Disclaimer index={0} />
-							</Box>
-							{error && (
-								<Box sx={{ mt: 2 }}>
-									<Alert severity="warning">{error}</Alert>
-								</Box>
-							)}
-						</CardContent>
+											)}
+										</Box>
+									</>
+								) : (
+									question.inputs.map((input, index) => (
+										<InputField
+											key={index}
+											input={input}
+											handleTextChange={handleTextChange}
+											handleDateChange={handleDateChange}
+											handleConsentChange={
+												handleConsentChange
+											}
+											selectedDate={selectedDate}
+											setValidPhoneNumber={
+												setValidPhoneNumber
+											}
+											checked={checked}
+											setChecked={setChecked}
+											handleBlur={handleBlur}
+										/>
+									))
+								)}
+							</React.Fragment>
+						))}
+					</Stack>
+					<Box>
+						<Disclaimer index={0} />
+					</Box>
+					{error && (
+						<Box sx={{ mt: 2 }}>
+							<Alert severity="warning">{error}</Alert>
+						</Box>
+					)}
+				</CardContent>
 
-						<CardActions sx={{ justifyContent: 'end' }}>
-							<Typography
-								variant="body2"
-								color="textSecondary"
-								sx={{ mr: 2 }}
-							>
-								{statusMessage}
-							</Typography>
-							<Button
-								size={'large'}
-								variant="contained"
-								color="primary"
-								onClick={handleFinalSubmit} // Use the memoized handler
-								disabled={
-									loading || submitted || !turnstileToken
-								} // Use disabled prop for clarity
-							>
-								Submit
-							</Button>
-						</CardActions>
-						{loading || (!turnstileToken && <LinearProgress />)}
-						<div
-							ref={turnstileRef}
-							id="turnstile-widget"
-							className="cf-turnstile"
-						></div>
-					</form>
-				)}
-			</Card>
+				<CardActions sx={{ justifyContent: 'end' }}>
+					<Typography
+						variant="body2"
+						color="textSecondary"
+						sx={{ mr: 2 }}
+					>
+						{statusMessage}
+					</Typography>
+					<Button
+						size={'large'}
+						variant="contained"
+						color="primary"
+						onClick={handleFinalSubmit} // Use the memoized handler
+						disabled={loading || submitted || !turnstileToken} // Use disabled prop for clarity
+					>
+						Submit
+					</Button>
+				</CardActions>
+				{loading || (!turnstileToken && <LinearProgress />)}
+				<div
+					ref={turnstileRef}
+					id="turnstile-widget"
+					className="cf-turnstile"
+				></div>
+			</form>
+		</Card>
 	);
 }

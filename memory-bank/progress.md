@@ -43,6 +43,8 @@ What are you or excessions bringing in I love you I love you I have a fluttering
     * Restored Cloudflare Turnstile integration in `ConversationalForm.jsx`.
     * Conversational form (`ConversationalForm.jsx`) styled via inline `sx` prop on the `<Card>` component to have `width: max-content`, `minWidth: 300px`, `maxWidth: 500px`, and `marginLeft: auto` for chatbox-like width behavior (reverted global CSS approach).
     * `ServiceSelect.jsx` (used in `ConversationalForm`) now formats its output data as an array of objects `[{value: ..., id: ...}]` before passing it up via `onInputChange`, aligning its data structure with `EmbedForm/Services.jsx`.
+    * Embed form (`EmbedForm.jsx`) success message display refactored to use MUI `Alert` within a styled `Box` for better vertical presence, replacing the previous `Prompt` component implementation. Uses `html-react-parser` for rendering `LOCALIZED.SUBMISSION_MESSAGE`.
+    * Embed form (`EmbedForm.jsx`) now smoothly scrolls to the success message (`#submission-success`) upon successful submission using a `useEffect` hook.
 * **What's Left:**
     * Full implementation details of backend logic (API interactions, settings handling, processing new 'email' field).
     * Complete implementation and integration of frontend React components (ensuring 'email' field renders correctly).
@@ -73,3 +75,5 @@ What are you or excessions bringing in I love you I love you I have a fluttering
     * **2025-04-07:** Updated `ConversationalForm.jsx` navigation button behavior: Back button (`handleBackClick`) made always responsive. Next/Submit button (`handleNextSubmitClick`) now shows "Saving, please wait...." alert if `loading` is true (instead of ignoring click), and shows "Securing form..." alert only if `turnstileToken` is null.
     * **2025-04-08:** Modified `ServiceSelect.jsx` to format its output data as `[{value: ..., id: ...}]` before calling `onInputChange`, aligning its data structure with `EmbedForm/Services.jsx`.
     * **2025-04-08:** Refactored `ConversationalForm.jsx` navigation UX: Replaced `Alert` component for loading/Turnstile states with inline `Typography` messages. Updated Next/Submit button `disabled` logic to include `loading` and `!turnstileToken` checks. Removed `navigationWarning` state.
+    * **2025-04-09:** Refactored the success message display in `EmbedForm.jsx` to use MUI `Alert` and `Box` components instead of the `Prompt` component, aiming for a more standard UI and better vertical space utilization. Utilized `html-react-parser` for rendering the HTML message content.
+    * **2025-04-09:** Implemented smooth scrolling to the success message (`#submission-success`) in `EmbedForm.jsx` upon submission using a `useEffect` hook.

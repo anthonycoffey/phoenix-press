@@ -79,7 +79,7 @@ const InputField = ({
 			return (
 				<FormControlLabel
 					sx={{ marginBottom: '1rem' }}
-          size="small"
+					size="small"
 					control={
 						<Checkbox
 							checked={checked}
@@ -91,7 +91,9 @@ const InputField = ({
 							required={!input.optional}
 						/>
 					}
-					label={parse(LOCALIZED.SMS_CONSENT_MESSAGE || input.label || '')}
+					label={parse(
+						LOCALIZED.SMS_CONSENT_MESSAGE || input.label || ''
+					)}
 				/>
 			);
 		case 'datetime':
