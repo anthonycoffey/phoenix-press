@@ -69,10 +69,11 @@ div#conversation-turnstile-widget {
 }
 
 #phoenix-form-root {
-  position: sticky !important;
-  bottom: 10px !important;
-  right: 10px !important;
-  z-index: 9999 !important;
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+  z-index: 9999;
 }
 
 .phoenix-form-embed-root {
