@@ -1,3 +1,4 @@
+import { useCallback } from '@wordpress/element';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
@@ -5,24 +6,16 @@ import Checkbox from '@mui/material/Checkbox';
 import Box from '@mui/material/Box';
 import FormHelperText from '@mui/material/FormHelperText';
 import FormLabel from '@mui/material/FormLabel';
-import { useCallback } from '@wordpress/element'; // Removed useContext, useEffect, useState
-// Removed: import { GlobalStateContext } from '../state';
 
-// Accept input (containing current value), services, onInputChange, and errors via props
 export default function ServiceSelect({
 	input,
 	services,
 	onInputChange,
 	errors,
 }) {
-	// Removed context usage
-	// Removed internal selectedServices state
-	// Removed useEffect hook
 
-	// Ensure services is an array
 	const availableServices = Array.isArray(services) ? services : [];
-	// The parent (ConversationalForm) now stores the value for 'service_type' as an array of objects: [{value: ..., id: ...}]
-	// We need to extract the 'value' strings from this array to determine the checked state.
+
 	const currentSelectedObjects = Array.isArray(input?.value)
 		? input.value
 		: [];
@@ -32,16 +25,14 @@ export default function ServiceSelect({
 
 	const handleCheckboxChange = useCallback(
 		(event) => {
-			const { value, checked } = event.target; // 'value' here is the service.value
+			const { value, checked } = event.target; 
 
-			// Calculate the next array of selected service values (strings)
 			const nextSelectedValues = checked
-				? [...currentSelectedValues, value] // Add the value if checked
+				? [...currentSelectedValues, value] 
 				: currentSelectedValues.filter(
 						(serviceValue) => serviceValue !== value
-					); // Remove the value if unchecked
+					);
 
-			// Format the output to match the target structure: [{value: ..., id: ...}]
 			const formattedOutputArray = availableServices
 				.filter((service) => nextSelectedValues.includes(service.value))
 				.map((service) => ({
@@ -49,7 +40,6 @@ export default function ServiceSelect({
 					id: service.id,
 				}));
 
-			// Call the parent's handler with the correct input name and the formatted array of objects
 			if (onInputChange && input?.name) {
 				onInputChange(input.name, formattedOutputArray);
 			}
@@ -58,11 +48,9 @@ export default function ServiceSelect({
 			input?.name,
 			currentSelectedValues,
 			onInputChange,
-			availableServices, // Add availableServices as a dependency
+			availableServices,
 		]
-	); // Depend on current value, callback, and the services list
-
-	// Removed validateSelection function
+	);
 
 	// Use error from props, checking specifically for this input's name
 	const error = errors?.[input?.name];

@@ -286,7 +286,6 @@ export default function EmbedForm() {
 	}, [setStatusMessage, setSubmitted, handleSubmit]); // Depends on setters and the main submit handler
 
 	return (
-		<section>
 			<Card className="phoenix-form">
 				{LOCALIZED.FORM_TITLE && (
 					<CardHeader
@@ -437,6 +436,5 @@ export default function EmbedForm() {
 					</form>
 				)}
 			</Card>
-		</section>
 	);
 }

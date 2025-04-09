@@ -69,10 +69,9 @@ div#conversation-turnstile-widget {
 }
 
 #phoenix-form-root {
-  position: fixed;
-  bottom: 10px!important;
-  margin-right: 10px;
-  left: 0.5em !important;
+  position: sticky !important;
+  bottom: 10px !important;
+  left: 10px !important;
   z-index: 9999 !important;
 }
 
@@ -90,17 +89,12 @@ div#conversation-turnstile-widget {
 }
 
 @media screen and (max-width: 1024px) {
-  #phoenix-show-form-button{
+  #phoenix-show-form-button {
     bottom: 5rem;
   }
 
   .phoenix-conversational-form__service-select label span {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
   }
-
-  .phoenix-conversational-form__consent-switch {
-    font-size: 1rem;
-  }
-
 }
 
