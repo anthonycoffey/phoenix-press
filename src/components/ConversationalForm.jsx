@@ -49,11 +49,14 @@ const ConversationalForm = () => {
 	});
 	const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 	const [errors, setErrors] = useState({});
+	const [isDirty, setIsDirty] = useState(false);
 
 	const turnstileRef = useRef(null);
 	const [turnstileToken, setTurnstileToken] = useState(null);
 	const [formSubmissionId, setFormSubmissionId] = useState(null);
 	const gtagUserDataSentRef = useRef(false);
+	const formStartFiredRef = useRef(false);
+	const formSubmitFiredRef = useRef(false);
 
 	const currentQuestion = useMemo(
 		() => questions[currentQuestionIndex],
@@ -102,6 +105,30 @@ const ConversationalForm = () => {
 	useEffect(() => {
 		setErrors({});
 	}, [currentQuestionIndex]);
+
+	// Track first interaction to trigger form_start
+	useEffect(() => {
+		if (
+			isDirty &&
+			!formStartFiredRef.current &&
+			typeof window?.gtag !== 'undefined'
+		) {
+			window.gtag('event', 'form_start');
+			formStartFiredRef.current = true;
+		}
+	}, [isDirty]);
+
+	// Track first successful save to trigger form_submit
+	useEffect(() => {
+		if (
+			formSubmissionId &&
+			!formSubmitFiredRef.current &&
+			typeof window?.gtag !== 'undefined'
+		) {
+			window.gtag('event', 'form_submit');
+			formSubmitFiredRef.current = true;
+		}
+	}, [formSubmissionId]);
 
 	useEffect(() => {
 		if (!currentQuestion || !currentQuestion.inputs) {
@@ -199,9 +226,6 @@ const ConversationalForm = () => {
 				window.gtag('set', 'user_data', userData);
 				gtagUserDataSentRef.current = true;
 			}
-			if (typeof window?.dataLayer !== 'undefined') {
-				window.dataLayer.push({ event: 'form_submit' });
-			}
 		} catch (error) {
 			setSubmitted(false);
 			console.log(error);
@@ -245,8 +269,6 @@ const ConversationalForm = () => {
 						}
 					);
 				} else {
-					if (typeof window?.dataLayer !== 'undefined')
-						window.dataLayer.push({ event: 'form_start' });
 					const response = await fetch(
 						`${LOCALIZED.API_URL}/submit-lead-form`,
 						{
@@ -280,6 +302,7 @@ const ConversationalForm = () => {
 
 	const handleAnswerInputChange = useCallback(
 		(name, value) => {
+			setIsDirty(true);
 			setQuestions((prevQuestions) => {
 				const questionToUpdate = prevQuestions[currentQuestionIndex];
 				if (!questionToUpdate) return prevQuestions;
@@ -307,6 +330,7 @@ const ConversationalForm = () => {
 
 	const handleAnswerDateChange = useCallback(
 		(name, date) => {
+			setIsDirty(true);
 			const newValue = date instanceof Date ? date.toISOString() : date;
 			setQuestions((prevQuestions) => {
 				const questionToUpdate = prevQuestions[currentQuestionIndex];

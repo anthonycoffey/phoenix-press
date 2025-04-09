@@ -2,6 +2,7 @@
 
 * **Current Focus:** Optimizing form components for performance.
 * **Recent Changes:**
+    * Updated both form components (`EmbedForm.jsx` and `ConversationalForm.jsx`) to use `gtag()` instead of `dataLayer` for analytics tracking (form_start and form_submit events).
     * Modified `src/utils/form-data.js` to add a new optional 'email' step after the 'phone' step in the conversational form. (Previous task)
     * Modified `src/utils/embed-form-data.js` to add a new optional 'email' field after the 'phone' field in the embed form. (Previous task)
     * Modified `src/components/EmbedForm.jsx` to remove `window.location.assign` and display `LOCALIZED.SUBMISSION_MESSAGE` upon successful submission. (Previous task)
@@ -62,6 +63,7 @@
 * **Active Decisions:**
     * Added an optional 'email' field to both form types. (Previous task)
     * Implemented Google Analytics Enhanced Conversions tracking (`gtag('set', 'user_data', ...)`) in both `ConversationalForm.jsx` and `EmbedForm.jsx`, triggering before the `form_submit` event. User data (email, phone) is extracted from the form submission state. Phone numbers are attempted to be formatted to E.164. The `gtag` call is conditional on the presence of an email address and uses a `useRef` flag to ensure it only executes once per component instance during submission.
+    * Standardized analytics tracking to use `gtag()` exclusively instead of mixing with `dataLayer`. Updated all form interaction events (form_start, form_submit) to use `gtag('event', ...)` syntax.
     * Reverted form submission behavior from redirect to inline success message display using `LOCALIZED.SUBMISSION_MESSAGE`. (Previous task)
     * Implemented conditional rendering in `EmbedForm.jsx` to show the message. (Previous task)
     * Updated the existing success prompt in `ConversationalForm.jsx` to use the localized message. (Previous task)

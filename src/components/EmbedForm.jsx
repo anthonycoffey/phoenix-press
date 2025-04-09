@@ -11,7 +11,6 @@ import CardHeader from '@mui/material/CardHeader';
 import InputField from './InputField';
 import parse from 'html-react-parser';
 import AlertTitle from '@mui/material/AlertTitle';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CheckCircleOutlineTwoTone from '@mui/icons-material/CheckCircleOutlineTwoTone';
 import Disclaimer from './Disclaimer';
 import questionData from '../utils/embed-form-data.js';
@@ -33,6 +32,8 @@ export default function EmbedForm() {
 	const turnstileRef = useRef(null);
 	const debounceTimeoutRef = useRef(null);
 	const gtagUserDataSentRef = useRef(false);
+	const formStartFiredRef = useRef(false);
+	const formSubmitFiredRef = useRef(false);
 
 	// Scroll to success message when submitted
 	useEffect(() => {
@@ -118,12 +119,6 @@ export default function EmbedForm() {
 						}
 					);
 				} else {
-					// GTAG: Trigger form_start on initial submission attempt
-					if (typeof window?.dataLayer !== 'undefined') {
-						window.dataLayer.push({
-							event: 'form_start',
-						});
-					}
 					const response = await fetch(
 						`${LOCALIZED.API_URL}/submit-lead-form`,
 						{
@@ -178,10 +173,13 @@ export default function EmbedForm() {
 				}
 
 				// GTAG: Trigger form_submit ONLY on final, explicit submission
-				if (submit && typeof window?.dataLayer !== 'undefined') {
-					window.dataLayer.push({
-						event: 'form_submit',
-					});
+				if (
+					submit &&
+					typeof window?.gtag !== 'undefined' &&
+					!formSubmitFiredRef.current
+				) {
+					window.gtag('event', 'form_submit', {});
+					formSubmitFiredRef.current = true;
 				}
 
 				if (submit) {
@@ -212,6 +210,30 @@ export default function EmbedForm() {
 			error,
 		] // Added error dependency
 	);
+
+	// Track first interaction to trigger form_start
+	useEffect(() => {
+		if (
+			isDirty &&
+			!formStartFiredRef.current &&
+			typeof window?.gtag !== 'undefined'
+		) {
+			window.gtag('event', 'form_start');
+			formStartFiredRef.current = true;
+		}
+	}, [isDirty]);
+
+	// Track first successful save to trigger form_submit
+	useEffect(() => {
+		if (
+			formSubmissionId &&
+			!formSubmitFiredRef.current &&
+			typeof window?.gtag !== 'undefined'
+		) {
+			window.gtag('event', 'form_submit');
+			formSubmitFiredRef.current = true;
+		}
+	}, [formSubmissionId]);
 
 	// Debounced auto-save function
 	const debouncedAutoSave = useCallback(() => {

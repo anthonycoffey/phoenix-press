@@ -17,8 +17,8 @@
     * **Build Tool:** Webpack (configured via `webpack.config.js` and managed by `@wordpress/scripts`). Uses Babel for JS transpilation, MiniCssExtractPlugin for CSS.
 * **Key Dependencies:**
     * **PHP:** `10up/wp_mock` (dev dependency for unit testing)
-    * **JS:** `react`, `react-dom`, `@mui/material`, `@emotion/react`, `axios`, `@wordpress/element`, `@wordpress/scripts`, `date-fns`
-    * **External Services:** Phoenix CRM API (URL configured in settings), Google Maps API (Key configured in settings)
+    * **JS:** `react`, `react-dom`, `@mui/material`, `@emotion/react`, `axios`, `@wordpress/element`, `@wordpress/scripts`, `date-fns`, `gtag.js`
+    * **External Services:** Phoenix CRM API (URL configured in settings), Google Maps API (Key configured in settings), Google Tag Manager (gtag.js)
 * **Technical Constraints:**
     * Requires WordPress environment.
     * PHP version constraint (>= 7.4.3).

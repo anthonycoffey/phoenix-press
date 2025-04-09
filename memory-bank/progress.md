@@ -9,7 +9,7 @@ What are you or excessions bringing in I love you I love you I have a fluttering
     * Basic WordPress plugin structure is in place (`phoenix-press.php`, `includes/`).
     * Frontend build pipeline using `@wordpress/scripts`.
     * Settings page infrastructure likely exists (`includes/Settings.php`, `readme-plugin-settings.png`).
-    * Google Analytics `gtag` event tracking (`form_start`, `form_submit`) implemented in `EmbedForm.jsx` and `ConversationalForm.jsx`.
+    * Google Analytics `gtag` event tracking (`form_start`, `form_submit`) implemented in `EmbedForm.jsx` and `ConversationalForm.jsx`, replacing previous `dataLayer` implementation.
     * Form submission UX updated to show an inline success message (`LOCALIZED.SUBMISSION_MESSAGE`) instead of redirecting in both `EmbedForm.jsx` and `ConversationalForm.jsx`.
     * Conversational form (`ConversationalForm.jsx`) navigation UX improved: Replaced disruptive alerts for loading/Turnstile states with inline `Typography` messages ("Saving your answer, please wait...", "Securing form, please wait..."). The Next/Submit button is now disabled based on input validation errors (`hasInputErrors`), API loading state (`loading`), and Turnstile readiness (`!turnstileToken`). The Back button remains always enabled when visible.
     * Optional 'email' field added to both conversational (`src/utils/form-data.js`) and embed (`src/utils/embed-form-data.js`) form definitions.
@@ -57,6 +57,7 @@ What are you or excessions bringing in I love you I love you I have a fluttering
     * **[Date of Memory Bank Init - e.g., 2025-04-06]:** Initialized Memory Bank structure.
     * **[Date of Memory Bank Init - e.g., 2025-04-06]:** Populated Memory Bank based on `README.md` and `package.json`.
     * **2025-04-06:** Restored `gtag` event tracking (`form_start`, `form_submit`) to `EmbedForm.jsx` and `ConversationalForm.jsx` based on user-provided code snippets, ensuring only tracking logic was reintroduced.
+    * **2025-04-09:** Standardized analytics tracking to use `gtag()` exclusively instead of mixing with `dataLayer`. Updated all form interaction events to use `gtag('event', ...)` syntax.
     * **2025-04-06:** Changed form submission behavior from redirecting to displaying an inline success message (`LOCALIZED.SUBMISSION_MESSAGE`) in both `EmbedForm.jsx` and `ConversationalForm.jsx`.
     * **2025-04-06:** Modified `ConversationalForm.jsx` to keep navigation buttons visible but disabled during loading states.
     * **2025-04-07:** Added an optional 'email' field to the data definitions for both the conversational (`src/utils/form-data.js`) and embed (`src/utils/embed-form-data.js`) forms.
