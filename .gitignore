@@ -14,3 +14,5 @@ tests/
 composer.lock
 package-lock.json
 .prettierrc
+
+build/
