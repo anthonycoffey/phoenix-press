@@ -13,8 +13,9 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import en from 'date-fns/locale/en-US';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
@@ -31,18 +32,21 @@ import EditCalendar from '@mui/icons-material/EditCalendar';
 import ReceiptLong from '@mui/icons-material/ReceiptLong';
 import services from '../utils/services.js';
 import PhoenixApi from '../utils/PhoenixApi';
-import { CardHeader } from '@mui/material';
+import { CardHeader, Chip } from '@mui/material';
 import AddressAutoComplete from './StepperForm/AddressAutoComplete';
 import Disclaimer from './StepperForm/Disclaimer';
 import parse from 'html-react-parser';
 import Paper from '@mui/material/Paper';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
+import EventAvailable from '@mui/icons-material/EventAvailable';
+import DirectionsCar from '@mui/icons-material/DirectionsCar';
+import AccountCircle from '@mui/icons-material/AccountCircle';
 import PaymentForm from './StepperForm/PaymentForm';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 
-const steps = ['Service Selection', 'Vehicle Information', 'Quote', 'Payment'];
+const steps = ['Service Selection', 'Vehicle Information', 'Quote'];
 
 const leadFormSteps = [
   'Service Selection',
@@ -54,11 +58,13 @@ const initialFormData = {
   full_name: '',
   phone: '',
   email: '',
-  service_type: '',
+  service_type: null,
   car_year: new Date().getFullYear(),
   car_make: '',
   car_model: '',
   car_color: '',
+  car_license_plate: '',
+  additional_info: '',
   location: '',
   service_time: new Date(),
 };
@@ -75,10 +81,21 @@ export default function StepperForm() {
   const [payLater, setPayLater] = useState(false);
   const [opaqueData, setOpaqueData] = useState(null);
   const [paymentError, setPaymentError] = useState('');
-  const [tip, setTip] = useState(0);
+  const [tip, setTip] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiry, setExpiry] = useState('');
+  const [cvv, setCvv] = useState('');
+
+  const isPaymentDataValid = () => {
+    return (
+      cardNumber.replace(/\s/g, '').length === 16 &&
+      expiry.length === 5 &&
+      cvv.length >= 3
+    );
+  };
 
   const bookingServiceIds = [1, 3, 4, 5];
-  const isBookingFlow = bookingServiceIds.includes(formData.service_type);
+  const isBookingFlow = bookingServiceIds.includes(formData.service_type?.id);
 
   const currentSteps = isBookingFlow ? steps : leadFormSteps;
 
@@ -88,7 +105,8 @@ export default function StepperForm() {
       if (!formData.phone) newErrors.phone = 'Phone number is required';
       if (!formData.service_type)
         newErrors.service_type = 'Service type is required';
-      if (!formData.location) newErrors.location = 'Location is required';
+      if (!formData.location)
+        newErrors.location = 'Service Location is required';
       if (!formData.service_time)
         newErrors.service_time = 'Service time is required';
     }
@@ -118,12 +136,11 @@ export default function StepperForm() {
       setLoading(true);
       setError('');
       try {
-        const service = services.find((s) => s.id === formData.service_type);
         const payload = {
           year: parseInt(formData.car_year, 10),
           make: formData.car_make,
           model: formData.car_model,
-          service_type: service.value,
+          service_type: formData.service_type?.value,
           service_time: formData.service_time.toISOString(),
         };
         const quote = await PhoenixApi.getQuote(payload);
@@ -151,6 +168,9 @@ export default function StepperForm() {
     if (name === 'phone') {
       const formattedPhoneNumber = formatPhoneNumber(value);
       setFormData((prev) => ({ ...prev, [name]: formattedPhoneNumber }));
+    } else if (name === 'service_type') {
+      const service = services.find((s) => s.id === value);
+      setFormData((prev) => ({ ...prev, service_type: service }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
@@ -205,8 +225,10 @@ export default function StepperForm() {
   };
 
   const handleTipChange = (e) => {
-    const value = parseFloat(e.target.value);
-    setTip(isNaN(value) ? 0 : value);
+    const { value } = e.target;
+    if (/^\d*\.?\d{0,2}$/.test(value)) {
+      setTip(value);
+    }
   };
 
   const handleFinalSubmit = async (token = null) => {
@@ -225,6 +247,8 @@ export default function StepperForm() {
             model: formData.car_model,
             year: parseInt(formData.car_year, 10),
             color: formData.car_color,
+            license_plate: formData.car_license_plate,
+            additional_info: formData.additional_info,
           },
           address: addressObj || {},
           locationString: formData.location,
@@ -278,6 +302,12 @@ export default function StepperForm() {
       paymentError,
       tip,
       onTipChange: handleTipChange,
+      cardNumber,
+      onCardNumberChange: setCardNumber,
+      expiry,
+      onExpiryChange: setExpiry,
+      cvv,
+      onCvvChange: setCvv,
     };
 
     const stepContentMap = {
@@ -288,7 +318,6 @@ export default function StepperForm() {
       ) : (
         <ConfirmationStep {...stepProps} />
       ),
-      3: isBookingFlow ? <PaymentStep {...stepProps} /> : null,
     };
 
     return stepContentMap[step] || <p>Unknown step</p>;
@@ -327,10 +356,18 @@ export default function StepperForm() {
             <Button
               onClick={handleNext}
               variant='contained'
-              disabled={loading}
+              disabled={
+                loading ||
+                (activeStep === currentSteps.length - 1 &&
+                  isBookingFlow &&
+                  !payLater &&
+                  !isPaymentDataValid())
+              }
             >
               {loading ? (
                 <CircularProgress size={24} color='inherit' />
+              ) : activeStep === 2 && isBookingFlow ? (
+                'Book Now'
               ) : activeStep === currentSteps.length - 1 ? (
                 'Finish'
               ) : (
@@ -367,84 +404,91 @@ const CustomerInfoStep = ({
   consent,
   onConsentChange,
 }) => (
-  <Stack component='form' spacing={3} noValidate autoComplete='off'>
-    <TextField
-      label='Full Name'
-      name='full_name'
-      value={formData.full_name}
-      onChange={handleChange}
-      error={!!errors.full_name}
-      helperText={errors.full_name}
-      fullWidth
+  <>
+    <CardHeader
+      title='Customer Information'
+      avatar={<AccountCircle fontSize='large' color='primary' />}
+      sx={{ px: 0 }}
     />
-    <TextField
-      label='Email Address (optional)'
-      name='email'
-      value={formData.email}
-      onChange={handleChange}
-      error={!!errors.email}
-      helperText={errors.email}
-      fullWidth
-    />
-    <AddressAutoComplete
-      value={formData.location}
-      onChange={handleChange}
-      onPlaceChanged={handlePlaceChanged}
-      error={!!errors.location}
-      helperText={errors.location}
-    />
-    <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <DateTimePicker
-        label='Service Time'
-        value={formData.service_time}
-        onChange={handleDateChange}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            fullWidth
-            margin='normal'
-            error={!!errors.service_time}
-            helperText={errors.service_time}
-          />
-        )}
-      />
-    </LocalizationProvider>
-    <TextField
-      label='Phone Number'
-      name='phone'
-      value={formData.phone}
-      onChange={handleChange}
-      error={!!errors.phone}
-      helperText={errors.phone}
-      fullWidth
-      margin='normal'
-    />
-    <FormControl fullWidth margin='normal' error={!!errors.service_type}>
-      <InputLabel>Service Type</InputLabel>
-      <Select
-        name='service_type'
-        value={formData.service_type}
+    <Stack component='form' spacing={2} noValidate autoComplete='on'>
+      <TextField
+        label='Full Name'
+        name='full_name'
+        value={formData.full_name}
         onChange={handleChange}
-        label='Service Type'
-      >
-        {services.map((service) => (
-          <MenuItem key={service.id} value={service.id}>
-            {service.text}
-          </MenuItem>
-        ))}
-      </Select>
-      {errors.service_type && (
-        <Typography color='error' variant='caption'>
-          {errors.service_type}
-        </Typography>
-      )}
-    </FormControl>
-    <Alert severity='info' sx={{ mb: 2 }}>
-      Note: If you require multiple services, please select the primary service
-      you require as additional services can be added later.
-    </Alert>
-    <Disclaimer consent={consent} onConsentChange={onConsentChange} />
-  </Stack>
+        error={!!errors.full_name}
+        helperText={errors.full_name}
+        fullWidth
+      />
+      <TextField
+        label='Email Address (optional)'
+        name='email'
+        value={formData.email}
+        onChange={handleChange}
+        error={!!errors.email}
+        helperText={errors.email}
+        fullWidth
+      />
+      <AddressAutoComplete
+        value={formData.location}
+        onChange={handleChange}
+        onPlaceChanged={handlePlaceChanged}
+        error={!!errors.location}
+        helperText={errors.location}
+      />
+      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={en}>
+        <DateTimePicker
+          label='Service Time'
+          value={formData.service_time}
+          onChange={handleDateChange}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              fullWidth
+              margin='normal'
+              error={!!errors.service_time}
+              helperText={errors.service_time}
+            />
+          )}
+        />
+      </LocalizationProvider>
+      <TextField
+        label='Phone Number'
+        name='phone'
+        value={formData.phone}
+        onChange={handleChange}
+        error={!!errors.phone}
+        helperText={errors.phone}
+        fullWidth
+        margin='normal'
+      />
+      <FormControl fullWidth margin='normal' error={!!errors.service_type}>
+        <InputLabel>Service Type</InputLabel>
+        <Select
+          name='service_type'
+          value={formData.service_type?.id || ''}
+          onChange={handleChange}
+          label='Service Type'
+        >
+          {services.map((service) => (
+            <MenuItem key={service.id} value={service.id}>
+              {service.text}
+            </MenuItem>
+          ))}
+        </Select>
+        {errors.service_type && (
+          <Typography color='error' variant='caption'>
+            {errors.service_type}
+          </Typography>
+        )}
+      </FormControl>
+      <Alert severity='info' sx={{ mb: 2 }}>
+        Note: If you require multiple services, please select the primary
+        service you require as additional services can be added later.
+      </Alert>
+      <Disclaimer consent={consent} onConsentChange={onConsentChange} />
+    </Stack>
+  </>
 );
 
 const carMakes = [
@@ -486,208 +530,244 @@ const carMakes = [
 ];
 
 const VehicleInfoStep = ({ formData, handleChange, errors }) => (
-  <Box component='form' noValidate autoComplete='on'>
-    <FormControl fullWidth margin='normal' error={!!errors.car_make}>
-      <InputLabel>Vehicle Make</InputLabel>
-      <Select
-        name='car_make'
-        value={formData.car_make}
+  <>
+    <CardHeader
+      title='What are you driving?'
+      avatar={<DirectionsCar fontSize='large' color='primary' />}
+      sx={{ px: 0 }}
+    />
+    <Stack component='form' spacing={2} noValidate autoComplete='on'>
+      <FormControl fullWidth margin='normal' error={!!errors.car_make}>
+        <InputLabel>Vehicle Make</InputLabel>
+        <Select
+          name='car_make'
+          value={formData.car_make}
+          onChange={handleChange}
+          label='Vehicle Make'
+        >
+          {carMakes.map((make) => (
+            <MenuItem key={make} value={make}>
+              {make}
+            </MenuItem>
+          ))}
+        </Select>
+        {errors.car_make && (
+          <Typography color='error' variant='caption'>
+            {errors.car_make}
+          </Typography>
+        )}
+      </FormControl>
+      <TextField
+        label='Vehicle Model'
+        name='car_model'
+        value={formData.car_model}
         onChange={handleChange}
-        label='Vehicle Make'
-      >
-        {carMakes.map((make) => (
-          <MenuItem key={make} value={make}>
-            {make}
-          </MenuItem>
-        ))}
-      </Select>
-      {errors.car_make && (
-        <Typography color='error' variant='caption'>
-          {errors.car_make}
-        </Typography>
-      )}
-    </FormControl>
-    <TextField
-      label='Vehicle Model'
-      name='car_model'
-      value={formData.car_model}
-      onChange={handleChange}
-      error={!!errors.car_model}
-      helperText={errors.car_model}
-      fullWidth
-      margin='normal'
-      slotProps={{ htmlInput: { maxLength: 20 } }}
-    />
-    <TextField
-      label='Vehicle Year'
-      name='car_year'
-      type='number'
-      value={formData.car_year}
-      onChange={handleChange}
-      error={!!errors.car_year}
-      helperText={errors.car_year}
-      fullWidth
-      margin='normal'
-      inputProps={{
-        min: 1980,
-        max: new Date().getFullYear() + 1,
-        step: 1,
-      }}
-    />
-    <Alert severity='info' sx={{ mb: 2 }}>
-      Please provide your vehicle details to get an accurate quote.
-    </Alert>
-  </Box>
+        error={!!errors.car_model}
+        helperText={errors.car_model}
+        fullWidth
+        margin='normal'
+        slotProps={{ htmlInput: { maxLength: 20 } }}
+      />
+      <TextField
+        label='Vehicle Year'
+        name='car_year'
+        type='number'
+        value={formData.car_year}
+        onChange={handleChange}
+        error={!!errors.car_year}
+        helperText={errors.car_year}
+        fullWidth
+        margin='normal'
+        inputProps={{
+          min: 1980,
+          max: new Date().getFullYear() + 1,
+          step: 1,
+        }}
+      />
+      <TextField
+        label='Vehicle Color (optional)'
+        name='car_color'
+        value={formData.car_color}
+        onChange={handleChange}
+        error={!!errors.car_color}
+        helperText={errors.car_color}
+        fullWidth
+        margin='normal'
+        slotProps={{ htmlInput: { maxLength: 20 } }}
+      />
+      <TextField
+        label='License Plate (optional)'
+        name='car_license_plate'
+        value={formData.car_license_plate}
+        onChange={handleChange}
+        error={!!errors.car_license_plate}
+        helperText={errors.car_license_plate}
+        fullWidth
+        margin='normal'
+        slotProps={{ htmlInput: { maxLength: 10 } }}
+      />
+      <TextField
+        label='Additional Info (optional)'
+        name='additional_info'
+        value={formData.additional_info}
+        onChange={handleChange}
+        error={!!errors.additional_info}
+        helperText={errors.additional_info}
+        fullWidth
+        margin='normal'
+        multiline
+        rows={2}
+        slotProps={{ htmlInput: { maxLength: 255 } }}
+      />
+      <Alert severity='info' sx={{ mb: 2 }}>
+        Please provide your vehicle details to get an accurate quote.
+      </Alert>
+    </Stack>
+  </>
 );
 
-const QuoteStep = ({ formData, quoteData, loading, error }) => (
-  <Stack spacing={0}>
-    {loading && (
-      <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-        <CircularProgress />
-      </Box>
-    )}
-    {error && <Alert severity='error'>{error}</Alert>}
-    {quoteData && (
-      <List
-        sx={{ width: '100%', bgcolor: 'background.paper' }}
-        subheader={<ListSubheader>Your Quote Details</ListSubheader>}
-      >
-        <ListItem>
-          <ListItemIcon>
-            <DirectionsCarIcon />
-          </ListItemIcon>
-          <ListItemText
-            primary={`${formData.car_make} ${formData.car_model} ${formData.car_year}`}
-            secondary={quoteData.vehicle_class}
-          />
-        </ListItem>
-        <Divider component='li' />
-        {quoteData.breakdown.map((item, index) => (
-          <ListItem key={index}>
-            <ListItemIcon>
-              {item.label.includes('surcharge') ? (
-                <MoreTime />
-              ) : (
-                <MonetizationOnIcon />
-              )}
-            </ListItemIcon>
-            <ListItemText
-              primary={`$${item.amount.toFixed(2)}`}
-              secondary={item.label}
-            />
-          </ListItem>
-        ))}
-        <Divider component='li' />
-        <ListItem>
-          <ListItemIcon>
-            <ReceiptLong size='large' />
-          </ListItemIcon>
-          <ListItemText
-            primary={`$${quoteData.quote.toFixed(2)}`}
-            secondary='Total'
-          />
-        </ListItem>
-      </List>
-    )}
-  </Stack>
-);
-
-const PaymentStep = ({
+const QuoteStep = ({
   formData,
   quoteData,
+  loading,
+  error,
   onTokenReceived,
   paymentError,
   payLater,
   onPayLaterChange,
   tip,
   onTipChange,
+  cardNumber,
+  onCardNumberChange,
+  expiry,
+  onExpiryChange,
+  cvv,
+  onCvvChange,
 }) => (
-  <Stack spacing={3}>
-    <List
-      sx={{ width: '100%', bgcolor: 'background.paper' }}
-      subheader={<ListSubheader>Order Summary</ListSubheader>}
-    >
-      <ListItem>
-        <ListItemIcon>
-          <DirectionsCarIcon />
-        </ListItemIcon>
-        <ListItemText
-          primary={`${formData.car_make} ${formData.car_model} ${formData.car_year}`}
-          secondary={quoteData.vehicle_class}
-        />
-      </ListItem>
-      <Divider component='li' />
-      {quoteData.breakdown.map((item, index) => (
-        <ListItem key={index}>
-          <ListItemIcon>
-            {item.label.includes('surcharge') ? (
-              <MoreTime />
-            ) : (
-              <MonetizationOnIcon />
-            )}
-          </ListItemIcon>
-          <ListItemText
-            primary={`$${item.amount.toFixed(2)}`}
-            secondary={item.label}
-          />
-        </ListItem>
-      ))}
-      <Divider component='li' />
-      <ListItem>
-        <ListItemIcon>
-          <ReceiptLong size='large' />
-        </ListItemIcon>
-        <ListItemText
-          primary={`$${quoteData.quote.toFixed(2)}`}
-          secondary='Subtotal'
-        />
-      </ListItem>
-      <ListItem>
-        <ListItemIcon>
-          <MonetizationOnIcon />
-        </ListItemIcon>
-        <TextField
-          label='Tip (optional)'
-          type='number'
-          value={tip}
-          onChange={onTipChange}
-          fullWidth
-          variant='standard'
-        />
-      </ListItem>
-      <Divider component='li' />
-      <ListItem>
-        <ListItemIcon>
-          <ReceiptLong size='large' />
-        </ListItemIcon>
-        <ListItemText
-          primary={`$${(quoteData.quote + tip).toFixed(2)}`}
-          secondary='Total'
-        />
-      </ListItem>
-    </List>
-    <CardHeader
-      avatar={<CreditCardIcon color='primary' />}
-      title='Pay with Card'
-    />
-    {!payLater && (
-      <PaymentForm
-        amount={quoteData.quote + tip}
-        onTokenReceived={onTokenReceived}
-        error={paymentError}
-      />
+  <Stack component='form' spacing={2} noValidate autoComplete='on'>
+    {loading && (
+      <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+        <CircularProgress />
+      </Box>
     )}
-    <FormControlLabel
-      control={
-        <Checkbox
-          checked={payLater}
-          onChange={(e) => onPayLaterChange(e.target.checked)}
-          name='payLater'
+
+    {error && <Alert severity='error'>{error}</Alert>}
+    {quoteData && (
+      <>
+        <CardHeader
+          title={`Confirm Your Booking`}
+          avatar={<EventAvailable fontSize='large' color='primary' />}
+          subheader={
+            <>
+              <Typography component='span' variant='h6'>
+                {formData.location}
+              </Typography>
+              <Typography variant='subtitle2'>
+                {new Date(formData.service_time).toLocaleString()}
+              </Typography>
+              <Chip label={formData.service_type.text} color='primary' />
+            </>
+          }
+          sx={{ px: 0 }}
         />
-      }
-      label='Pay Later'
-    />
+
+        <List
+          sx={{ width: '100%', bgcolor: 'background.paper' }}
+          subheader={<ListSubheader>Summary</ListSubheader>}
+        >
+          <ListItem>
+            <ListItemIcon>
+              <DirectionsCarIcon />
+            </ListItemIcon>
+            <ListItemText
+              primary={`${formData.car_make} ${formData.car_model} ${formData.car_year}`}
+              secondary={quoteData.vehicle_class}
+            />
+          </ListItem>
+          <Divider component='li' />
+          {quoteData.breakdown.map((item, index) => (
+            <ListItem key={index}>
+              <ListItemIcon>
+                {item.label.includes('surcharge') ? (
+                  <MoreTime />
+                ) : (
+                  <MonetizationOnIcon />
+                )}
+              </ListItemIcon>
+              <ListItemText
+                primary={`$${item.amount.toFixed(2)}`}
+                secondary={item.label}
+              />
+            </ListItem>
+          ))}
+          <Divider component='li' />
+          <ListItem>
+            <ListItemIcon>
+              <ReceiptLong size='large' />
+            </ListItemIcon>
+            <ListItemText
+              primary={`$${quoteData.quote.toFixed(2)}`}
+              secondary='Subtotal'
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <MonetizationOnIcon />
+            </ListItemIcon>
+            <TextField
+              label='Tip (optional)'
+              type='number'
+              value={tip}
+              onChange={onTipChange}
+              fullWidth
+              variant='standard'
+            />
+          </ListItem>
+          <Divider component='li' />
+          <ListItem>
+            <ListItemIcon>
+              <ReceiptLong size='large' />
+            </ListItemIcon>
+            <ListItemText
+              primary={`$${(quoteData.quote + (parseFloat(tip) || 0)).toFixed(
+                2
+              )}`}
+              secondary='Total'
+            />
+          </ListItem>
+        </List>
+        {!payLater && (
+          <>
+            <CardHeader
+              avatar={<CreditCardIcon color='primary' />}
+              title='Pay with Card'
+              sx={{ px: 0 }}
+            />
+            <PaymentForm
+              amount={quoteData.quote + (parseFloat(tip) || 0)}
+              onTokenReceived={onTokenReceived}
+              error={paymentError}
+              cardNumber={cardNumber}
+              onCardNumberChange={onCardNumberChange}
+              expiry={expiry}
+              onExpiryChange={onExpiryChange}
+              cvv={cvv}
+              onCvvChange={onCvvChange}
+            />
+          </>
+        )}
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={payLater}
+              onChange={(e) => onPayLaterChange(e.target.checked)}
+              name='payLater'
+            />
+          }
+          label='Pay Later'
+        />
+      </>
+    )}
   </Stack>
 );
 

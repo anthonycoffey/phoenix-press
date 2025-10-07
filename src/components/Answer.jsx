@@ -7,12 +7,12 @@ import {
 	TimePicker,
 	LocalizationProvider,
 } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import en from 'date-fns/locale/en-US';
 import AddressAutoComplete from './AddressAutoComplete';
 import ServiceSelect from './ServiceSelect';
 import PhoneField from './PhoneField';
 import parse from 'html-react-parser';
-import { GlobalStateContext } from '../state';
 import { Switch, Box } from '@mui/material';
 
 // Wrap component in React.memo
@@ -135,6 +135,7 @@ const Answer = memo(
 						return (
 							<LocalizationProvider
 								dateAdapter={AdapterDateFns}
+                adapterLocale={en}
 								key={input.name}
 							>
 								<Stack

@@ -7,4 +7,9 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
+    'Phoenix\\Press\\Api' => $baseDir . '/includes/Api.php',
+    'Phoenix\\Press\\Assets' => $baseDir . '/includes/Assets.php',
+    'Phoenix\\Press\\Meta' => $baseDir . '/includes/Meta.php',
+    'Phoenix\\Press\\Plugin' => $baseDir . '/includes/Plugin.php',
+    'Phoenix\\Press\\Settings' => $baseDir . '/includes/Settings.php',
 );

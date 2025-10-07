@@ -27,6 +27,11 @@ class ComposerStaticInit764515d78a6dbd714ad1e6221a82a832
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'Phoenix\\Press\\Api' => __DIR__ . '/../..' . '/includes/Api.php',
+        'Phoenix\\Press\\Assets' => __DIR__ . '/../..' . '/includes/Assets.php',
+        'Phoenix\\Press\\Meta' => __DIR__ . '/../..' . '/includes/Meta.php',
+        'Phoenix\\Press\\Plugin' => __DIR__ . '/../..' . '/includes/Plugin.php',
+        'Phoenix\\Press\\Settings' => __DIR__ . '/../..' . '/includes/Settings.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

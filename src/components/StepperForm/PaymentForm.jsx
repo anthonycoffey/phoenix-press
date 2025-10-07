@@ -1,4 +1,4 @@
-import { useEffect } from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
 import TextField from '@mui/material/TextField';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
@@ -6,7 +6,18 @@ import Alert from '@mui/material/Alert';
 
 const { AUTH_NET_API_LOGIN_ID, AUTH_NET_CLIENT_KEY } = window.LOCALIZED;
 
-export default function PaymentForm({ amount, onTokenReceived, error }) {
+export default function PaymentForm({
+  amount,
+  onTokenReceived,
+  error,
+  cardNumber,
+  onCardNumberChange,
+  expiry,
+  onExpiryChange,
+  cvv,
+  onCvvChange,
+}) {
+
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://js.authorize.net/v1/Accept.js';
@@ -25,10 +36,10 @@ export default function PaymentForm({ amount, onTokenReceived, error }) {
     };
 
     const cardData = {
-      cardNumber: document.getElementById('card-number').value,
-      month: document.getElementById('card-month').value,
-      year: document.getElementById('card-year').value,
-      cardCode: document.getElementById('card-cvv').value,
+      cardNumber: cardNumber.replace(/\s/g, ''),
+      month: expiry.split('/')[0],
+      year: `20${expiry.split('/')[1]}`,
+      cardCode: cvv,
     };
 
     const secureData = {
@@ -50,14 +61,54 @@ export default function PaymentForm({ amount, onTokenReceived, error }) {
     });
   };
 
+  const handleCardNumberChange = (e) => {
+    const value = e.target.value.replace(/\D/g, '');
+    const formattedValue = value.replace(/(.{4})/g, '$1 ').trim();
+    if (formattedValue.length <= 19) {
+      onCardNumberChange(formattedValue);
+    }
+  };
+
+  const handleExpiryChange = (e) => {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length > 2) {
+      value = `${value.slice(0, 2)}/${value.slice(2, 4)}`;
+    }
+    if (value.length <= 5) {
+      onExpiryChange(value);
+    }
+  };
+
   return (
     <Stack spacing={1} sx={{ my: 2 }}>
-      <TextField id='card-number' label='Card Number' fullWidth />
+      <TextField
+        id='card-number'
+        label='Card Number'
+        value={cardNumber}
+        onChange={handleCardNumberChange}
+        fullWidth
+      />
       <Stack direction='row' spacing={2}>
-        <TextField id='card-month' label='MM' sx={{ width: '50%' }} />
-        <TextField id='card-year' label='YYYY' sx={{ width: '50%' }} />
+        <TextField
+          id='card-expiry'
+          label='MM/YY'
+          value={expiry}
+          onChange={handleExpiryChange}
+          sx={{ width: '50%' }}
+        />
+        <TextField
+          id='card-cvv'
+          label='CVV'
+          value={cvv}
+          onChange={(e) => {
+            const value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 4) {
+              onCvvChange(value);
+            }
+          }}
+          sx={{ width: '50%' }}
+        />
       </Stack>
-      <TextField id='card-cvv' label='CVV' fullWidth />
       {error && <Alert severity='error'>{error}</Alert>}
       <Button
         onClick={sendPaymentDataToAnet}
