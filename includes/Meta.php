@@ -7,7 +7,7 @@ class Meta {
         add_action( 'wp_footer', [ __CLASS__, 'lead_form' ] );
         add_shortcode( 'phoenix_form', [ __CLASS__, 'lead_form_shortcode' ] );
         add_shortcode('phoenix_form_success', [__CLASS__, 'success_message_shortcode']);
-
+        add_shortcode( 'phoenix_stepper_form', [ __CLASS__, 'stepper_form_shortcode' ] );
     }
 
     public static function lead_form() {
@@ -17,6 +17,12 @@ class Meta {
     public static function lead_form_shortcode( $attr ) {
         ob_start();
         echo '<div class="phoenix-form-embed-root"></div>';
+        return ob_get_clean();
+    }
+
+    public static function stepper_form_shortcode( $attr ) {
+        ob_start();
+        echo '<div id="phoenix-stepper-form-root"></div>';
         return ob_get_clean();
     }
 

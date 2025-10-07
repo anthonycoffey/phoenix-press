@@ -1,8 +1,11 @@
-import { useState } from '@wordpress/element';
 import TextField from '@mui/material/TextField';
 
-export default function PhoneField({ input, setValidPhoneNumber, handleBlur }) {
-	const [errors, setErrors] = useState({});
+export default function PhoneField({
+	input,
+	handleBlur,
+	handleTextChange,
+	error,
+}) {
 	const formatPhoneNumber = (value) => {
 		const phoneNumber = value.replace(/\D/g, '');
 
@@ -15,20 +18,10 @@ export default function PhoneField({ input, setValidPhoneNumber, handleBlur }) {
 		}
 	};
 
-	// Function to validate phone number
-	const validatePhoneNumber = (value) => {
-		const phoneNumber = value.replace(/\D/g, '');
-		const valid = phoneNumber.length !== 10;
-		setValidPhoneNumber(true);
-		return valid ? 'Valid phone number is required.' : '';
-	};
-
 	const handleInputChange = (event) => {
 		const { value } = event.target;
 		const formatted = formatPhoneNumber(value);
-		const errorMessage = validatePhoneNumber(formatted);
-		setErrors({ ...errors, [input.name]: errorMessage });
-		input.value = formatted;
+		handleTextChange({ input, event: { target: { value: formatted } } });
 	};
 
 	return (
@@ -37,14 +30,14 @@ export default function PhoneField({ input, setValidPhoneNumber, handleBlur }) {
 			name={input.name}
 			value={input.value}
 			onChange={handleInputChange}
-			onBlur={handleBlur}
+			onBlur={() => handleBlur({ input })}
 			fullWidth
 			variant="outlined"
 			margin="normal"
 			type="tel"
 			required={!input.optional}
-			error={!!errors[input.name]}
-			helperText={errors[input.name]}
+			error={!!error}
+			helperText={error}
 		/>
 	);
 }

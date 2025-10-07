@@ -138,6 +138,8 @@ class Assets {
             'CHAT_AVATAR' => get_option('phoenix_form_avatar',''),
             'FORM_TITLE' => get_option('phoenix_form_title',''),
             'FORM_SUBTITLE' => get_option('phoenix_form_subtitle',''),
+            'AUTH_NET_API_LOGIN_ID' => get_option('phoenix_auth_net_api_login_id', ''),
+            'AUTH_NET_CLIENT_KEY' => get_option('phoenix_auth_net_client_key', ''),
         ];
 
         wp_localize_script('phoenix-press-main-js', 'LOCALIZED', $localized_data);

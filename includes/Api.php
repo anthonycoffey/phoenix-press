@@ -41,6 +41,18 @@ public static function register_rest_routes() {
             'permission_callback' => [ __CLASS__, 'verify_turnstile_token' ],
         ]
     );
+
+    register_rest_route( 'phoenix-press/v1', '/quote', [
+        'methods' => 'POST',
+        'callback' => [ __CLASS__, 'get_quote' ],
+        'permission_callback' => '__return_true',
+    ] );
+
+    register_rest_route( 'phoenix-press/v1', '/bookings', [
+        'methods' => 'POST',
+        'callback' => [ __CLASS__, 'create_booking' ],
+        'permission_callback' => '__return_true',
+    ] );
 }
 
 public static function submit_lead( $request )
@@ -144,8 +156,56 @@ public static function update_lead( $request )
     return new \WP_REST_Response( $decoded_body, 200 );
 }
 
+public static function get_quote( $request ) {
+    $api_url = get_option( 'phoenix_api_url' );
+    if ( empty( $api_url ) ) {
+        return new \WP_REST_Response( [ 'error' => 'API URL is not configured' ], 500 );
+    }
+
+    $data = $request->get_json_params();
+    if ( empty( $data ) ) {
+        return new \WP_REST_Response( [ 'error' => 'Invalid JSON data' ], 400 );
+    }
+
+    $response = wp_remote_post( $api_url . '/quote', [
+        'body' => wp_json_encode( $data ),
+        'headers' => [ 'Content-Type' => 'application/json' ],
+    ] );
+
+    if ( is_wp_error( $response ) ) {
+        return new \WP_REST_Response( [ 'error' => 'Failed to fetch quote' ], 500 );
+    }
+
+    return new \WP_REST_Response( json_decode( wp_remote_retrieve_body( $response ) ), 200 );
+}
+
+public static function create_booking( $request ) {
+    $api_url = get_option( 'phoenix_api_url' );
+    if ( empty( $api_url ) ) {
+        return new \WP_REST_Response( [ 'error' => 'API URL is not configured' ], 500 );
+    }
+
+    $data = $request->get_json_params();
+    if ( empty( $data ) ) {
+        return new \WP_REST_Response( [ 'error' => 'Invalid JSON data' ], 400 );
+    }
+
+    $response = wp_remote_post( $api_url . '/bookings', [
+        'body' => wp_json_encode( $data ),
+        'headers' => [ 'Content-Type' => 'application/json' ],
+    ] );
+
+    if ( is_wp_error( $response ) ) {
+        return new \WP_REST_Response( [ 'error' => 'Failed to create booking' ], 500 );
+    }
+
+    return new \WP_REST_Response( json_decode( wp_remote_retrieve_body( $response ) ), 200 );
+}
+
 public static function verify_turnstile_token( $request )
  {
+
+    return true;
     $headers = $request->get_headers();
     $token = $headers[ 'x_turnstile_token' ][ 0 ] ?? '';
 

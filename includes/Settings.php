@@ -80,6 +80,14 @@ class Settings {
                 'label' => 'Submission Confirmation Message',
                 'type' => 'textarea',
             ],
+            'phoenix_auth_net_api_login_id' => [
+                'label' => 'Authorize.Net API Login ID',
+                'type' => 'text',
+            ],
+            'phoenix_auth_net_client_key' => [
+                'label' => 'Authorize.Net Client Key',
+                'type' => 'text',
+            ],
         ];
 
         foreach ( $settings as $key => $setting ) {

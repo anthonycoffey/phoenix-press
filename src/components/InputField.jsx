@@ -7,7 +7,8 @@ import {
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import AddressAutoComplete from './EmbedForm/AddressAutoComplete';
 import PhoneField from './EmbedForm/PhoneField';
-import Services from './EmbedForm/Services';
+import Services from './EmbedForm/Services'
+import ServiceSelect from './StepperForm/ServiceSelect';
 import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
@@ -23,6 +24,8 @@ const InputField = ({
 	setValidPhoneNumber,
 	checked,
 	handleBlur,
+	handleServiceChange,
+	error,
 }) => {
 	useEffect(() => {
 		if (input.type === 'datetime') {
@@ -40,6 +43,8 @@ const InputField = ({
 					input={input}
 					setValidPhoneNumber={setValidPhoneNumber}
 					handleBlur={handleBlur}
+					handleTextChange={handleTextChange}
+					error={error}
 				/>
 			);
 		case 'text':
@@ -48,11 +53,13 @@ const InputField = ({
 					label={input.label}
 					name={input.name}
 					onChange={(event) => handleTextChange({ input, event })}
-					onBlur={handleBlur}
+					onBlur={() => handleBlur({ input })}
 					fullWidth
 					variant="outlined"
 					margin="normal"
 					required={!input.optional}
+					error={!!error}
+					helperText={error}
 				/>
 			);
 		case 'email':
@@ -61,20 +68,39 @@ const InputField = ({
 					label={input.label}
 					name={input.name}
 					onChange={(event) => handleTextChange({ input, event })}
-					onBlur={handleBlur}
+					onBlur={() => handleBlur({ input })}
 					fullWidth
 					autoCapitalize="email"
 					variant="outlined"
 					margin="normal"
 					required={!input.optional}
+					error={!!error}
+					helperText={error}
 				/>
 			);
 		case 'geo':
 			return (
-				<AddressAutoComplete input={input} handleBlur={handleBlur} />
+				<AddressAutoComplete
+					input={input}
+					handleBlur={() => handleBlur({ input })}
+				/>
+			);
+		case 'dropdown':
+			return (
+				<ServiceSelect
+					input={input}
+					handleServiceChange={handleServiceChange}
+					handleBlur={() => handleBlur({ input })}
+					error={error}
+				/>
 			);
 		case 'select':
-			return <Services input={input} handleBlur={handleBlur} />;
+			return (
+				<Services
+					input={input}
+					handleBlur={() => handleBlur({ input })}
+				/>
+			);
 		case 'checkbox':
 			return (
 				<FormControlLabel
@@ -86,7 +112,7 @@ const InputField = ({
 							onChange={(event) =>
 								handleConsentChange({ input, event })
 							}
-							onBlur={handleBlur}
+							onBlur={() => handleBlur({ input })}
 							name={input.name}
 							required={!input.optional}
 						/>
@@ -114,7 +140,7 @@ const InputField = ({
 							onChange={(event) =>
 								handleDateChange({ input, event })
 							}
-							onAccept={handleBlur}
+							onAccept={() => handleBlur({ input })}
 							disablePast
 							fullWidth
 						/>
@@ -124,7 +150,7 @@ const InputField = ({
 							onChange={(event) =>
 								handleDateChange({ input, event })
 							}
-							onAccept={handleBlur}
+							onAccept={() => handleBlur({ input })}
 							fullWidth
 						/>
 					</Stack>

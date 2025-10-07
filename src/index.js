@@ -8,6 +8,7 @@ const EmbedForm = lazy(() => import('./components/EmbedForm'));
 const ConversationalForm = lazy(
 	() => import('./components/ConversationalForm')
 );
+const StepperForm = lazy(() => import('./components/StepperForm'));
 
 document.addEventListener('DOMContentLoaded', () => {
 	const chat = document.getElementById('phoenix-form-root');
@@ -30,4 +31,14 @@ document.addEventListener('DOMContentLoaded', () => {
 			</Suspense>
 		);
 	});
+
+	const stepperFormRoot = document.getElementById('phoenix-stepper-form-root');
+	if (stepperFormRoot) {
+		const root = createRoot(stepperFormRoot);
+		root.render(
+			<Suspense fallback={<LinearProgress />}>
+				<StepperForm />
+			</Suspense>
+		);
+	}
 });
