@@ -41,6 +41,7 @@ import Paper from '@mui/material/Paper';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import EventAvailable from '@mui/icons-material/EventAvailable';
+import Sell from '@mui/icons-material/Sell';
 import DirectionsCar from '@mui/icons-material/DirectionsCar';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import PaymentForm from './StepperForm/PaymentForm';
@@ -723,7 +724,7 @@ const QuoteStep = ({
           <Divider component='li' />
           <ListItem>
             <ListItemIcon>
-              <ReceiptLong size='large' />
+              <Sell size='large' />
             </ListItemIcon>
             <ListItemText
               primary={`$${quoteData.quote.toFixed(2)}`}
