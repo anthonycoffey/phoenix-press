@@ -12,6 +12,13 @@
 		"clean:react": "rimraf ./build",
 		"reset": "rimraf node_modules package-lock.json vendor composer.lock"
 	},
+  "files": [
+    "build",
+    "assets",
+    "includes",
+    "vendor",
+    "phoenix-press.php"
+  ],
 	"entry": {
 		"index": "./src/index.js"
 	},
