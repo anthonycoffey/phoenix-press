@@ -140,6 +140,7 @@ class Assets {
             'FORM_SUBTITLE' => get_option('phoenix_form_subtitle',''),
             'AUTH_NET_API_LOGIN_ID' => get_option('phoenix_auth_net_api_login_id', ''),
             'AUTH_NET_CLIENT_KEY' => get_option('phoenix_auth_net_client_key', ''),
+            'AUTH_NET_TEST_MODE' => get_option('phoenix_auth_net_test_mode', false),
         ];
 
         wp_localize_script('phoenix-press-main-js', 'LOCALIZED', $localized_data);

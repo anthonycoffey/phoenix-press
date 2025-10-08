@@ -88,6 +88,10 @@ class Settings {
                 'label' => 'Authorize.Net Client Key',
                 'type' => 'text',
             ],
+            'phoenix_auth_net_test_mode' => [
+                'label' => 'Authorize.Net Test Mode',
+                'type' => 'checkbox',
+            ],
         ];
 
         foreach ( $settings as $key => $setting ) {
@@ -125,6 +129,10 @@ class Settings {
             echo "<textarea name='$name'>" .
             esc_textarea( $value ) .
             '</textarea>';
+        } elseif ( $type === 'checkbox' ) {
+            echo "<input type='checkbox' name='$name' value='1' " .
+            checked( 1, $value, false ) .
+            " />";
         } elseif ( $type === 'image' ) {
             echo '<div class="image-upload-wrapper">';
             echo '<input type="hidden" name="' . esc_attr( $name ) . '" id="' . esc_attr( $name ) . '" value="' . esc_attr( $value ) . '" />';
