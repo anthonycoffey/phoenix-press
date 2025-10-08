@@ -170,6 +170,7 @@ public static function get_quote( $request ) {
     $response = wp_remote_post( $api_url . '/quote', [
         'body' => wp_json_encode( $data ),
         'headers' => [ 'Content-Type' => 'application/json' ],
+        'timeout' => 60,
     ] );
 
     if ( is_wp_error( $response ) ) {

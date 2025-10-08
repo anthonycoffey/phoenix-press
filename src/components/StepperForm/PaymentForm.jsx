@@ -3,6 +3,10 @@ import TextField from '@mui/material/TextField';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 const {
   AUTH_NET_API_LOGIN_ID,
@@ -86,44 +90,90 @@ export default function PaymentForm({
   };
 
   return (
-    <Stack spacing={1} sx={{ my: 2 }}>
-      <TextField
-        id='card-number'
-        label='Card Number'
-        value={cardNumber}
-        onChange={handleCardNumberChange}
-        fullWidth
-      />
-      <Stack direction='row' spacing={2}>
-        <TextField
-          id='card-expiry'
-          label='MM/YY'
-          value={expiry}
-          onChange={handleExpiryChange}
-          sx={{ width: '50%' }}
-        />
-        <TextField
-          id='card-cvv'
-          label='CVV'
-          value={cvv}
-          onChange={(e) => {
-            const value = e.target.value.replace(/\D/g, '');
-            if (value.length <= 4) {
-              onCvvChange(value);
-            }
+    <Card
+      sx={{
+        my: 2,
+        p: 2,
+        borderRadius: '12px',
+        background: 'linear-gradient(135deg, #3a3a3a 0%, #1e1e1e 100%)',
+        color: 'white',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+        position: 'relative',
+      }}
+    >
+      <CardContent>
+        <Box
+          sx={{
+            width: '50px',
+            height: '40px',
+            background: '#007aff',
+            borderRadius: '4px',
+            mb: 2,
           }}
-          sx={{ width: '50%' }}
         />
-      </Stack>
-      {error && <Alert severity='error'>{error}</Alert>}
-      <Button
-        onClick={sendPaymentDataToAnet}
-        variant='contained'
-        sx={{ display: 'none' }}
-        id='payment-submit-button'
-      >
-        Submit Payment
-      </Button>
-    </Stack>
+        <TextField
+          id='card-number'
+          label='Card Number'
+          value={cardNumber}
+          onChange={handleCardNumberChange}
+          fullWidth
+          variant='filled'
+          InputLabelProps={{
+            sx: { color: 'rgba(255, 255, 255, 0.7)' },
+          }}
+          inputProps={{
+            sx: { color: 'white', fontSize: '1.2rem' },
+          }}
+        />
+        <Stack direction='row' spacing={2} sx={{ mt: 2 }}>
+          <TextField
+            id='card-expiry'
+            label='MM/YY'
+            value={expiry}
+            onChange={handleExpiryChange}
+            sx={{ width: '50%' }}
+            variant='filled'
+            InputLabelProps={{
+              sx: { color: 'rgba(255, 255, 255, 0.7)' },
+            }}
+            inputProps={{
+              sx: { color: 'white' },
+            }}
+          />
+          <TextField
+            id='card-cvv'
+            label='CVV'
+            value={cvv}
+            variant='filled'
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, '');
+              if (value.length <= 4) {
+                onCvvChange(value);
+              }
+            }}
+            sx={{ width: '50%' }}
+            InputLabelProps={{
+              sx: { color: 'rgba(255, 255, 255, 0.7)' },
+            }}
+            inputProps={{
+              sx: { color: 'white' },
+            }}
+          />
+        </Stack>
+        {error && (
+          <Alert severity='error' sx={{ mt: 2 }}>
+            {error}
+          </Alert>
+        )}
+        <Button
+          onClick={sendPaymentDataToAnet}
+          variant='contained'
+          sx={{ display: 'none' }}
+          id='payment-submit-button'
+        >
+          Submit Payment
+        </Button>
+      </CardContent>
+    </Card>
   );
 }

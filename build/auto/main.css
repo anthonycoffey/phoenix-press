@@ -3,6 +3,10 @@
   height: 20px;
 }
 
+.MuiCardHeader-title {
+  font-size: 100%;
+}
+
 div#conversation-turnstile-widget {
   max-height: 80px;
 }
@@ -99,5 +103,3 @@ div#conversation-turnstile-widget {
   }
 }
 
-
-/*# sourceMappingURL=main.css.map*/

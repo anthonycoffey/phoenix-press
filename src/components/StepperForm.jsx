@@ -1,4 +1,4 @@
-import { useState, useEffect } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Stepper from '@mui/material/Stepper';
@@ -33,12 +33,10 @@ import ReceiptLong from '@mui/icons-material/ReceiptLong';
 import services from '../utils/services.js';
 import PhoenixApi from '../utils/PhoenixApi';
 import { CardHeader, Chip, useMediaQuery } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { useTheme, ThemeProvider, createTheme } from '@mui/material/styles';
 import AddressAutoComplete from './StepperForm/AddressAutoComplete';
 import Disclaimer from './StepperForm/Disclaimer';
 import parse from 'html-react-parser';
-import Paper from '@mui/material/Paper';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import EventAvailable from '@mui/icons-material/EventAvailable';
 import Sell from '@mui/icons-material/Sell';
@@ -47,6 +45,7 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import PaymentForm from './StepperForm/PaymentForm';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
+import ServiceCarousel from './StepperForm/ServiceCarousel';
 
 const steps = ['Service Selection', 'Vehicle Information', 'Confirmation'];
 
@@ -60,7 +59,7 @@ const initialFormData = {
   full_name: '',
   phone: '',
   email: '',
-  service_type: null,
+  service_type: [],
   car_year: new Date().getFullYear(),
   car_make: '',
   car_model: '',
@@ -100,7 +99,9 @@ export default function StepperForm() {
   };
 
   const bookingServiceIds = [1, 3, 4, 5];
-  const isBookingFlow = bookingServiceIds.includes(formData.service_type?.id);
+  const isBookingFlow = formData.service_type.some((s) =>
+    bookingServiceIds.includes(s.id)
+  );
 
   const currentSteps = isBookingFlow ? steps : leadFormSteps;
 
@@ -108,8 +109,8 @@ export default function StepperForm() {
     const newErrors = {};
     if (activeStep === 0) {
       if (!formData.phone) newErrors.phone = 'Phone number is required';
-      if (!formData.service_type)
-        newErrors.service_type = 'Service type is required';
+      if (formData.service_type.length === 0)
+        newErrors.service_type = 'At least one service must be selected';
       if (!formData.location)
         newErrors.location = 'Service Location is required';
       if (!formData.service_time)
@@ -138,23 +139,28 @@ export default function StepperForm() {
     }
 
     if (activeStep === 1 && isBookingFlow) {
-      setLoading(true);
-      setError('');
-      try {
-        const payload = {
-          year: parseInt(formData.car_year, 10),
-          make: formData.car_make,
-          model: formData.car_model,
-          service_type: formData.service_type?.value,
-          service_time: formData.service_time.toISOString(),
-        };
-        const quote = await PhoenixApi.getQuote(payload);
-        setQuoteData(quote);
-      } catch (err) {
-        setError(err.message || 'Failed to fetch quote.');
-      } finally {
-        setLoading(false);
-      }
+      setActiveStep((prev) => prev + 1);
+      const fetchQuote = async () => {
+        setLoading(true);
+        setError('');
+        try {
+          const payload = {
+            year: parseInt(formData.car_year, 10),
+            make: formData.car_make,
+            model: formData.car_model,
+            service_type: formData.service_type?.map((s) => s.id),
+            service_time: formData.service_time.toISOString(),
+          };
+          const quote = await PhoenixApi.getQuote(payload);
+          setQuoteData(quote);
+        } catch (err) {
+          setError(err.message || 'Failed to fetch quote.');
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchQuote();
+      return;
     }
 
     if (!isBookingFlow && activeStep === 1) {
@@ -175,7 +181,12 @@ export default function StepperForm() {
       setFormData((prev) => ({ ...prev, [name]: formattedPhoneNumber }));
     } else if (name === 'service_type') {
       const service = services.find((s) => s.id === value);
-      setFormData((prev) => ({ ...prev, service_type: service }));
+      setFormData((prev) => {
+        const newServices = prev.service_type.some((s) => s.id === service.id)
+          ? prev.service_type.filter((s) => s.id !== service.id)
+          : [...prev.service_type, service].slice(0, 3);
+        return { ...prev, service_type: newServices };
+      });
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
@@ -183,6 +194,10 @@ export default function StepperForm() {
 
   const handleDateChange = (newValue) => {
     setFormData((prev) => ({ ...prev, service_time: newValue }));
+  };
+
+  const handleLocationGeocoded = (place) => {
+    handlePlaceChanged(place);
   };
 
   const handlePlaceChanged = (place) => {
@@ -245,14 +260,19 @@ export default function StepperForm() {
           quoteData.quote -
           quoteData.breakdown.reduce((acc, item) => acc + item.amount, 0);
 
+        const pricePerService =
+          formData.service_type.length > 0
+            ? servicePrice / formData.service_type.length
+            : 0;
+
         const lineItems = [
-          {
-            ServiceId: formData.service_type.id,
-            label: formData.service_type.text,
-            price: Math.round(servicePrice * 100),
-          },
+          ...formData.service_type.map((service) => ({
+            ServiceId: service.id,
+            description: service.text,
+            price: Math.round(pricePerService * 100),
+          })),
           ...quoteData.breakdown.map((item) => ({
-            label: item.label,
+            description: item.label,
             price: Math.round(item.amount * 100),
           })),
         ];
@@ -306,6 +326,7 @@ export default function StepperForm() {
       handleChange,
       handleDateChange,
       handlePlaceChanged,
+      handleLocationGeocoded,
       errors,
       quoteData,
       loading,
@@ -341,64 +362,71 @@ export default function StepperForm() {
     return stepContentMap[step] || <p>Unknown step</p>;
   };
 
-  return (
-    <Card>
-      <CardHeader icon={<EditCalendar />} title='Booking Form' />
+  const darkTheme = createTheme({
+    palette: {
+      mode: 'dark',
+    },
+  });
 
-      <CardContent>
-        <Stepper
-          activeStep={activeStep}
-          orientation={isMobile ? 'vertical' : 'horizontal'}
-        >
-          {currentSteps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
-        <Box sx={{ mt: 3, mb: 1 }}>
-          {activeStep === currentSteps.length ? (
-            <ConfirmationStep isBookingFlow={isBookingFlow} />
-          ) : (
-            getStepContent(activeStep)
-          )}
-        </Box>
-        {activeStep < currentSteps.length && (
-          <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
-            <Button
-              color='inherit'
-              disabled={activeStep === 0 || loading}
-              onClick={handleBack}
-              sx={{ mr: 1 }}
-            >
-              Back
-            </Button>
-            <Box sx={{ flex: '1 1 auto' }} />
-            <Button
-              onClick={handleNext}
-              variant='contained'
-              disabled={
-                loading ||
-                (activeStep === currentSteps.length - 1 &&
-                  isBookingFlow &&
-                  !payLater &&
-                  !isPaymentDataValid())
-              }
-            >
-              {loading ? (
-                <CircularProgress size={24} color='inherit' />
-              ) : activeStep === 2 && isBookingFlow ? (
-                'Book Now'
-              ) : activeStep === currentSteps.length - 1 ? (
-                'Finish'
-              ) : (
-                'Next'
-              )}
-            </Button>
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <Card>
+
+        <CardContent>
+          <Stepper
+            activeStep={activeStep}
+            orientation={isMobile ? 'vertical' : 'horizontal'}
+          >
+            {currentSteps.map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+          <Box sx={{ mt: 3, mb: 1 }}>
+            {activeStep === currentSteps.length ? (
+              <ConfirmationStep isBookingFlow={isBookingFlow} />
+            ) : (
+              getStepContent(activeStep)
+            )}
           </Box>
-        )}
-      </CardContent>
-    </Card>
+          {activeStep < currentSteps.length && (
+            <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
+              <Button
+                color='inherit'
+                disabled={activeStep === 0 || loading}
+                onClick={handleBack}
+                sx={{ mr: 1 }}
+              >
+                Back
+              </Button>
+              <Box sx={{ flex: '1 1 auto' }} />
+              <Button
+                onClick={handleNext}
+                variant='contained'
+                disabled={
+                  loading ||
+                  (activeStep === currentSteps.length - 1 &&
+                    isBookingFlow &&
+                    !payLater &&
+                    !isPaymentDataValid())
+                }
+              >
+                {loading ? (
+                  <CircularProgress size={24} color='inherit' />
+                ) : activeStep === 2 && isBookingFlow ? (
+                  'Book Now'
+                ) : activeStep === currentSteps.length - 1 ? (
+                  'Finish'
+                ) : (
+                  'Next'
+                )}
+              </Button>
+            </Box>
+          )}
+        </CardContent>
+      </Card>
+    </ThemeProvider>
   );
 }
 
@@ -421,18 +449,20 @@ const CustomerInfoStep = ({
   handleChange,
   handleDateChange,
   handlePlaceChanged,
+  handleLocationGeocoded,
   errors,
   consent,
   onConsentChange,
 }) => (
   <>
     <CardHeader
-      title='Customer Information'
+      title={<Typography color='primary' component='span' variant='h5'>Customer Information</Typography>}
       avatar={<AccountCircle fontSize='large' color='primary' />}
       sx={{ px: 0 }}
     />
     <Stack component='form' spacing={2} noValidate autoComplete='on'>
       <TextField
+        variant='filled'
         label='Full Name'
         name='full_name'
         value={formData.full_name}
@@ -442,6 +472,7 @@ const CustomerInfoStep = ({
         fullWidth
       />
       <TextField
+        variant='filled'
         label='Email Address (optional)'
         name='email'
         value={formData.email}
@@ -456,24 +487,26 @@ const CustomerInfoStep = ({
         onPlaceChanged={handlePlaceChanged}
         error={!!errors.location}
         helperText={errors.location}
+        onLocationGeocoded={handleLocationGeocoded}
       />
       <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={en}>
         <DateTimePicker
           label='Service Time'
           value={formData.service_time}
           onChange={handleDateChange}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              fullWidth
-              margin='normal'
-              error={!!errors.service_time}
-              helperText={errors.service_time}
-            />
-          )}
+          slotProps={{
+            textField: {
+              variant: 'filled',
+              fullWidth: true,
+              margin: 'normal',
+              error: !!errors.service_time,
+              helperText: errors.service_time,
+            },
+          }}
         />
       </LocalizationProvider>
       <TextField
+        variant='filled'
         label='Phone Number'
         name='phone'
         value={formData.phone}
@@ -483,30 +516,18 @@ const CustomerInfoStep = ({
         fullWidth
         margin='normal'
       />
-      <FormControl fullWidth margin='normal' error={!!errors.service_type}>
-        <InputLabel>Service Type</InputLabel>
-        <Select
-          name='service_type'
-          value={formData.service_type?.id || ''}
-          onChange={handleChange}
-          label='Service Type'
-        >
-          {services.map((service) => (
-            <MenuItem key={service.id} value={service.id}>
-              {service.text}
-            </MenuItem>
-          ))}
-        </Select>
-        {errors.service_type && (
-          <Typography color='error' variant='caption'>
-            {errors.service_type}
-          </Typography>
-        )}
-      </FormControl>
-      <Alert severity='info' sx={{ mb: 2 }}>
-        Note: If you require multiple services, please select the primary
-        service you require as additional services can be added later.
-      </Alert>
+      <ServiceCarousel
+        services={services}
+        selectedServices={formData.service_type}
+        onServiceSelect={(service) =>
+          handleChange({ target: { name: 'service_type', value: service.id } })
+        }
+      />
+      {errors.service_type && (
+        <Typography color='error' variant='caption'>
+          {errors.service_type}
+        </Typography>
+      )}
       <Disclaimer consent={consent} onConsentChange={onConsentChange} />
     </Stack>
   </>
@@ -553,7 +574,7 @@ const carMakes = [
 const VehicleInfoStep = ({ formData, handleChange, errors }) => (
   <>
     <CardHeader
-      title='What are you driving?'
+      title={<Typography color='primary' component='span' variant='h5'>What are you driving?</Typography>}
       avatar={<DirectionsCar fontSize='large' color='primary' />}
       sx={{ px: 0 }}
     />
@@ -561,6 +582,7 @@ const VehicleInfoStep = ({ formData, handleChange, errors }) => (
       <FormControl fullWidth margin='normal' error={!!errors.car_make}>
         <InputLabel>Vehicle Make</InputLabel>
         <Select
+          variant='filled'
           name='car_make'
           value={formData.car_make}
           onChange={handleChange}
@@ -579,6 +601,7 @@ const VehicleInfoStep = ({ formData, handleChange, errors }) => (
         )}
       </FormControl>
       <TextField
+        variant='filled'
         label='Vehicle Model'
         name='car_model'
         value={formData.car_model}
@@ -590,6 +613,7 @@ const VehicleInfoStep = ({ formData, handleChange, errors }) => (
         slotProps={{ htmlInput: { maxLength: 20 } }}
       />
       <TextField
+        variant='filled'
         label='Vehicle Year'
         name='car_year'
         type='number'
@@ -605,7 +629,8 @@ const VehicleInfoStep = ({ formData, handleChange, errors }) => (
           step: 1,
         }}
       />
-      <TextField
+      {/* <TextField
+        variant='filled'
         label='Vehicle Color (optional)'
         name='car_color'
         value={formData.car_color}
@@ -615,8 +640,9 @@ const VehicleInfoStep = ({ formData, handleChange, errors }) => (
         fullWidth
         margin='normal'
         slotProps={{ htmlInput: { maxLength: 20 } }}
-      />
-      <TextField
+      /> */}
+      {/* <TextField
+        variant='filled'
         label='License Plate (optional)'
         name='car_license_plate'
         value={formData.car_license_plate}
@@ -628,6 +654,7 @@ const VehicleInfoStep = ({ formData, handleChange, errors }) => (
         slotProps={{ htmlInput: { maxLength: 10 } }}
       />
       <TextField
+        variant='filled'
         label='Additional Info (optional)'
         name='additional_info'
         value={formData.additional_info}
@@ -639,8 +666,8 @@ const VehicleInfoStep = ({ formData, handleChange, errors }) => (
         multiline
         rows={2}
         slotProps={{ htmlInput: { maxLength: 255 } }}
-      />
-      <Alert severity='info' sx={{ mb: 2 }}>
+      /> */}
+      <Alert variant='outlined' severity='warning' sx={{ mb: 2 }}>
         Please provide your vehicle details to get an accurate quote.
       </Alert>
     </Stack>
@@ -667,8 +694,18 @@ const QuoteStep = ({
 }) => (
   <Stack component='form' spacing={2} noValidate autoComplete='on'>
     {loading && (
-      <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          my: 4,
+        }}
+      >
         <CircularProgress />
+        <Typography sx={{ mt: 2 }}>
+          Please wait... generating your quote.
+        </Typography>
       </Box>
     )}
 
@@ -676,17 +713,24 @@ const QuoteStep = ({
     {quoteData && (
       <>
         <CardHeader
-          title={`Confirm Your Booking`}
+          title={<Typography color='primary' component='span' variant='h5'>Confirm Your Booking</Typography>}
           avatar={<EventAvailable fontSize='large' color='primary' />}
           subheader={
             <>
               <Typography component='span' variant='h6'>
-                {formData.location}
-              </Typography>
-              <Typography variant='subtitle2'>
                 {new Date(formData.service_time).toLocaleString()}
               </Typography>
-              <Chip label={formData.service_type.text} color='primary' />
+              <Typography variant='subtitle2'>
+                {formData.location}
+              </Typography>
+              {formData.service_type.map((s) => (
+                <Chip
+                  key={s.id}
+                  label={s.text}
+                  color='primary'
+                  sx={{ mr: 1 }}
+                />
+              ))}
             </>
           }
           sx={{ px: 0 }}
@@ -707,7 +751,7 @@ const QuoteStep = ({
           </ListItem>
           <Divider component='li' />
           {quoteData.breakdown.map((item, index) => (
-            <ListItem key={index}>
+            <ListItem key={index} dense>
               <ListItemIcon>
                 {item.label.includes('surcharge') ? (
                   <MoreTime />
@@ -761,7 +805,7 @@ const QuoteStep = ({
           <>
             <CardHeader
               avatar={<CreditCardIcon color='primary' />}
-              title='Pay with Card'
+              title={'Pay with Card'}
               sx={{ px: 0 }}
             />
             <PaymentForm
@@ -777,16 +821,18 @@ const QuoteStep = ({
             />
           </>
         )}
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={payLater}
-              onChange={(e) => onPayLaterChange(e.target.checked)}
-              name='payLater'
-            />
-          }
-          label='Pay Later'
-        />
+        <Box>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={payLater}
+                onChange={(e) => onPayLaterChange(e.target.checked)}
+                name='payLater'
+              />
+            }
+            label='Pay Later'
+          />
+        </Box>
       </>
     )}
   </Stack>
@@ -798,7 +844,7 @@ const ConfirmationStep = ({ isBookingFlow }) => {
   const message = SUBMISSION_MESSAGE || defaultMessage;
 
   return (
-    <Paper
+    <Box
       elevation={0}
       sx={{
         padding: 4,
@@ -806,14 +852,13 @@ const ConfirmationStep = ({ isBookingFlow }) => {
         flexDirection: 'column',
         alignItems: 'center',
         textAlign: 'center',
-        backgroundColor: '#f9f9f9',
       }}
     >
-      <CheckCircleIcon sx={{ fontSize: 60, color: 'success.main', mb: 2 }} />
+      <EventAvailable sx={{ fontSize: 60, color: 'success.main', mb: 2 }} />
       <Typography variant='h4' gutterBottom>
         {isBookingFlow ? 'Booking Confirmed!' : 'Submission Successful!'}
       </Typography>
       <Typography variant='body1'>{parse(message)}</Typography>
-    </Paper>
+    </Box>
   );
 };

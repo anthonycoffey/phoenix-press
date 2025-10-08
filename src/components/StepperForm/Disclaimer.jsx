@@ -13,7 +13,14 @@ export default function Disclaimer({ consent, onConsentChange }) {
   const message = DISCLAIMER_MESSAGE || defaultMessage;
 
   return (
-    <Box sx={{ mt: 2, p: 2, border: '1px solid #e0e0e0', borderRadius: 1 }}>
+    <Box
+      sx={{
+        mt: 2,
+        p: 2,
+        border: (theme) => `1px solid ${theme.palette.divider}`,
+        borderRadius: 1,
+      }}
+    >
       <FormControlLabel
         control={
           <Checkbox
