@@ -259,7 +259,7 @@ export default function StepperForm() {
 
         const payload = {
           customer: {
-            firstName: formData.full_name,
+            firstName: formData.full_name || 'Guest User',
             lastName: '',
             CustomerPhones: [{ number: formData.phone }],
           },
