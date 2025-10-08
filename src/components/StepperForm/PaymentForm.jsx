@@ -4,7 +4,11 @@ import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 
-const { AUTH_NET_API_LOGIN_ID, AUTH_NET_CLIENT_KEY } = window.LOCALIZED;
+const {
+  AUTH_NET_API_LOGIN_ID,
+  AUTH_NET_CLIENT_KEY,
+  AUTH_NET_TEST_MODE,
+} = window.LOCALIZED;
 
 export default function PaymentForm({
   amount,
@@ -20,7 +24,9 @@ export default function PaymentForm({
 
   useEffect(() => {
     const script = document.createElement('script');
-    script.src = 'https://js.authorize.net/v1/Accept.js';
+    script.src = AUTH_NET_TEST_MODE
+      ? 'https://jstest.authorize.net/v1/Accept.js'
+      : 'https://js.authorize.net/v1/Accept.js';
     script.async = true;
     document.body.appendChild(script);
 

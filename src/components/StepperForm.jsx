@@ -32,7 +32,8 @@ import EditCalendar from '@mui/icons-material/EditCalendar';
 import ReceiptLong from '@mui/icons-material/ReceiptLong';
 import services from '../utils/services.js';
 import PhoenixApi from '../utils/PhoenixApi';
-import { CardHeader, Chip } from '@mui/material';
+import { CardHeader, Chip, useMediaQuery } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import AddressAutoComplete from './StepperForm/AddressAutoComplete';
 import Disclaimer from './StepperForm/Disclaimer';
 import parse from 'html-react-parser';
@@ -46,7 +47,7 @@ import PaymentForm from './StepperForm/PaymentForm';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 
-const steps = ['Service Selection', 'Vehicle Information', 'Quote'];
+const steps = ['Service Selection', 'Vehicle Information', 'Confirmation'];
 
 const leadFormSteps = [
   'Service Selection',
@@ -85,6 +86,9 @@ export default function StepperForm() {
   const [cardNumber, setCardNumber] = useState('');
   const [expiry, setExpiry] = useState('');
   const [cvv, setCvv] = useState('');
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const isPaymentDataValid = () => {
     return (
@@ -236,6 +240,22 @@ export default function StepperForm() {
     setError('');
     try {
       if (isBookingFlow) {
+        const servicePrice =
+          quoteData.quote -
+          quoteData.breakdown.reduce((acc, item) => acc + item.amount, 0);
+
+        const lineItems = [
+          {
+            ServiceId: formData.service_type.id,
+            label: formData.service_type.text,
+            price: Math.round(servicePrice * 100),
+          },
+          ...quoteData.breakdown.map((item) => ({
+            label: item.label,
+            price: Math.round(item.amount * 100),
+          })),
+        ];
+
         const payload = {
           customer: {
             firstName: formData.full_name,
@@ -248,16 +268,13 @@ export default function StepperForm() {
             year: parseInt(formData.car_year, 10),
             color: formData.car_color,
             license_plate: formData.car_license_plate,
-            additional_info: formData.additional_info,
           },
           address: addressObj || {},
           locationString: formData.location,
-          lineItems: quoteData.breakdown.map((item) => ({
-            ServiceId: item.id,
-            price: Math.round(item.amount * 100),
-          })),
+          lineItems,
           opaqueData: token,
           tip: Math.round(tip * 100),
+          additional_info: formData.additional_info,
         };
         await PhoenixApi.createBooking(payload);
       } else {
@@ -328,7 +345,10 @@ export default function StepperForm() {
       <CardHeader icon={<EditCalendar />} title='Booking Form' />
 
       <CardContent>
-        <Stepper activeStep={activeStep}>
+        <Stepper
+          activeStep={activeStep}
+          orientation={isMobile ? 'vertical' : 'horizontal'}
+        >
           {currentSteps.map((label) => (
             <Step key={label}>
               <StepLabel>{label}</StepLabel>
@@ -773,9 +793,7 @@ const QuoteStep = ({
 
 const ConfirmationStep = ({ isBookingFlow }) => {
   const { SUBMISSION_MESSAGE } = window.LOCALIZED;
-  const defaultMessage = isBookingFlow
-    ? 'Your booking has been confirmed.'
-    : `Thank you for reaching out! Don't wait — call us now at <a href="tel:+18665848488">(866) 584-8488</a> to speak with a live dispatcher and get help right away!`;
+  const defaultMessage = `Thank you for reaching out! Don't wait — call us now at <a href="tel:+18665848488">(866) 584-8488</a> to speak with a live dispatcher and get help right away!`;
   const message = SUBMISSION_MESSAGE || defaultMessage;
 
   return (
@@ -792,7 +810,7 @@ const ConfirmationStep = ({ isBookingFlow }) => {
     >
       <CheckCircleIcon sx={{ fontSize: 60, color: 'success.main', mb: 2 }} />
       <Typography variant='h4' gutterBottom>
-        Thank You!
+        {isBookingFlow ? 'Booking Confirmed!' : 'Submission Successful!'}
       </Typography>
       <Typography variant='body1'>{parse(message)}</Typography>
     </Paper>
