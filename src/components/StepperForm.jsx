@@ -46,6 +46,7 @@ import PaymentForm from './StepperForm/PaymentForm';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import ServiceCarousel from './StepperForm/ServiceCarousel';
+import { lighten } from '@mui/material/styles';
 
 const steps = ['Service Selection', 'Vehicle Information', 'Confirmation'];
 
@@ -717,8 +718,8 @@ const QuoteStep = ({
           avatar={<EventAvailable fontSize='large' color='primary' />}
           subheader={
             <>
-              <Typography component='span' variant='h6'>
-                {new Date(formData.service_time).toLocaleString()}
+              <Typography component='span' variant='h6' sx={{mb:2}}>
+                {new Date(formData.service_time).toLocaleString().replace(', ', ' @ ')}
               </Typography>
               <Typography variant='subtitle2'>
                 {formData.location}
@@ -737,7 +738,7 @@ const QuoteStep = ({
         />
 
         <List
-          sx={{ width: '100%', bgcolor: 'background.paper' }}
+          sx={{ width: '100%', bgcolor: (theme) => lighten(theme.palette.background.paper, 0.1), borderRadius: 8 }}
           subheader={<ListSubheader>Summary</ListSubheader>}
         >
           <ListItem>
