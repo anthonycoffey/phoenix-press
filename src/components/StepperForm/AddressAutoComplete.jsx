@@ -88,6 +88,7 @@ export default function AddressAutoComplete({
         fullWidth
         margin='normal'
         variant='filled'
+        sx={{ m: 0 }}
         InputProps={{
           endAdornment: (
             <InputAdornment position='end'>

@@ -28,8 +28,11 @@ import Divider from '@mui/material/Divider';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import MoreTime from '@mui/icons-material/MoreTime';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import InfoIcon from '@mui/icons-material/Info';
 import EditCalendar from '@mui/icons-material/EditCalendar';
 import ReceiptLong from '@mui/icons-material/ReceiptLong';
+import IconButton from '@mui/material/IconButton';
+import Popover from '@mui/material/Popover';
 import services from '../utils/services.js';
 import PhoenixApi from '../utils/PhoenixApi';
 import { CardHeader, Chip, useMediaQuery } from '@mui/material';
@@ -47,8 +50,15 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import ServiceCarousel from './StepperForm/ServiceCarousel';
 import { lighten } from '@mui/material/styles';
+import VehicleSelector from './StepperForm/VehicleSelector';
+import Autocomplete from '@mui/material/Autocomplete';
 
-const steps = ['Service Selection', 'Vehicle Information', 'Confirmation'];
+const steps = [
+	'Service Selection',
+	'Vehicle Information',
+	'Confirmation',
+	'Payment',
+];
 
 const leadFormSteps = [
   'Service Selection',
@@ -61,7 +71,7 @@ const initialFormData = {
   phone: '',
   email: '',
   service_type: [],
-  car_year: new Date().getFullYear(),
+  car_year: '',
   car_make: '',
   car_model: '',
   car_color: '',
@@ -110,37 +120,42 @@ export default function StepperForm() {
     const newErrors = {};
     if (activeStep === 0) {
       if (!formData.phone) newErrors.phone = 'Phone number is required';
-      if (formData.service_type.length === 0)
-        newErrors.service_type = 'At least one service must be selected';
       if (!formData.location)
         newErrors.location = 'Service Location is required';
       if (!formData.service_time)
         newErrors.service_time = 'Service time is required';
     }
-    if (activeStep === 1 && isBookingFlow) {
-      if (!formData.car_year) newErrors.car_year = 'Vehicle year is required';
-      if (!formData.car_make) newErrors.car_make = 'Vehicle make is required';
-      if (!formData.car_model)
-        newErrors.car_model = 'Vehicle model is required';
+    if (activeStep === 1) {
+      if (formData.service_type.length === 0) {
+        newErrors.service_type = 'At least one service must be selected';
+      }
+      if (isBookingFlow) {
+        if (!formData.car_year) newErrors.car_year = 'Vehicle year is required';
+        if (!formData.car_make) newErrors.car_make = 'Vehicle make is required';
+        if (!formData.car_model)
+          newErrors.car_model = 'Vehicle model is required';
+      }
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleNext = async () => {
+  const handleNext = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
     if (!validateStep()) return;
 
     if (activeStep === currentSteps.length - 1 && isBookingFlow) {
-      if (payLater) {
-        handleFinalSubmit();
-      } else {
-        document.getElementById('payment-submit-button').click();
-      }
-      return;
-    }
+			if (payLater) {
+				handleFinalSubmit();
+			} else {
+				document.getElementById('payment-submit-button').click();
+			}
+			return;
+		}
 
     if (activeStep === 1 && isBookingFlow) {
-      setActiveStep((prev) => prev + 1);
       const fetchQuote = async () => {
         setLoading(true);
         setError('');
@@ -149,11 +164,12 @@ export default function StepperForm() {
             year: parseInt(formData.car_year, 10),
             make: formData.car_make,
             model: formData.car_model,
-            service_type: formData.service_type?.map((s) => s.id),
+            service_ids: formData.service_type?.map((s) => s.id),
             service_time: formData.service_time.toISOString(),
           };
           const quote = await PhoenixApi.getQuote(payload);
           setQuoteData(quote);
+          setActiveStep((prev) => prev + 1);
         } catch (err) {
           setError(err.message || 'Failed to fetch quote.');
         } finally {
@@ -165,13 +181,17 @@ export default function StepperForm() {
     }
 
     if (!isBookingFlow && activeStep === 1) {
-      handleFinalSubmit();
-    } else {
-      setActiveStep((prev) => prev + 1);
-    }
+			handleFinalSubmit();
+		} else if (activeStep === 2 && isBookingFlow) {
+			setActiveStep((prev) => prev + 1);
+		} else {
+			setActiveStep((prev) => prev + 1);
+		}
   };
 
-  const handleBack = () => {
+  const handleBack = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     setActiveStep((prev) => prev - 1);
   };
 
@@ -358,6 +378,7 @@ export default function StepperForm() {
       ) : (
         <ConfirmationStep {...stepProps} />
       ),
+      3: <PaymentStep {...stepProps} />,
     };
 
     return stepContentMap[step] || <p>Unknown step</p>;
@@ -376,7 +397,23 @@ export default function StepperForm() {
         <CardContent>
           <Stepper
             activeStep={activeStep}
-            orientation={isMobile ? 'vertical' : 'horizontal'}
+            orientation={'horizontal'}
+            sx={{
+              '& .MuiStepLabel-root .Mui-active': {
+                color: 'primary.main', // circle color
+              },
+              '& .MuiStepLabel-label.Mui-active.MuiStepLabel-alternativeLabel':
+                {
+                  color: 'primary.contrastText', // Just text label (ACTIVE)
+                },
+              '& .MuiStepLabel-root .Mui-completed': {
+                color: 'secondary.main', // circle color
+              },
+              '& .MuiStepLabel-label.Mui-completed.MuiStepLabel-alternativeLabel':
+                {
+                  color: 'grey.500', // Just text label (COMPLETED)
+                },
+            }}
           >
             {currentSteps.map((label) => (
               <Step key={label}>
@@ -415,10 +452,8 @@ export default function StepperForm() {
               >
                 {loading ? (
                   <CircularProgress size={24} color='inherit' />
-                ) : activeStep === 2 && isBookingFlow ? (
-                  'Book Now'
                 ) : activeStep === currentSteps.length - 1 ? (
-                  'Finish'
+                  'Book Now'
                 ) : (
                   'Next'
                 )}
@@ -457,8 +492,8 @@ const CustomerInfoStep = ({
 }) => (
   <>
     <CardHeader
-      title={<Typography color='primary' component='span' variant='h5'>Customer Information</Typography>}
-      avatar={<AccountCircle fontSize='large' color='primary' />}
+      title={<Typography color='primary' component='span' variant='h6'>Customer Information</Typography>}
+      avatar={<AccountCircle color='primary' />}
       sx={{ px: 0 }}
     />
     <Stack component='form' spacing={2} noValidate autoComplete='on'>
@@ -517,326 +552,305 @@ const CustomerInfoStep = ({
         fullWidth
         margin='normal'
       />
-      <ServiceCarousel
-        services={services}
-        selectedServices={formData.service_type}
-        onServiceSelect={(service) =>
-          handleChange({ target: { name: 'service_type', value: service.id } })
-        }
-      />
-      {errors.service_type && (
-        <Typography color='error' variant='caption'>
-          {errors.service_type}
-        </Typography>
-      )}
       <Disclaimer consent={consent} onConsentChange={onConsentChange} />
     </Stack>
   </>
 );
 
-const carMakes = [
-  'Acura',
-  'Alfa Romeo',
-  'Audi',
-  'BMW',
-  'Buick',
-  'Cadillac',
-  'Chevrolet',
-  'Chrysler',
-  'Dodge',
-  'Fiat',
-  'Ford',
-  'Genesis',
-  'GMC',
-  'Honda',
-  'Hyundai',
-  'Infiniti',
-  'Jaguar',
-  'Jeep',
-  'Kia',
-  'Land Rover',
-  'Lexus',
-  'Lincoln',
-  'Maserati',
-  'Mazda',
-  'Mercedes-Benz',
-  'Mini',
-  'Mitsubishi',
-  'Nissan',
-  'Porsche',
-  'Ram',
-  'Subaru',
-  'Tesla',
-  'Toyota',
-  'Volkswagen',
-  'Volvo',
-];
+const VehicleInfoStep = ({ formData, handleChange, errors }) => {
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: currentYear - 1948 }, (_, i) =>
+    (currentYear + 1 - i).toString()
+  );
 
-const VehicleInfoStep = ({ formData, handleChange, errors }) => (
-  <>
-    <CardHeader
-      title={<Typography color='primary' component='span' variant='h5'>What are you driving?</Typography>}
-      avatar={<DirectionsCar fontSize='large' color='primary' />}
-      sx={{ px: 0 }}
-    />
-    <Stack component='form' spacing={2} noValidate autoComplete='on'>
-      <FormControl fullWidth margin='normal' error={!!errors.car_make}>
-        <InputLabel>Vehicle Make</InputLabel>
-        <Select
-          variant='filled'
-          name='car_make'
-          value={formData.car_make}
-          onChange={handleChange}
-          label='Vehicle Make'
-        >
-          {carMakes.map((make) => (
-            <MenuItem key={make} value={make}>
-              {make}
-            </MenuItem>
-          ))}
-        </Select>
-        {errors.car_make && (
+  return (
+    <>
+      <CardHeader
+        title={
+          <Typography color='primary' component='span' variant='h6'>
+            What are you driving?
+          </Typography>
+        }
+        avatar={<DirectionsCar fontSize='large' color='primary' />}
+        sx={{ px: 0 }}
+      />
+      <Stack component='form' spacing={2} noValidate autoComplete='on'>
+        <Alert variant='outlined' severity='warning' sx={{ mb: 2 }}>
+          Please provide your vehicle details to get an accurate quote.
+        </Alert>
+        <VehicleSelector
+          formData={formData}
+          handleChange={handleChange}
+          errors={errors}
+        />
+        <Autocomplete
+          options={years}
+          value={formData.car_year.toString()}
+          onChange={(event, value) =>
+            handleChange({ target: { name: 'car_year', value } })
+          }
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              variant='filled'
+              label='Vehicle Year'
+              error={!!errors.car_year}
+              helperText={errors.car_year}
+              margin='none'
+              fullWidth
+            />
+          )}
+        />
+        <Alert severity='info'>
+          Select a service below, bundling services unlocks super savings!
+        </Alert>
+        <ServiceCarousel
+          services={services}
+          selectedServices={formData.service_type}
+          onServiceSelect={(service) =>
+            handleChange({
+              target: { name: 'service_type', value: service.id },
+            })
+          }
+        />
+        {errors.service_type && (
           <Typography color='error' variant='caption'>
-            {errors.car_make}
+            {errors.service_type}
           </Typography>
         )}
-      </FormControl>
-      <TextField
-        variant='filled'
-        label='Vehicle Model'
-        name='car_model'
-        value={formData.car_model}
-        onChange={handleChange}
-        error={!!errors.car_model}
-        helperText={errors.car_model}
-        fullWidth
-        margin='normal'
-        slotProps={{ htmlInput: { maxLength: 20 } }}
-      />
-      <TextField
-        variant='filled'
-        label='Vehicle Year'
-        name='car_year'
-        type='number'
-        value={formData.car_year}
-        onChange={handleChange}
-        error={!!errors.car_year}
-        helperText={errors.car_year}
-        fullWidth
-        margin='normal'
-        inputProps={{
-          min: 1980,
-          max: new Date().getFullYear() + 1,
-          step: 1,
-        }}
-      />
-      {/* <TextField
-        variant='filled'
-        label='Vehicle Color (optional)'
-        name='car_color'
-        value={formData.car_color}
-        onChange={handleChange}
-        error={!!errors.car_color}
-        helperText={errors.car_color}
-        fullWidth
-        margin='normal'
-        slotProps={{ htmlInput: { maxLength: 20 } }}
-      /> */}
-      {/* <TextField
-        variant='filled'
-        label='License Plate (optional)'
-        name='car_license_plate'
-        value={formData.car_license_plate}
-        onChange={handleChange}
-        error={!!errors.car_license_plate}
-        helperText={errors.car_license_plate}
-        fullWidth
-        margin='normal'
-        slotProps={{ htmlInput: { maxLength: 10 } }}
-      />
-      <TextField
-        variant='filled'
-        label='Additional Info (optional)'
-        name='additional_info'
-        value={formData.additional_info}
-        onChange={handleChange}
-        error={!!errors.additional_info}
-        helperText={errors.additional_info}
-        fullWidth
-        margin='normal'
-        multiline
-        rows={2}
-        slotProps={{ htmlInput: { maxLength: 255 } }}
-      /> */}
-      <Alert variant='outlined' severity='warning' sx={{ mb: 2 }}>
-        Please provide your vehicle details to get an accurate quote.
-      </Alert>
-    </Stack>
-  </>
-);
+      </Stack>
+    </>
+  );
+};
 
 const QuoteStep = ({
   formData,
   quoteData,
   loading,
   error,
-  onTokenReceived,
-  paymentError,
-  payLater,
-  onPayLaterChange,
   tip,
   onTipChange,
-  cardNumber,
-  onCardNumberChange,
-  expiry,
-  onExpiryChange,
-  cvv,
-  onCvvChange,
-}) => (
-  <Stack component='form' spacing={2} noValidate autoComplete='on'>
-    {loading && (
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          my: 4,
-        }}
-      >
-        <CircularProgress />
-        <Typography sx={{ mt: 2 }}>
-          Please wait... generating your quote.
-        </Typography>
-      </Box>
-    )}
+}) => {
+  const [anchorEl, setAnchorEl] = useState(null);
 
-    {error && <Alert severity='error'>{error}</Alert>}
-    {quoteData && (
-      <>
-        <CardHeader
-          title={<Typography color='primary' component='span' variant='h5'>Confirm Your Booking</Typography>}
-          avatar={<EventAvailable fontSize='large' color='primary' />}
-          subheader={
-            <>
-              <Typography component='span' variant='h6' sx={{mb:2}}>
-                {new Date(formData.service_time).toLocaleString().replace(', ', ' @ ')}
-              </Typography>
-              <Typography variant='subtitle2'>
-                {formData.location}
-              </Typography>
-              {formData.service_type.map((s) => (
-                <Chip
-                  key={s.id}
-                  label={s.text}
-                  color='primary'
-                  sx={{ mr: 1 }}
-                />
-              ))}
-            </>
-          }
-          sx={{ px: 0 }}
-        />
+  const handlePopoverOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
 
-        <List
-          sx={{ width: '100%', bgcolor: (theme) => lighten(theme.palette.background.paper, 0.1), borderRadius: 8 }}
-          subheader={<ListSubheader>Summary</ListSubheader>}
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+
+  const totalSurcharges =
+    quoteData?.breakdown?.reduce((acc, item) => acc + item.amount, 0) || 0;
+
+  return (
+    <Stack spacing={2}>
+      {loading && (
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            my: 4,
+          }}
         >
-          <ListItem>
-            <ListItemIcon>
-              <DirectionsCarIcon />
-            </ListItemIcon>
-            <ListItemText
-              primary={`${formData.car_make} ${formData.car_model} ${formData.car_year}`}
-              secondary={quoteData.vehicle_class}
-            />
-          </ListItem>
-          <Divider component='li' />
-          {quoteData.breakdown.map((item, index) => (
-            <ListItem key={index} dense>
+          <CircularProgress />
+          <Typography sx={{ mt: 2 }}>
+            Please wait... generating your quote.
+          </Typography>
+        </Box>
+      )}
+
+      {error && <Alert severity='error'>{error}</Alert>}
+      {quoteData && (
+        <>
+          <CardHeader
+            title={
+              <Typography color='primary' component='span' variant='h6'>
+                Confirm Your Booking
+              </Typography>
+            }
+            avatar={<EventAvailable fontSize='large' color='primary' />}
+            subheader={
+              <>
+                <Typography component='span' variant='h6' sx={{ mb: 2 }}>
+                  {new Date(formData.service_time)
+                    .toLocaleString()
+                    .replace(', ', ' @ ')}
+                </Typography>
+                <Typography variant='subtitle2'>{formData.location}</Typography>
+                {formData.service_type.map((s) => (
+                  <Chip
+                    key={s.id}
+                    label={s.text}
+                    color='primary'
+                    sx={{ mr: 1, mt: 1 }}
+                  />
+                ))}
+              </>
+            }
+            sx={{ px: 0 }}
+          />
+
+          <List
+            sx={{
+              width: '100%',
+              bgcolor: (theme) => lighten(theme.palette.background.paper, 0.1),
+              borderRadius: 2,
+            }}
+            subheader={
+              <ListSubheader
+                sx={{
+                  bgcolor: 'transparent',
+                  borderRadius: '8px 8px 0 0',
+                }}
+              >
+                Summary
+              </ListSubheader>
+            }
+          >
+            <ListItem>
               <ListItemIcon>
-                {item.label.includes('surcharge') ? (
-                  <MoreTime />
-                ) : (
-                  <MonetizationOnIcon />
-                )}
+                <DirectionsCarIcon />
               </ListItemIcon>
               <ListItemText
-                primary={`$${item.amount.toFixed(2)}`}
-                secondary={item.label}
+                primary={`${formData.car_make} ${formData.car_model} ${formData.car_year}`}
+                secondary={quoteData.vehicle_class}
               />
             </ListItem>
-          ))}
-          <Divider component='li' />
-          <ListItem>
-            <ListItemIcon>
-              <Sell size='large' />
-            </ListItemIcon>
-            <ListItemText
-              primary={`$${quoteData.quote.toFixed(2)}`}
-              secondary='Subtotal'
-            />
-          </ListItem>
-          <ListItem>
-            <ListItemIcon>
-              <MonetizationOnIcon />
-            </ListItemIcon>
-            <TextField
-              label='Tip (optional)'
-              type='number'
-              value={tip}
-              onChange={onTipChange}
-              fullWidth
-              variant='standard'
-            />
-          </ListItem>
-          <Divider component='li' />
-          <ListItem>
-            <ListItemIcon>
-              <ReceiptLong size='large' />
-            </ListItemIcon>
-            <ListItemText
-              primary={`$${(quoteData.quote + (parseFloat(tip) || 0)).toFixed(
-                2
-              )}`}
-              secondary='Total'
-            />
-          </ListItem>
-        </List>
-        {!payLater && (
-          <>
-            <CardHeader
-              avatar={<CreditCardIcon color='primary' />}
-              title={'Pay with Card'}
-              sx={{ px: 0 }}
-            />
-            <PaymentForm
-              amount={quoteData.quote + (parseFloat(tip) || 0)}
-              onTokenReceived={onTokenReceived}
-              error={paymentError}
-              cardNumber={cardNumber}
-              onCardNumberChange={onCardNumberChange}
-              expiry={expiry}
-              onExpiryChange={onExpiryChange}
-              cvv={cvv}
-              onCvvChange={onCvvChange}
-            />
-          </>
-        )}
-        <Box>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={payLater}
-                onChange={(e) => onPayLaterChange(e.target.checked)}
-                name='payLater'
+            <Divider component='li' />
+            {totalSurcharges > 0 && (
+              <ListItem dense>
+                <ListItemIcon>
+                  <MoreTime />
+                </ListItemIcon>
+                <ListItemText
+                  primary={`$${totalSurcharges.toFixed(2)}`}
+                  secondary='Additional fees'
+                />
+                <IconButton onClick={handlePopoverOpen} size='small'>
+                  <InfoIcon fontSize='small' />
+                </IconButton>
+                <Popover
+                  open={open}
+                  anchorEl={anchorEl}
+                  onClose={handlePopoverClose}
+                  anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'left',
+                  }}
+                >
+                  <List dense sx={{ p: 1 }}>
+                    {quoteData.breakdown.map((item, index) => (
+                      <ListItem key={index}>
+                        <ListItemText
+                          primary={`$${item.amount.toFixed(2)}`}
+                          secondary={item.label}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Popover>
+              </ListItem>
+            )}
+            <Divider component='li' />
+            <ListItem>
+              <ListItemIcon>
+                <Sell />
+              </ListItemIcon>
+              <ListItemText
+                primary={`$${quoteData.quote.toFixed(2)}`}
+                secondary='Subtotal'
               />
-            }
-            label='Pay Later'
-          />
-        </Box>
-      </>
-    )}
-  </Stack>
+            </ListItem>
+            <ListItem>
+              <ListItemIcon>
+                <MonetizationOnIcon />
+              </ListItemIcon>
+              <TextField
+                label='Tip (optional)'
+                type='number'
+                value={tip}
+                onChange={onTipChange}
+                fullWidth
+                variant='standard'
+                InputProps={{
+                  startAdornment: <Typography sx={{ mr: 1 }}>$</Typography>,
+                }}
+              />
+            </ListItem>
+            <Divider component='li' />
+            <ListItem>
+              <ListItemIcon>
+                <ReceiptLong />
+              </ListItemIcon>
+              <ListItemText
+                primary={`$${(
+                  quoteData.quote + (parseFloat(tip) || 0)
+                ).toFixed(2)}`}
+                secondary='Total'
+              />
+            </ListItem>
+          </List>
+        </>
+      )}
+    </Stack>
+  );
+};
+
+const PaymentStep = ({
+	quoteData,
+	onTokenReceived,
+	paymentError,
+	payLater,
+	onPayLaterChange,
+	tip,
+	cardNumber,
+	onCardNumberChange,
+	expiry,
+	onExpiryChange,
+	cvv,
+	onCvvChange,
+}) => (
+	<Stack spacing={2}>
+		{!payLater && quoteData && (
+			<>
+				<CardHeader
+					avatar={<CreditCardIcon color='primary' />}
+					title={
+						<Typography color='primary' component='span' variant='h6'>
+							Pay with Card
+						</Typography>
+					}
+					sx={{ px: 0, pt: 0 }}
+				/>
+				<PaymentForm
+					amount={quoteData.quote + (parseFloat(tip) || 0)}
+					onTokenReceived={onTokenReceived}
+					error={paymentError}
+					cardNumber={cardNumber}
+					onCardNumberChange={onCardNumberChange}
+					expiry={expiry}
+					onExpiryChange={onExpiryChange}
+					cvv={cvv}
+					onCvvChange={onCvvChange}
+				/>
+			</>
+		)}
+		<FormControlLabel
+			control={
+				<Checkbox
+					checked={payLater}
+					onChange={(e) => onPayLaterChange(e.target.checked)}
+					name='payLater'
+				/>
+			}
+			label='Pay Later'
+		/>
+	</Stack>
 );
 
 const ConfirmationStep = ({ isBookingFlow }) => {

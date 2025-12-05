@@ -16,7 +16,7 @@ export default function Disclaimer({ consent, onConsentChange }) {
     <Box
       sx={{
         mt: 2,
-        p: 2,
+        p: 1,
         border: (theme) => `1px solid ${theme.palette.divider}`,
         borderRadius: 1,
       }}
