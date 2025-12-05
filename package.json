@@ -1,6 +1,6 @@
 {
 	"name": "phoenix-press",
-	"version": "1.3.6",
+	"version": "1.3.7",
 	"description": "WordPress Plugin for Phoenix Platform",
 	"author": "Anthony Coffey",
 	"license": "MIT",
@@ -12,13 +12,13 @@
 		"clean:react": "rimraf ./build",
 		"reset": "rimraf node_modules package-lock.json vendor composer.lock"
 	},
-  "files": [
-    "build",
-    "assets",
-    "includes",
-    "vendor",
-    "phoenix-press.php"
-  ],
+	"files": [
+		"build",
+		"assets",
+		"includes",
+		"vendor",
+		"phoenix-press.php"
+	],
 	"entry": {
 		"index": "./src/index.js"
 	},
