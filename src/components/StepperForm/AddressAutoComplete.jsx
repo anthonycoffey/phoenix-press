@@ -1,10 +1,11 @@
 import { Autocomplete, useJsApiLoader } from '@react-google-maps/api';
 import { useState } from '@wordpress/element';
 import TextField from '@mui/material/TextField';
-import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import MyLocationIcon from '@mui/icons-material/MyLocation';
 import InputAdornment from '@mui/material/InputAdornment';
+import ClearIcon from '@mui/icons-material/Clear';
 
 const libraries = ['places'];
 
@@ -92,13 +93,24 @@ export default function AddressAutoComplete({
         InputProps={{
           endAdornment: (
             <InputAdornment position='end'>
-              <IconButton
-                onClick={handleGeolocate}
-                color='primary'
-                aria-label='use my location'
-              >
-                <MyLocationIcon />
-              </IconButton>
+              {value ? (
+                <IconButton
+                  onClick={() => onChange({ target: { name: 'location', value: '' } })}
+                  aria-label='clear location'
+                >
+                  <ClearIcon />
+                </IconButton>
+              ) : (
+                <Button
+                  onClick={handleGeolocate}
+                  color='primary'
+                  aria-label='use my location'
+                  startIcon={<MyLocationIcon />}
+                  sx={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+                >
+                  use my location
+                </Button>
+              )}
             </InputAdornment>
           ),
         }}

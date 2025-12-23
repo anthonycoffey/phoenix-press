@@ -54,10 +54,10 @@ import VehicleSelector from './StepperForm/VehicleSelector';
 import Autocomplete from '@mui/material/Autocomplete';
 
 const steps = [
-	'Service Selection',
-	'Vehicle Information',
-	'Confirmation',
-	'Payment',
+  'Service Selection',
+  'Vehicle Information',
+  'Confirmation',
+  'Payment',
 ];
 
 const leadFormSteps = [
@@ -147,13 +147,13 @@ export default function StepperForm() {
     if (!validateStep()) return;
 
     if (activeStep === currentSteps.length - 1 && isBookingFlow) {
-			if (payLater) {
-				handleFinalSubmit();
-			} else {
-				document.getElementById('payment-submit-button').click();
-			}
-			return;
-		}
+      if (payLater) {
+        handleFinalSubmit();
+      } else {
+        document.getElementById('payment-submit-button').click();
+      }
+      return;
+    }
 
     if (activeStep === 1 && isBookingFlow) {
       const fetchQuote = async () => {
@@ -181,12 +181,12 @@ export default function StepperForm() {
     }
 
     if (!isBookingFlow && activeStep === 1) {
-			handleFinalSubmit();
-		} else if (activeStep === 2 && isBookingFlow) {
-			setActiveStep((prev) => prev + 1);
-		} else {
-			setActiveStep((prev) => prev + 1);
-		}
+      handleFinalSubmit();
+    } else if (activeStep === 2 && isBookingFlow) {
+      setActiveStep((prev) => prev + 1);
+    } else {
+      setActiveStep((prev) => prev + 1);
+    }
   };
 
   const handleBack = (e) => {
@@ -324,10 +324,18 @@ export default function StepperForm() {
           window.location.origin.replace(/^https?:\/\//, '') +
           window.location.pathname.replace(/\/$/, '');
         await PhoenixApi.submitLead({
-          submission: Object.entries(formData).map(([name, value]) => ({
-            name,
-            value,
-          })),
+          submission: Object.entries(formData).map(([name, value]) => {
+            if (name === 'service_type' && Array.isArray(value)) {
+              return {
+                name,
+                value: value.map(({ id, value }) => ({ id, value })),
+              };
+            }
+            return {
+              name,
+              value,
+            };
+          }),
           source,
           completed: true,
           submitted: true,
@@ -393,35 +401,66 @@ export default function StepperForm() {
   return (
     <ThemeProvider theme={darkTheme}>
       <Card>
-
         <CardContent>
-          <Stepper
-            activeStep={activeStep}
-            orientation={'horizontal'}
-            sx={{
-              '& .MuiStepLabel-root .Mui-active': {
-                color: 'primary.main', // circle color
-              },
-              '& .MuiStepLabel-label.Mui-active.MuiStepLabel-alternativeLabel':
-                {
-                  color: 'primary.contrastText', // Just text label (ACTIVE)
+          {isMobile ? (
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                mb: 0,
+              }}
+            >
+              <Typography variant='overline' sx={{ mb: 1 }}>
+                {currentSteps[activeStep]}
+              </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                {currentSteps.map((_, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      bgcolor:
+                        index === activeStep ? 'primary.main' : 'grey.500',
+                      mx: 0.5,
+                      transform: index === activeStep ? 'scale(1.2)' : 'none',
+                      transition: 'transform 0.2s ease-in-out',
+                    }}
+                  />
+                ))}
+              </Box>
+            </Box>
+          ) : (
+            <Stepper
+              activeStep={activeStep}
+              orientation={'horizontal'}
+              sx={{
+                '& .MuiStepLabel-root .Mui-active': {
+                  color: 'primary.main', // circle color
                 },
-              '& .MuiStepLabel-root .Mui-completed': {
-                color: 'secondary.main', // circle color
-              },
-              '& .MuiStepLabel-label.Mui-completed.MuiStepLabel-alternativeLabel':
-                {
-                  color: 'grey.500', // Just text label (COMPLETED)
+                '& .MuiStepLabel-label.Mui-active.MuiStepLabel-alternativeLabel':
+                  {
+                    color: 'primary.contrastText', // Just text label (ACTIVE)
+                  },
+                '& .MuiStepLabel-root .Mui-completed': {
+                  color: 'secondary.main', // circle color
                 },
-            }}
-          >
-            {currentSteps.map((label) => (
-              <Step key={label}>
-                <StepLabel>{label}</StepLabel>
-              </Step>
-            ))}
-          </Stepper>
-          <Box sx={{ mt: 3, mb: 1 }}>
+                '& .MuiStepLabel-label.Mui-completed.MuiStepLabel-alternativeLabel':
+                  {
+                    color: 'grey.500', // Just text label (COMPLETED)
+                  },
+              }}
+            >
+              {currentSteps.map((label) => (
+                <Step key={label}>
+                  <StepLabel>{label}</StepLabel>
+                </Step>
+              ))}
+            </Stepper>
+          )}
+          <Box>
             {activeStep === currentSteps.length ? (
               <ConfirmationStep isBookingFlow={isBookingFlow} />
             ) : (
@@ -492,9 +531,17 @@ const CustomerInfoStep = ({
 }) => (
   <>
     <CardHeader
-      title={<Typography color='primary' component='span' variant='h6'>Customer Information</Typography>}
+      title={
+        <Typography
+          color='primary'
+          component='span'
+          variant='h6'
+        >
+          Customer Information
+        </Typography>
+      }
       avatar={<AccountCircle color='primary' />}
-      sx={{ px: 0 }}
+      sx={{fontSize: '0.6rem', whiteSpace: 'nowrap' }}
     />
     <Stack component='form' spacing={2} noValidate autoComplete='on'>
       <TextField
@@ -788,9 +835,9 @@ const QuoteStep = ({
                 <ReceiptLong />
               </ListItemIcon>
               <ListItemText
-                primary={`$${(
-                  quoteData.quote + (parseFloat(tip) || 0)
-                ).toFixed(2)}`}
+                primary={`$${(quoteData.quote + (parseFloat(tip) || 0)).toFixed(
+                  2
+                )}`}
                 secondary='Total'
               />
             </ListItem>
@@ -802,55 +849,55 @@ const QuoteStep = ({
 };
 
 const PaymentStep = ({
-	quoteData,
-	onTokenReceived,
-	paymentError,
-	payLater,
-	onPayLaterChange,
-	tip,
-	cardNumber,
-	onCardNumberChange,
-	expiry,
-	onExpiryChange,
-	cvv,
-	onCvvChange,
+  quoteData,
+  onTokenReceived,
+  paymentError,
+  payLater,
+  onPayLaterChange,
+  tip,
+  cardNumber,
+  onCardNumberChange,
+  expiry,
+  onExpiryChange,
+  cvv,
+  onCvvChange,
 }) => (
-	<Stack spacing={2}>
-		{!payLater && quoteData && (
-			<>
-				<CardHeader
-					avatar={<CreditCardIcon color='primary' />}
-					title={
-						<Typography color='primary' component='span' variant='h6'>
-							Pay with Card
-						</Typography>
-					}
-					sx={{ px: 0, pt: 0 }}
-				/>
-				<PaymentForm
-					amount={quoteData.quote + (parseFloat(tip) || 0)}
-					onTokenReceived={onTokenReceived}
-					error={paymentError}
-					cardNumber={cardNumber}
-					onCardNumberChange={onCardNumberChange}
-					expiry={expiry}
-					onExpiryChange={onExpiryChange}
-					cvv={cvv}
-					onCvvChange={onCvvChange}
-				/>
-			</>
-		)}
-		<FormControlLabel
-			control={
-				<Checkbox
-					checked={payLater}
-					onChange={(e) => onPayLaterChange(e.target.checked)}
-					name='payLater'
-				/>
-			}
-			label='Pay Later'
-		/>
-	</Stack>
+  <Stack spacing={2}>
+    {!payLater && quoteData && (
+      <>
+        <CardHeader
+          avatar={<CreditCardIcon color='primary' />}
+          title={
+            <Typography color='primary' component='span' variant='h6'>
+              Pay with Card
+            </Typography>
+          }
+          sx={{ px: 0, pt: 0 }}
+        />
+        <PaymentForm
+          amount={quoteData.quote + (parseFloat(tip) || 0)}
+          onTokenReceived={onTokenReceived}
+          error={paymentError}
+          cardNumber={cardNumber}
+          onCardNumberChange={onCardNumberChange}
+          expiry={expiry}
+          onExpiryChange={onExpiryChange}
+          cvv={cvv}
+          onCvvChange={onCvvChange}
+        />
+      </>
+    )}
+    <FormControlLabel
+      control={
+        <Checkbox
+          checked={payLater}
+          onChange={(e) => onPayLaterChange(e.target.checked)}
+          name='payLater'
+        />
+      }
+      label='Pay Later'
+    />
+  </Stack>
 );
 
 const ConfirmationStep = ({ isBookingFlow }) => {
