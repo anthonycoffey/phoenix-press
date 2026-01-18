@@ -53,6 +53,7 @@
     * `bookingController.js` (backend) updated to preserve frontend-provided line items and correctly link jobs to form submissions using `formSubmissionId`.
     * `pricingService.js` (backend) updated to provide the specific `Core Service Name` and `ServiceId` in the quote breakdown, replacing the generic "Base price" label.
     * `StepperForm.jsx` updated to prioritize the `ServiceId` provided by the API breakdown, ensuring accurate invoice line item creation without fallback to "Other".
+    * `StepperForm.jsx` updated to fix "Unknown step" error by guarding step increments (`Math.min`), preventing double-clicks on payment submission (loading state), and correctly resetting loading state on payment errors.
 * **What's Left:**
     * Full implementation details of backend logic (API interactions, settings handling, processing new 'email' field).
     * Complete implementation and integration of frontend React components (ensuring 'email' field renders correctly).
@@ -90,32 +91,4 @@
     * **2026-01-18:** Implemented partial submission saving ("Save-As-You-Go") in `StepperForm.jsx`, ensuring progress is tracked via `submitLead`/`updateLead` calls on step transitions.
     * **2026-01-18:** Updated `StepperForm.jsx` to include `submissionId` in the `createBooking` payload.
     * **2026-01-18:** Overhauled `StepperForm.jsx` line item generation to use the quote breakdown directly, ensuring accurate pricing for all services (including base services) and fixing the 0.00 price issue.
-
-</final_file_content>
-
-IMPORTANT: For any future changes to this file, use the final_file_content shown above as your reference. This content reflects the current state of the file, including any auto-formatting (e.g., if you used single quotes but the formatter converted them to double quotes). Always base your SEARCH/REPLACE operations on this final version to ensure accuracy.
-
-<environment_details>
-# Visual Studio Code Visible Files
-memory-bank/progress.md
-
-# Visual Studio Code Open Tabs
-src/components/StepperForm/QuoteStep.jsx
-../../../../phoenix/src/routes/booking.js
-../../../../phoenix/src/controllers/bookingController.js
-memory-bank/progress.md
-../../../../phoenix/src/services/pricingService.js
-src/components/StepperForm.jsx
-memory-bank/activeContext.md
-package.json
-phoenix-press.php
-
-# Current Time
-1/18/2026, 6:36:58 AM (America/Chicago, UTC-6:00)
-
-# Context Window Usage
-176,143 / 1,048.576K tokens used (16%)
-
-# Current Mode
-ACT MODE
-</environment_details>
+    * **2026-01-18:** Fixed critical "Unknown step" error in `StepperForm.jsx` by adding guard clauses to `setActiveStep`, implementing double-click prevention (locking UI via `loading` state) during payment, and correctly handling loading state resets on payment errors.

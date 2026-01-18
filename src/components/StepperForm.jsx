@@ -189,6 +189,7 @@ export default function StepperForm({ splitTestVariant }) {
       if (payLater) {
         handleFinalSubmit();
       } else {
+        setLoading(true);
         document.getElementById('payment-submit-button').click();
       }
       return;
@@ -300,6 +301,7 @@ export default function StepperForm({ splitTestVariant }) {
 
   const handleTokenReceived = (token, error) => {
     if (error) {
+      setLoading(false);
       setPaymentError(error);
       return;
     }
@@ -429,7 +431,7 @@ export default function StepperForm({ splitTestVariant }) {
         });
       }
 
-      setActiveStep((prev) => prev + 1);
+      setActiveStep((prev) => Math.min(prev + 1, currentSteps.length));
     } catch (err) {
       setError(err.message || 'An error occurred during submission.');
     } finally {

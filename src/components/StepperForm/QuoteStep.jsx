@@ -240,7 +240,7 @@ const QuoteStep = ({
             <Typography variant='caption' color='text.secondary' sx={{ px: 1 }}>
               *Core services are flat-rate. Specialty Services require a
               deposit. The listed Specialty Service amount applies toward the
-              final cost, which will be disclosed and approved before payment.
+              final cost, which will be disclosed and approved before services are rendered.
             </Typography>
           )}
         </>

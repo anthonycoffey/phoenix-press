@@ -1,7 +1,11 @@
 # Active Context
 
-* **Current Focus:** Fixing a crash and validation issue in `EmbedForm`'s `PhoneField`.
+* **Current Focus:** Fixed "Unknown step" error in `StepperForm` during payment processing.
 * **Recent Changes:**
+    * **Fixed `StepperForm.jsx` "Unknown step" error:**
+        * Guarded `setActiveStep` in `handleFinalSubmit` to ensure the step index never exceeds `currentSteps.length` (using `Math.min`).
+        * Prevented double-clicks on the "Book Now" button in the payment flow by explicitly setting `loading(true)` in `handleNext` before triggering the payment submission.
+        * Added `setLoading(false)` to `handleTokenReceived` to properly reset the UI if an error occurs during payment tokenization.
     * **Split Testing Mechanics Updated:**
         * Removed 30-day cookie persistence for split testing in `includes/SplitTest.php`.
         * Implemented a pure random assignment strategy per request (no cookies used).
@@ -92,8 +96,9 @@
         * Implemented a native WordPress tabbed interface within the "Settings" page with three sections: **API Settings**, **Form Settings**, and **A/B Testing**.
         * Styled the Settings page form with a cleaner, card-based layout (`.phoenix-settings-card`) to match the dashboard aesthetics.
         * Optimized asset loading to enqueue Highcharts only on the Analytics page and Media scripts only on the Settings page.
-* **Next Steps:** Verify the phone field fix and ensure form submission works correctly.
+* **Next Steps:** Verify the `StepperForm` fix and ensure form submission works correctly.
 * **Active Decisions:**
+    * **Guard Clauses for State:** Implemented defensive programming in `StepperForm` (`Math.min` for step increment) to prevent undefined state errors, even in edge cases like double-submissions.
     * **Split Testing:** Switched to a "no cookie" approach as requested. Variants are assigned randomly on every request. This prioritizes equal traffic distribution and user privacy/simplicity over persistence.
     * Used local state in `EmbedForm/PhoneField` to handle input updates. This decouples the input's visual state from the parent form's state management (which relies on mutation and delayed re-renders), ensuring a smooth typing experience.
     * Implemented validation in `EmbedForm/PhoneField` by checking for 10-digit input and updating the parent's validation state, ensuring the form cannot be submitted with an incomplete phone number.
@@ -108,7 +113,7 @@
     * Reverted form submission behavior from redirect to inline success message display using `LOCALIZED.SUBMISSION_MESSAGE`. (Previous task)
     * Implemented conditional rendering in `EmbedForm.jsx` to show the message. (Previous task)
     * Updated the existing success prompt in `ConversationalForm.jsx` to use the localized message. (Previous task)
-    * Kept navigation buttons in `ConversationalForm.jsx` visible but disabled during loading to prevent layout shifts and improve UX. (Previous task)
+    * Kept navigation buttons in `ConversationalForm.jsx` visible but disabled during loading states to prevent layout shifts and improve UX. (Previous task)
     * Applied `useCallback` and `useMemo` hooks in `EmbedForm.jsx` and `ConversationalForm.jsx` to optimize performance by memoizing functions and derived values, potentially reducing unnecessary re-renders of child components.
     * Modified the `handleSubmit` function in `EmbedForm.jsx` to make the `dataLayer.push({ event: 'form_submit' })` call conditional on the `submit` parameter being true, preventing it from firing during auto-saves.
     * Replaced the previous `onBlur`-based auto-save in `EmbedForm.jsx` with a debounced approach triggered by input changes, only saving when data is modified (`isDirty` state).
@@ -128,7 +133,7 @@
     * Styled the conversational form (`ConversationalForm.jsx`) to behave like a chatbox (min/max width, shrink-wrap content) using inline styles (`sx` prop) on the main `<Card>` component, ensuring styles do not affect the embed form.
     * Updated UX in `ConversationalForm.jsx` for navigation during processing: Replaced disruptive alerts for loading/Turnstile states with inline `Typography` messages ("Saving your answer, please wait...", "Securing form, please wait..."). The Next/Submit button is now disabled based on input validation errors (`hasInputErrors`), API loading state (`loading`), and Turnstile readiness (`!turnstileToken`). The Back button remains always enabled when visible.
     * Aligned the data structure passed up by `ServiceSelect.jsx` (used in `ConversationalForm`) to match the structure used by `EmbedForm/Services.jsx`. The `ServiceSelect` component now formats the selected services into an array of objects `[{value: ..., id: ...}]` within its `handleCheckboxChange` function before calling the `onInputChange` prop.
-    * Replaced the success message implementation in `EmbedForm.jsx` from using the custom `Prompt` component to using standard MUI components (`Box`, `Alert`, `AlertTitle`, `CheckCircleOutlineIcon`, `Typography`) for a more conventional and vertically substantial success display, utilizing `html-react-parser` to render the `LOCALIZED.SUBMISSION_MESSAGE`.
+    * Replaced the success message implementation in `EmbedForm.jsx` from using the custom `Prompt` component to using standard MUI components (`Box`, `Alert`, `AlertTitle`, `CheckCircleOutlineIcon`, `Typography`) for a more conventional and vertically substantial success display, utilizing `html-react-parser` for rendering the `LOCALIZED.SUBMISSION_MESSAGE`.
     * Implemented smooth scrolling to the success message (`#submission-success`) in `EmbedForm.jsx` using a `useEffect` hook triggered by the `submitted` state.
     * Refactored `src/components/StepperForm.jsx` by extracting its internal component definitions (`CustomerInfoStep`, `VehicleInfoStep`, `QuoteStep`, `PaymentStep`, `ConfirmationStep`) into separate files within `src/components/StepperForm/`.
 * **Key Patterns/Preferences:**
