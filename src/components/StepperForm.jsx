@@ -328,33 +328,40 @@ export default function StepperForm({ splitTestVariant }) {
         const processedServices = new Set();
 
         breakdown.forEach((item) => {
-          const label = item.label.toLowerCase();
-          let serviceId = null;
+          // Check if API provided explicit ServiceId
+          let serviceId = item.ServiceId || null;
 
-          if (label.includes('luxury')) {
-            serviceId = 79;
-          } else if (label.includes('time')) {
-            serviceId = 80;
-          } else {
-            // Try matching with selected services
-            const matchedService = formData.service_type.find(
-              (s) =>
-                item.label.toLowerCase().includes(s.text.toLowerCase()) ||
-                s.text.toLowerCase().includes(item.label.toLowerCase())
-            );
+          if (!serviceId) {
+            const label = item.label.toLowerCase();
 
-            if (matchedService) {
-              serviceId = matchedService.id;
-              processedServices.add(matchedService.id);
+            if (label.includes('luxury')) {
+              serviceId = 79;
+            } else if (label.includes('time')) {
+              serviceId = 80;
             } else {
-              // Try global services list
-              const globalService = services.find((s) =>
-                item.label.toLowerCase().includes(s.text.toLowerCase())
+              // Try matching with selected services
+              const matchedService = formData.service_type.find(
+                (s) =>
+                  item.label.toLowerCase().includes(s.text.toLowerCase()) ||
+                  s.text.toLowerCase().includes(item.label.toLowerCase())
               );
-              if (globalService) {
-                serviceId = globalService.id;
+
+              if (matchedService) {
+                serviceId = matchedService.id;
+              } else {
+                // Try global services list
+                const globalService = services.find((s) =>
+                  item.label.toLowerCase().includes(s.text.toLowerCase())
+                );
+                if (globalService) {
+                  serviceId = globalService.id;
+                }
               }
             }
+          }
+
+          if (serviceId) {
+            processedServices.add(serviceId);
           }
 
           lineItems.push({
@@ -364,13 +371,28 @@ export default function StepperForm({ splitTestVariant }) {
           });
         });
 
-        // Add remaining selected services (if any) with 0 price (or appropriate logic)
+        // Calculate residual amount for core services (Total Quote - Breakdown Items)
+        const allocatedAmount = lineItems.reduce(
+          (sum, item) => sum + item.price,
+          0
+        );
+        const totalQuoteAmount = Math.round((quoteData?.quote || 0) * 100);
+        let remainingAmount = totalQuoteAmount - allocatedAmount;
+
+        // Add remaining selected services (if any) with appropriate price
         formData.service_type.forEach((service) => {
           if (!processedServices.has(service.id)) {
+            let price = 0;
+            // Assign the entire remaining amount to the first remaining service found
+            if (remainingAmount > 0) {
+              price = remainingAmount;
+              remainingAmount = 0;
+            }
+
             lineItems.push({
               ServiceId: service.id,
               description: service.text,
-              price: 0,
+              price: price,
             });
           }
         });

@@ -42,13 +42,17 @@
     * Re-introduced validation `useEffect` hook in `ConversationalForm.jsx`.
     * Restored Cloudflare Turnstile integration in `ConversationalForm.jsx`.
     * Conversational form (`ConversationalForm.jsx`) styled via inline `sx` prop on the `<Card>` component to have `width: max-content`, `minWidth: 300px`, `maxWidth: 500px`, and `marginLeft: auto` for chatbox-like width behavior (reverted global CSS approach).
-    * `ServiceSelect.jsx` (used in `ConversationalForm`) now formats its output data as an array of objects `[{value: ..., id: ...}]` before passing it up via `onInputChange`, aligning its data structure with `EmbedForm/Services.jsx`.
+    * `ServiceSelect.jsx` (used in `ConversationalForm`) now formats its output data as `[{value: ..., id: ...}]` before calling `onInputChange`, aligning its data structure with `EmbedForm/Services.jsx`.
     * Embed form (`EmbedForm.jsx`) success message display refactored to use MUI `Alert` and `Box` components instead of the `Prompt` component, aiming for a more standard UI and better vertical space utilization. Utilized `html-react-parser` for rendering the HTML message content.
     * Embed form (`EmbedForm.jsx`) now smoothly scrolls to the success message (`#submission-success`) upon successful submission using a `useEffect` hook.
     * `StepperForm.jsx` refactored: extracted internal components (`CustomerInfoStep`, `VehicleInfoStep`, `QuoteStep`, `PaymentStep`, `ConfirmationStep`) into separate files within `src/components/StepperForm/` for better organization.
     * `StepperForm.jsx` updated to implement "Save-As-You-Go" functionality, preserving partial submissions across steps.
     * `StepperForm.jsx` line items logic overhauled to derive prices directly from the quote breakdown, resolving the 0.00 pricing issue for base services.
-    * `StepperForm.jsx` booking submission updated to include `submissionId` in the payload, linking the booking to the lead record.
+    * `StepperForm.jsx` booking submission updated to include `submissionId` in the `createBooking` payload.
+    * `StepperForm.jsx` updated to correctly calculate residual price for core services, ensuring invoice line items are not $0.00.
+    * `bookingController.js` (backend) updated to preserve frontend-provided line items and correctly link jobs to form submissions using `formSubmissionId`.
+    * `pricingService.js` (backend) updated to provide the specific `Core Service Name` and `ServiceId` in the quote breakdown, replacing the generic "Base price" label.
+    * `StepperForm.jsx` updated to prioritize the `ServiceId` provided by the API breakdown, ensuring accurate invoice line item creation without fallback to "Other".
 * **What's Left:**
     * Full implementation details of backend logic (API interactions, settings handling, processing new 'email' field).
     * Complete implementation and integration of frontend React components (ensuring 'email' field renders correctly).
@@ -74,7 +78,7 @@
     * **2025-04-07:** Refactored `PhoneField`, `AddressAutoComplete`, and `ServiceSelect` to remove context dependencies and fix errors.
     * **2025-04-07:** Set default value for `datetime` inputs.
     * **2025-04-07:** Improved email validation immediacy in `validateInputObject`.
-    * **2025-04-07:** Corrected phone number validation logic in `validateInputObject`.
+    * **2025-04-07:** Corrected phone number validation logic in `validateInputObject` to check raw digit length.
     * **2025-04-07:** Re-introduced validation `useEffect` and restored Turnstile integration in `ConversationalForm.jsx`.
     * **2025-04-07:** Reverted CSS rules added to `src/styles.css` and instead applied inline styles (`sx` prop) to the `<Card>` in `ConversationalForm.jsx` to constrain width (min/max/max-content) for chatbox appearance without affecting the embed form.
     * **2025-04-07:** Updated `ConversationalForm.jsx` navigation button behavior: Back button (`handleBackClick`) made always responsive. Next/Submit button (`handleNextSubmitClick`) now shows "Saving, please wait...." alert if `loading` is true (instead of ignoring click), and shows "Securing form..." alert only if `turnstileToken` is null.
@@ -86,3 +90,32 @@
     * **2026-01-18:** Implemented partial submission saving ("Save-As-You-Go") in `StepperForm.jsx`, ensuring progress is tracked via `submitLead`/`updateLead` calls on step transitions.
     * **2026-01-18:** Updated `StepperForm.jsx` to include `submissionId` in the `createBooking` payload.
     * **2026-01-18:** Overhauled `StepperForm.jsx` line item generation to use the quote breakdown directly, ensuring accurate pricing for all services (including base services) and fixing the 0.00 price issue.
+
+</final_file_content>
+
+IMPORTANT: For any future changes to this file, use the final_file_content shown above as your reference. This content reflects the current state of the file, including any auto-formatting (e.g., if you used single quotes but the formatter converted them to double quotes). Always base your SEARCH/REPLACE operations on this final version to ensure accuracy.
+
+<environment_details>
+# Visual Studio Code Visible Files
+memory-bank/progress.md
+
+# Visual Studio Code Open Tabs
+src/components/StepperForm/QuoteStep.jsx
+../../../../phoenix/src/routes/booking.js
+../../../../phoenix/src/controllers/bookingController.js
+memory-bank/progress.md
+../../../../phoenix/src/services/pricingService.js
+src/components/StepperForm.jsx
+memory-bank/activeContext.md
+package.json
+phoenix-press.php
+
+# Current Time
+1/18/2026, 6:36:58 AM (America/Chicago, UTC-6:00)
+
+# Context Window Usage
+176,143 / 1,048.576K tokens used (16%)
+
+# Current Mode
+ACT MODE
+</environment_details>
