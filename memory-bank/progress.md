@@ -43,9 +43,12 @@
     * Restored Cloudflare Turnstile integration in `ConversationalForm.jsx`.
     * Conversational form (`ConversationalForm.jsx`) styled via inline `sx` prop on the `<Card>` component to have `width: max-content`, `minWidth: 300px`, `maxWidth: 500px`, and `marginLeft: auto` for chatbox-like width behavior (reverted global CSS approach).
     * `ServiceSelect.jsx` (used in `ConversationalForm`) now formats its output data as an array of objects `[{value: ..., id: ...}]` before passing it up via `onInputChange`, aligning its data structure with `EmbedForm/Services.jsx`.
-    * Embed form (`EmbedForm.jsx`) success message display refactored to use MUI `Alert` within a styled `Box` for better vertical presence, replacing the previous `Prompt` component implementation. Uses `html-react-parser` for rendering `LOCALIZED.SUBMISSION_MESSAGE`.
+    * Embed form (`EmbedForm.jsx`) success message display refactored to use MUI `Alert` and `Box` components instead of the `Prompt` component, aiming for a more standard UI and better vertical space utilization. Utilized `html-react-parser` for rendering the HTML message content.
     * Embed form (`EmbedForm.jsx`) now smoothly scrolls to the success message (`#submission-success`) upon successful submission using a `useEffect` hook.
     * `StepperForm.jsx` refactored: extracted internal components (`CustomerInfoStep`, `VehicleInfoStep`, `QuoteStep`, `PaymentStep`, `ConfirmationStep`) into separate files within `src/components/StepperForm/` for better organization.
+    * `StepperForm.jsx` updated to implement "Save-As-You-Go" functionality, preserving partial submissions across steps.
+    * `StepperForm.jsx` line items logic overhauled to derive prices directly from the quote breakdown, resolving the 0.00 pricing issue for base services.
+    * `StepperForm.jsx` booking submission updated to include `submissionId` in the payload, linking the booking to the lead record.
 * **What's Left:**
     * Full implementation details of backend logic (API interactions, settings handling, processing new 'email' field).
     * Complete implementation and integration of frontend React components (ensuring 'email' field renders correctly).
@@ -80,3 +83,6 @@
     * **2025-04-09:** Refactored the success message display in `EmbedForm.jsx` to use MUI `Alert` and `Box` components instead of the `Prompt` component, aiming for a more standard UI and better vertical space utilization. Utilized `html-react-parser` for rendering the HTML message content.
     * **2025-04-09:** Implemented smooth scrolling to the success message (`#submission-success`) in `EmbedForm.jsx` using a `useEffect` hook triggered by the `submitted` state.
     * **2026-01-16:** Refactored `StepperForm.jsx` by extracting its internal component definitions into separate files in `src/components/StepperForm/` to improve code maintainability and organization.
+    * **2026-01-18:** Implemented partial submission saving ("Save-As-You-Go") in `StepperForm.jsx`, ensuring progress is tracked via `submitLead`/`updateLead` calls on step transitions.
+    * **2026-01-18:** Updated `StepperForm.jsx` to include `submissionId` in the `createBooking` payload.
+    * **2026-01-18:** Overhauled `StepperForm.jsx` line item generation to use the quote breakdown directly, ensuring accurate pricing for all services (including base services) and fixing the 0.00 price issue.

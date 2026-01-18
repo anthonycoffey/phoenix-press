@@ -51,6 +51,7 @@ const initialFormData = {
 export default function StepperForm({ splitTestVariant }) {
   const [activeStep, setActiveStep] = useState(0);
   const [formData, setFormData] = useState(initialFormData);
+  const [submissionId, setSubmissionId] = useState(null);
   const hasStartedRef = useRef(false);
 
   useEffect(() => {
@@ -129,11 +130,60 @@ export default function StepperForm({ splitTestVariant }) {
     return Object.keys(newErrors).length === 0;
   };
 
+  const saveLead = async (submitted = false) => {
+    const source =
+      window.location.origin.replace(/^https?:\/\//, '') +
+      window.location.pathname.replace(/\/$/, '');
+
+    const submission = Object.entries(formData).map(([name, value]) => {
+      if (name === 'service_type' && Array.isArray(value)) {
+        return {
+          name,
+          value: value.map(({ id, value }) => ({ id, value })),
+        };
+      }
+      return {
+        name,
+        value,
+      };
+    });
+
+    try {
+      let currentId = submissionId;
+      if (currentId) {
+        await PhoenixApi.updateLead(currentId, {
+          submission,
+          source,
+          completed: submitted,
+          submitted,
+        });
+      } else {
+        const result = await PhoenixApi.submitLead({
+          submission,
+          source,
+          completed: submitted,
+          submitted,
+        });
+        if (result && result.id) {
+          setSubmissionId(result.id);
+          currentId = result.id;
+        }
+      }
+      return currentId;
+    } catch (err) {
+      console.error('Failed to save lead:', err);
+      return submissionId;
+    }
+  };
+
   const handleNext = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     if (!validateStep()) return;
+
+    // Save progress on every step transition
+    await saveLead(false);
 
     if (activeStep === currentSteps.length - 1 && isBookingFlow) {
       if (payLater) {
@@ -268,43 +318,62 @@ export default function StepperForm({ splitTestVariant }) {
     setLoading(true);
     setError('');
     try {
+      // Ensure the lead is saved/updated as submitted
+      const finalSubmissionId = await saveLead(true);
+
       if (isBookingFlow) {
-        const servicePrice =
-          quoteData.quote -
-          quoteData.breakdown.reduce((acc, item) => acc + item.amount, 0);
+        // Construct line items strictly from breakdown
+        const breakdown = quoteData?.breakdown || [];
+        const lineItems = [];
+        const processedServices = new Set();
 
-        const pricePerService =
-          formData.service_type.length > 0
-            ? servicePrice / formData.service_type.length
-            : 0;
+        breakdown.forEach((item) => {
+          const label = item.label.toLowerCase();
+          let serviceId = null;
 
-        const lineItems = [
-          ...formData.service_type.map((service) => ({
-            ServiceId: service.id,
-            description: service.text,
-            price: Math.round(pricePerService * 100),
-          })),
-          ...quoteData.breakdown.reduce((acc, item) => {
-            const label = item.label.toLowerCase();
-            let serviceId = null;
+          if (label.includes('luxury')) {
+            serviceId = 79;
+          } else if (label.includes('time')) {
+            serviceId = 80;
+          } else {
+            // Try matching with selected services
+            const matchedService = formData.service_type.find(
+              (s) =>
+                item.label.toLowerCase().includes(s.text.toLowerCase()) ||
+                s.text.toLowerCase().includes(item.label.toLowerCase())
+            );
 
-            if (label.includes('luxury')) {
-              serviceId = 79;
-            } else if (label.includes('time')) {
-              serviceId = 80;
+            if (matchedService) {
+              serviceId = matchedService.id;
+              processedServices.add(matchedService.id);
+            } else {
+              // Try global services list
+              const globalService = services.find((s) =>
+                item.label.toLowerCase().includes(s.text.toLowerCase())
+              );
+              if (globalService) {
+                serviceId = globalService.id;
+              }
             }
+          }
 
-            if (serviceId) {
-              acc.push({
-                ServiceId: serviceId,
-                description: item.label,
-                price: Math.round(item.amount * 100),
-              });
-            }
+          lineItems.push({
+            ServiceId: serviceId || 35, // Fallback to 'Other' if not found
+            description: item.label,
+            price: Math.round(item.amount * 100),
+          });
+        });
 
-            return acc;
-          }, []),
-        ];
+        // Add remaining selected services (if any) with 0 price (or appropriate logic)
+        formData.service_type.forEach((service) => {
+          if (!processedServices.has(service.id)) {
+            lineItems.push({
+              ServiceId: service.id,
+              description: service.text,
+              price: 0,
+            });
+          }
+        });
 
         const payload = {
           customer: {
@@ -325,29 +394,9 @@ export default function StepperForm({ splitTestVariant }) {
           opaqueData: token,
           tip: Math.round(tip * 100),
           additional_info: formData.additional_info,
+          formSubmissionId: finalSubmissionId,
         };
         await PhoenixApi.createBooking(payload);
-      } else {
-        const source =
-          window.location.origin.replace(/^https?:\/\//, '') +
-          window.location.pathname.replace(/\/$/, '');
-        await PhoenixApi.submitLead({
-          submission: Object.entries(formData).map(([name, value]) => {
-            if (name === 'service_type' && Array.isArray(value)) {
-              return {
-                name,
-                value: value.map(({ id, value }) => ({ id, value })),
-              };
-            }
-            return {
-              name,
-              value,
-            };
-          }),
-          source,
-          completed: true,
-          submitted: true,
-        });
       }
 
       if (splitTestVariant) {
