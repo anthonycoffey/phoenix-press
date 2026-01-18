@@ -92,3 +92,4 @@
     * **2026-01-18:** Updated `StepperForm.jsx` to include `submissionId` in the `createBooking` payload.
     * **2026-01-18:** Overhauled `StepperForm.jsx` line item generation to use the quote breakdown directly, ensuring accurate pricing for all services (including base services) and fixing the 0.00 price issue.
     * **2026-01-18:** Fixed critical "Unknown step" error in `StepperForm.jsx` by adding guard clauses to `setActiveStep`, implementing double-click prevention (locking UI via `loading` state) during payment, and correctly handling loading state resets on payment errors.
+    * **2026-01-18:** Added a "Help" tab to the Phoenix Press settings page (`includes/Settings.php`), providing a list of available shortcodes and instructions for using the split testing feature.

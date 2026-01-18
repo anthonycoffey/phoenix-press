@@ -67,6 +67,7 @@
     echo '<a href="?page=phoenix-press&tab=api_settings" class="nav-tab ' . ( 'api_settings' == $active_tab ? 'nav-tab-active' : '' ) . '">API Settings</a>';
     echo '<a href="?page=phoenix-press&tab=form_settings" class="nav-tab ' . ( 'form_settings' == $active_tab ? 'nav-tab-active' : '' ) . '">Form Settings</a>';
     echo '<a href="?page=phoenix-press&tab=ab_testing" class="nav-tab ' . ( 'ab_testing' == $active_tab ? 'nav-tab-active' : '' ) . '">A/B Testing</a>';
+    echo '<a href="?page=phoenix-press&tab=help" class="nav-tab ' . ( 'help' == $active_tab ? 'nav-tab-active' : '' ) . '">Help</a>';
     echo '</h2>';
 
     // Custom CSS
@@ -130,6 +131,8 @@
       do_settings_sections( 'phoenix-press-form_settings' );
     } elseif ( 'ab_testing' == $active_tab ) {
       do_settings_sections( 'phoenix-press-ab_testing' );
+    } elseif ( 'help' == $active_tab ) {
+      self::render_help_content();
     }
 
   // Hidden input to preserve tab on save redirect (requires JS or hook to work fully,
@@ -139,7 +142,9 @@
   // For standard options.php, it redirects to options-general.php?updated=true or similar.
     // We rely on the referrer containing the tab param.
 
-    submit_button();
+    if ( 'help' !== $active_tab ) {
+      submit_button();
+    }
     echo '</form>';
     echo '</div>';
 
@@ -420,6 +425,52 @@
       echo '<input type="button" class="button button-secondary" value="Remove Image" id="' . esc_attr( $name ) . '_remove" style="display: ' . ( $value ? 'block' : 'none' ) . ';" />';
       echo '</div>';
     }
+  }
+
+  public static function render_help_content() {
+    ?>
+    <div class="phoenix-help-section">
+      <h3>Available Shortcodes</h3>
+      <table class="widefat fixed striped" style="margin-bottom: 30px;">
+        <thead>
+          <tr>
+            <th style="width: 250px;">Shortcode</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>[phoenix_form]</code></td>
+            <td>Displays the standard conversational lead capture form.</td>
+          </tr>
+          <tr>
+            <td><code>[phoenix_stepper_form]</code></td>
+            <td>Displays the multi-step quote request form.</td>
+          </tr>
+          <tr>
+            <td><code>[phoenix_form_success]</code></td>
+            <td>Displays the submission success message. Use this on your "Thank You" page if redirecting.</td>
+          </tr>
+          <tr>
+            <td><code>[phoenix_split_test]</code></td>
+            <td>Displays the active A/B split test variant.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>How to Use Split Testing</h3>
+      <div class="phoenix-info-box" style="border-left: 4px solid #72aee6; padding: 10px 20px; background: #f9f9f9;">
+        <ol>
+          <li><strong>Enable Split Testing:</strong> Navigate to the <a href="?page=phoenix-press&tab=ab_testing">A/B Testing</a> tab and check "Enable Split Testing".</li>
+          <li><strong>Configure Variants:</strong> Enter the shortcodes for the two versions you want to compare in the "Variant A" and "Variant B" fields.
+            <br><em>Example: Variant A = <code>[phoenix_form]</code>, Variant B = <code>[phoenix_stepper_form]</code></em>
+          </li>
+          <li><strong>Publish:</strong> Place the <code>[phoenix_split_test]</code> shortcode on the page where you want the form to appear.</li>
+        </ol>
+        <p>The plugin will automatically rotate between Variant A and Variant B for your visitors and track views, starts, and submissions in the <a href="admin.php?page=phoenix-press-analytics">Analytics</a> page.</p>
+      </div>
+    </div>
+    <?php
   }
 
   public static function render_media_library_script() {
