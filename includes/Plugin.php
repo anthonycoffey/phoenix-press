@@ -6,6 +6,8 @@ use Phoenix\Press\Meta;
 use Phoenix\Press\Assets;
 use Phoenix\Press\Api;
 use Phoenix\Press\Settings;
+use Phoenix\Press\Database;
+use Phoenix\Press\SplitTest;
 
 /**
 * Main plugin class.
@@ -165,6 +167,8 @@ class Plugin
         Meta::init();
         Api::init();
         Settings::init();
+        Database::init();
+        SplitTest::init();
     }
 
     /**

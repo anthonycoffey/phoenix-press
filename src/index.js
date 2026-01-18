@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		root.render(
 			<GlobalStateProvider>
 				<Suspense fallback={<LinearProgress />}>
-					<ConversationalForm />
+					<ConversationalForm splitTestVariant="conversational" />
 				</Suspense>
 			</GlobalStateProvider>
 		);
@@ -25,19 +25,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	const roots = document.querySelectorAll('.phoenix-form-embed-root');
 	roots.forEach((el) => {
+		const wrapper = el.closest('.phoenix-split-test-wrapper');
+		const splitTestVariant = wrapper
+			? wrapper.dataset.splitTestVariant
+			: null;
+
 		createRoot(el).render(
 			<Suspense fallback={<SkeletonForm />}>
-				<EmbedForm />
+				<EmbedForm splitTestVariant={splitTestVariant} />
 			</Suspense>
 		);
 	});
 
-	const stepperFormRoot = document.getElementById('phoenix-stepper-form-root');
+	const stepperFormRoot = document.getElementById(
+		'phoenix-stepper-form-root'
+	);
 	if (stepperFormRoot) {
+		const wrapper = stepperFormRoot.closest('.phoenix-split-test-wrapper');
+		const splitTestVariant = wrapper
+			? wrapper.dataset.splitTestVariant
+			: null;
+
 		const root = createRoot(stepperFormRoot);
 		root.render(
 			<Suspense fallback={<LinearProgress />}>
-				<StepperForm />
+				<StepperForm splitTestVariant={splitTestVariant} />
 			</Suspense>
 		);
 	}

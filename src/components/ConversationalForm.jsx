@@ -20,8 +20,9 @@ import Disclaimer from './Disclaimer';
 import CancelIcon from './CancelIcon';
 import { GlobalStateContext } from '../state';
 import { validateInputObject, formatPhoneNumber } from '../utils/validation';
+import PhoenixApi from '../utils/PhoenixApi';
 
-const ConversationalForm = () => {
+const ConversationalForm = ({ splitTestVariant }) => {
 	// Get only global state/setters from context
 	const {
 		loading,
@@ -106,17 +107,35 @@ const ConversationalForm = () => {
 		setErrors({});
 	}, [currentQuestionIndex]);
 
+	// Track View
+	useEffect(() => {
+		if (splitTestVariant) {
+			PhoenixApi.trackSplitTest({
+				variant: splitTestVariant,
+				event_type: 'view',
+				device_type: window.innerWidth < 768 ? 'mobile' : 'desktop',
+			});
+		}
+	}, [splitTestVariant]);
+
 	// Track first interaction to trigger form_start
 	useEffect(() => {
-		if (
-			isDirty &&
-			!formStartFiredRef.current &&
-			typeof window?.gtag !== 'undefined'
-		) {
-			window.gtag('event', 'form_start');
+		if (isDirty && !formStartFiredRef.current) {
+			if (typeof window?.gtag !== 'undefined') {
+				window.gtag('event', 'form_start');
+			}
+
+			if (splitTestVariant) {
+				PhoenixApi.trackSplitTest({
+					variant: splitTestVariant,
+					event_type: 'start',
+					device_type:
+						window.innerWidth < 768 ? 'mobile' : 'desktop',
+				});
+			}
 			formStartFiredRef.current = true;
 		}
-	}, [isDirty]);
+	}, [isDirty, splitTestVariant]);
 
 	// Track first successful save to trigger form_submit
 	useEffect(() => {
@@ -208,6 +227,15 @@ const ConversationalForm = () => {
 				}
 			);
 
+			if (splitTestVariant) {
+				PhoenixApi.trackSplitTest({
+					variant: splitTestVariant,
+					event_type: 'submission',
+					device_type:
+						window.innerWidth < 768 ? 'mobile' : 'desktop',
+				});
+			}
+
 			const emailEntry = submission.find((item) => item.name === 'email');
 			const phoneEntry = submission.find((item) => item.name === 'phone');
 			const userData = {};
@@ -240,6 +268,7 @@ const ConversationalForm = () => {
 		source,
 		setLoading,
 		setSubmitted,
+		splitTestVariant,
 	]);
 
 	const handleSubmit = useCallback(async () => {

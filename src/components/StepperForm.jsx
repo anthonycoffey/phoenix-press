@@ -1,6 +1,5 @@
-import { useState } from '@wordpress/element';
+import { useState, useEffect, useRef } from '@wordpress/element';
 import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
@@ -8,50 +7,18 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import TextField from '@mui/material/TextField';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import en from 'date-fns/locale/en-US';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import CircularProgress from '@mui/material/CircularProgress';
-import Alert from '@mui/material/Alert';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import ListSubheader from '@mui/material/ListSubheader';
-import Divider from '@mui/material/Divider';
-import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
-import MoreTime from '@mui/icons-material/MoreTime';
-import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
-import InfoIcon from '@mui/icons-material/Info';
-import EditCalendar from '@mui/icons-material/EditCalendar';
-import ReceiptLong from '@mui/icons-material/ReceiptLong';
-import IconButton from '@mui/material/IconButton';
-import Popover from '@mui/material/Popover';
-import services from '../utils/services.js';
-import PhoenixApi from '../utils/PhoenixApi';
-import { CardHeader, Chip, useMediaQuery } from '@mui/material';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme, ThemeProvider, createTheme } from '@mui/material/styles';
-import AddressAutoComplete from './StepperForm/AddressAutoComplete';
-import Disclaimer from './StepperForm/Disclaimer';
-import parse from 'html-react-parser';
-import CreditCardIcon from '@mui/icons-material/CreditCard';
-import EventAvailable from '@mui/icons-material/EventAvailable';
-import Sell from '@mui/icons-material/Sell';
-import DirectionsCar from '@mui/icons-material/DirectionsCar';
-import AccountCircle from '@mui/icons-material/AccountCircle';
-import PaymentForm from './StepperForm/PaymentForm';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import ServiceCarousel from './StepperForm/ServiceCarousel';
-import { lighten } from '@mui/material/styles';
-import VehicleSelector from './StepperForm/VehicleSelector';
-import Autocomplete from '@mui/material/Autocomplete';
+
+import PhoenixApi from '../utils/PhoenixApi';
+import services from '../utils/services.js';
+
+import CustomerInfoStep from './StepperForm/CustomerInfoStep';
+import VehicleInfoStep from './StepperForm/VehicleInfoStep';
+import QuoteStep from './StepperForm/QuoteStep';
+import PaymentStep from './StepperForm/PaymentStep';
+import ConfirmationStep from './StepperForm/ConfirmationStep';
 
 const steps = [
   'Service Selection',
@@ -81,9 +48,31 @@ const initialFormData = {
   service_time: new Date(),
 };
 
-export default function StepperForm() {
+export default function StepperForm({ splitTestVariant }) {
   const [activeStep, setActiveStep] = useState(0);
   const [formData, setFormData] = useState(initialFormData);
+  const hasStartedRef = useRef(false);
+
+  useEffect(() => {
+    if (splitTestVariant) {
+      PhoenixApi.trackSplitTest({
+        variant: splitTestVariant,
+        event_type: 'view',
+        device_type: window.innerWidth < 768 ? 'mobile' : 'desktop',
+      });
+    }
+  }, [splitTestVariant]);
+
+  const trackStart = () => {
+    if (!hasStartedRef.current && splitTestVariant) {
+      PhoenixApi.trackSplitTest({
+        variant: splitTestVariant,
+        event_type: 'start',
+        device_type: window.innerWidth < 768 ? 'mobile' : 'desktop',
+      });
+      hasStartedRef.current = true;
+    }
+  };
   const [addressObj, setAddressObj] = useState(null);
   const [quoteData, setQuoteData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -196,6 +185,7 @@ export default function StepperForm() {
   };
 
   const handleChange = (e) => {
+    trackStart();
     const { name, value } = e.target;
     if (name === 'phone') {
       const formattedPhoneNumber = formatPhoneNumber(value);
@@ -214,10 +204,12 @@ export default function StepperForm() {
   };
 
   const handleDateChange = (newValue) => {
+    trackStart();
     setFormData((prev) => ({ ...prev, service_time: newValue }));
   };
 
   const handleLocationGeocoded = (place) => {
+    trackStart();
     handlePlaceChanged(place);
   };
 
@@ -292,10 +284,26 @@ export default function StepperForm() {
             description: service.text,
             price: Math.round(pricePerService * 100),
           })),
-          ...quoteData.breakdown.map((item) => ({
-            description: item.label,
-            price: Math.round(item.amount * 100),
-          })),
+          ...quoteData.breakdown.reduce((acc, item) => {
+            const label = item.label.toLowerCase();
+            let serviceId = null;
+
+            if (label.includes('luxury')) {
+              serviceId = 79;
+            } else if (label.includes('time')) {
+              serviceId = 80;
+            }
+
+            if (serviceId) {
+              acc.push({
+                ServiceId: serviceId,
+                description: item.label,
+                price: Math.round(item.amount * 100),
+              });
+            }
+
+            return acc;
+          }, []),
         ];
 
         const payload = {
@@ -341,6 +349,15 @@ export default function StepperForm() {
           submitted: true,
         });
       }
+
+      if (splitTestVariant) {
+        PhoenixApi.trackSplitTest({
+          variant: splitTestVariant,
+          event_type: 'submission',
+          device_type: window.innerWidth < 768 ? 'mobile' : 'desktop',
+        });
+      }
+
       setActiveStep((prev) => prev + 1);
     } catch (err) {
       setError(err.message || 'An error occurred during submission.');
@@ -451,6 +468,7 @@ export default function StepperForm() {
                   {
                     color: 'grey.500', // Just text label (COMPLETED)
                   },
+                  mb: 1,
               }}
             >
               {currentSteps.map((label) => (
@@ -517,410 +535,4 @@ const formatPhoneNumber = (value) => {
     3,
     6
   )}-${phoneNumber.slice(6, 10)}`;
-};
-
-const CustomerInfoStep = ({
-  formData,
-  handleChange,
-  handleDateChange,
-  handlePlaceChanged,
-  handleLocationGeocoded,
-  errors,
-  consent,
-  onConsentChange,
-}) => (
-  <>
-    <CardHeader
-      title={
-        <Typography
-          color='primary'
-          component='span'
-          variant='h6'
-        >
-          Customer Information
-        </Typography>
-      }
-      avatar={<AccountCircle color='primary' />}
-      sx={{fontSize: '0.6rem', whiteSpace: 'nowrap' }}
-    />
-    <Stack component='form' spacing={2} noValidate autoComplete='on'>
-      <TextField
-        variant='filled'
-        label='Full Name'
-        name='full_name'
-        value={formData.full_name}
-        onChange={handleChange}
-        error={!!errors.full_name}
-        helperText={errors.full_name}
-        fullWidth
-      />
-      <TextField
-        variant='filled'
-        label='Email Address (optional)'
-        name='email'
-        value={formData.email}
-        onChange={handleChange}
-        error={!!errors.email}
-        helperText={errors.email}
-        fullWidth
-      />
-      <AddressAutoComplete
-        value={formData.location}
-        onChange={handleChange}
-        onPlaceChanged={handlePlaceChanged}
-        error={!!errors.location}
-        helperText={errors.location}
-        onLocationGeocoded={handleLocationGeocoded}
-      />
-      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={en}>
-        <DateTimePicker
-          label='Service Time'
-          value={formData.service_time}
-          onChange={handleDateChange}
-          slotProps={{
-            textField: {
-              variant: 'filled',
-              fullWidth: true,
-              margin: 'normal',
-              error: !!errors.service_time,
-              helperText: errors.service_time,
-            },
-          }}
-        />
-      </LocalizationProvider>
-      <TextField
-        variant='filled'
-        label='Phone Number'
-        name='phone'
-        value={formData.phone}
-        onChange={handleChange}
-        error={!!errors.phone}
-        helperText={errors.phone}
-        fullWidth
-        margin='normal'
-      />
-      <Disclaimer consent={consent} onConsentChange={onConsentChange} />
-    </Stack>
-  </>
-);
-
-const VehicleInfoStep = ({ formData, handleChange, errors }) => {
-  const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: currentYear - 1948 }, (_, i) =>
-    (currentYear + 1 - i).toString()
-  );
-
-  return (
-    <>
-      <CardHeader
-        title={
-          <Typography color='primary' component='span' variant='h6'>
-            What are you driving?
-          </Typography>
-        }
-        avatar={<DirectionsCar fontSize='large' color='primary' />}
-        sx={{ px: 0 }}
-      />
-      <Stack component='form' spacing={2} noValidate autoComplete='on'>
-        <Alert variant='outlined' severity='warning' sx={{ mb: 2 }}>
-          Please provide your vehicle details to get an accurate quote.
-        </Alert>
-        <VehicleSelector
-          formData={formData}
-          handleChange={handleChange}
-          errors={errors}
-        />
-        <Autocomplete
-          options={years}
-          value={formData.car_year.toString()}
-          onChange={(event, value) =>
-            handleChange({ target: { name: 'car_year', value } })
-          }
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              variant='filled'
-              label='Vehicle Year'
-              error={!!errors.car_year}
-              helperText={errors.car_year}
-              margin='none'
-              fullWidth
-            />
-          )}
-        />
-        <Alert severity='info'>
-          Select a service below, bundling services unlocks super savings!
-        </Alert>
-        <ServiceCarousel
-          services={services}
-          selectedServices={formData.service_type}
-          onServiceSelect={(service) =>
-            handleChange({
-              target: { name: 'service_type', value: service.id },
-            })
-          }
-        />
-        {errors.service_type && (
-          <Typography color='error' variant='caption'>
-            {errors.service_type}
-          </Typography>
-        )}
-      </Stack>
-    </>
-  );
-};
-
-const QuoteStep = ({
-  formData,
-  quoteData,
-  loading,
-  error,
-  tip,
-  onTipChange,
-}) => {
-  const [anchorEl, setAnchorEl] = useState(null);
-
-  const handlePopoverOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handlePopoverClose = () => {
-    setAnchorEl(null);
-  };
-
-  const open = Boolean(anchorEl);
-
-  const totalSurcharges =
-    quoteData?.breakdown?.reduce((acc, item) => acc + item.amount, 0) || 0;
-
-  return (
-    <Stack spacing={2}>
-      {loading && (
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            my: 4,
-          }}
-        >
-          <CircularProgress />
-          <Typography sx={{ mt: 2 }}>
-            Please wait... generating your quote.
-          </Typography>
-        </Box>
-      )}
-
-      {error && <Alert severity='error'>{error}</Alert>}
-      {quoteData && (
-        <>
-          <CardHeader
-            title={
-              <Typography color='primary' component='span' variant='h6'>
-                Confirm Your Booking
-              </Typography>
-            }
-            avatar={<EventAvailable fontSize='large' color='primary' />}
-            subheader={
-              <>
-                <Typography component='span' variant='h6' sx={{ mb: 2 }}>
-                  {new Date(formData.service_time)
-                    .toLocaleString()
-                    .replace(', ', ' @ ')}
-                </Typography>
-                <Typography variant='subtitle2'>{formData.location}</Typography>
-                {formData.service_type.map((s) => (
-                  <Chip
-                    key={s.id}
-                    label={s.text}
-                    color='primary'
-                    sx={{ mr: 1, mt: 1 }}
-                  />
-                ))}
-              </>
-            }
-            sx={{ px: 0 }}
-          />
-
-          <List
-            sx={{
-              width: '100%',
-              bgcolor: (theme) => lighten(theme.palette.background.paper, 0.1),
-              borderRadius: 2,
-            }}
-            subheader={
-              <ListSubheader
-                sx={{
-                  bgcolor: 'transparent',
-                  borderRadius: '8px 8px 0 0',
-                }}
-              >
-                Summary
-              </ListSubheader>
-            }
-          >
-            <ListItem>
-              <ListItemIcon>
-                <DirectionsCarIcon />
-              </ListItemIcon>
-              <ListItemText
-                primary={`${formData.car_make} ${formData.car_model} ${formData.car_year}`}
-                secondary={quoteData.vehicle_class}
-              />
-            </ListItem>
-            <Divider component='li' />
-            {totalSurcharges > 0 && (
-              <ListItem dense>
-                <ListItemIcon>
-                  <MoreTime />
-                </ListItemIcon>
-                <ListItemText
-                  primary={`$${totalSurcharges.toFixed(2)}`}
-                  secondary='Additional fees'
-                />
-                <IconButton onClick={handlePopoverOpen} size='small'>
-                  <InfoIcon fontSize='small' />
-                </IconButton>
-                <Popover
-                  open={open}
-                  anchorEl={anchorEl}
-                  onClose={handlePopoverClose}
-                  anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'left',
-                  }}
-                >
-                  <List dense sx={{ p: 1 }}>
-                    {quoteData.breakdown.map((item, index) => (
-                      <ListItem key={index}>
-                        <ListItemText
-                          primary={`$${item.amount.toFixed(2)}`}
-                          secondary={item.label}
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                </Popover>
-              </ListItem>
-            )}
-            <Divider component='li' />
-            <ListItem>
-              <ListItemIcon>
-                <Sell />
-              </ListItemIcon>
-              <ListItemText
-                primary={`$${quoteData.quote.toFixed(2)}`}
-                secondary='Subtotal'
-              />
-            </ListItem>
-            <ListItem>
-              <ListItemIcon>
-                <MonetizationOnIcon />
-              </ListItemIcon>
-              <TextField
-                label='Tip (optional)'
-                type='number'
-                value={tip}
-                onChange={onTipChange}
-                fullWidth
-                variant='standard'
-                InputProps={{
-                  startAdornment: <Typography sx={{ mr: 1 }}>$</Typography>,
-                }}
-              />
-            </ListItem>
-            <Divider component='li' />
-            <ListItem>
-              <ListItemIcon>
-                <ReceiptLong />
-              </ListItemIcon>
-              <ListItemText
-                primary={`$${(quoteData.quote + (parseFloat(tip) || 0)).toFixed(
-                  2
-                )}`}
-                secondary='Total'
-              />
-            </ListItem>
-          </List>
-        </>
-      )}
-    </Stack>
-  );
-};
-
-const PaymentStep = ({
-  quoteData,
-  onTokenReceived,
-  paymentError,
-  payLater,
-  onPayLaterChange,
-  tip,
-  cardNumber,
-  onCardNumberChange,
-  expiry,
-  onExpiryChange,
-  cvv,
-  onCvvChange,
-}) => (
-  <Stack spacing={2}>
-    {!payLater && quoteData && (
-      <>
-        <CardHeader
-          avatar={<CreditCardIcon color='primary' />}
-          title={
-            <Typography color='primary' component='span' variant='h6'>
-              Pay with Card
-            </Typography>
-          }
-          sx={{ px: 0, pt: 0 }}
-        />
-        <PaymentForm
-          amount={quoteData.quote + (parseFloat(tip) || 0)}
-          onTokenReceived={onTokenReceived}
-          error={paymentError}
-          cardNumber={cardNumber}
-          onCardNumberChange={onCardNumberChange}
-          expiry={expiry}
-          onExpiryChange={onExpiryChange}
-          cvv={cvv}
-          onCvvChange={onCvvChange}
-        />
-      </>
-    )}
-    <FormControlLabel
-      control={
-        <Checkbox
-          checked={payLater}
-          onChange={(e) => onPayLaterChange(e.target.checked)}
-          name='payLater'
-        />
-      }
-      label='Pay Later'
-    />
-  </Stack>
-);
-
-const ConfirmationStep = ({ isBookingFlow }) => {
-  const { SUBMISSION_MESSAGE } = window.LOCALIZED;
-  const defaultMessage = `Thank you for reaching out! Don't wait — call us now at <a href="tel:+18665848488">(866) 584-8488</a> to speak with a live dispatcher and get help right away!`;
-  const message = SUBMISSION_MESSAGE || defaultMessage;
-
-  return (
-    <Box
-      elevation={0}
-      sx={{
-        padding: 4,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        textAlign: 'center',
-      }}
-    >
-      <EventAvailable sx={{ fontSize: 60, color: 'success.main', mb: 2 }} />
-      <Typography variant='h4' gutterBottom>
-        {isBookingFlow ? 'Booking Confirmed!' : 'Submission Successful!'}
-      </Typography>
-      <Typography variant='body1'>{parse(message)}</Typography>
-    </Box>
-  );
 };

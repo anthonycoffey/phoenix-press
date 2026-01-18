@@ -16,8 +16,9 @@ import Disclaimer from './Disclaimer';
 import questionData from '../utils/embed-form-data.js';
 import { requiredFields, isSubmissionComplete } from '../utils/validation';
 import Alert from '@mui/material/Alert';
+import PhoenixApi from '../utils/PhoenixApi';
 
-export default function EmbedForm() {
+export default function EmbedForm({ splitTestVariant }) {
 	const [questions] = useState(questionData || false);
 	const [validPhoneNumber, setValidPhoneNumber] = useState(false);
 	const [loading, setLoading] = useState(false);
@@ -34,6 +35,17 @@ export default function EmbedForm() {
 	const gtagUserDataSentRef = useRef(false);
 	const formStartFiredRef = useRef(false);
 	const formSubmitFiredRef = useRef(false);
+
+	// Track Split Test View
+	useEffect(() => {
+		if (splitTestVariant) {
+			PhoenixApi.trackSplitTest({
+				variant: splitTestVariant,
+				event_type: 'view',
+				device_type: window.innerWidth < 768 ? 'mobile' : 'desktop',
+			});
+		}
+	}, [splitTestVariant]);
 
 	// Scroll to success message when submitted
 	useEffect(() => {
@@ -182,6 +194,15 @@ export default function EmbedForm() {
 					formSubmitFiredRef.current = true;
 				}
 
+				if (submit && splitTestVariant) {
+					PhoenixApi.trackSplitTest({
+						variant: splitTestVariant,
+						event_type: 'submission',
+						device_type:
+							window.innerWidth < 768 ? 'mobile' : 'desktop',
+					});
+				}
+
 				if (submit) {
 					setStatusMessage('');
 				} else {
@@ -213,15 +234,22 @@ export default function EmbedForm() {
 
 	// Track first interaction to trigger form_start
 	useEffect(() => {
-		if (
-			isDirty &&
-			!formStartFiredRef.current &&
-			typeof window?.gtag !== 'undefined'
-		) {
-			window.gtag('event', 'form_start');
+		if (isDirty && !formStartFiredRef.current) {
+			if (typeof window?.gtag !== 'undefined') {
+				window.gtag('event', 'form_start');
+			}
+			if (splitTestVariant) {
+				PhoenixApi.trackSplitTest({
+					variant: splitTestVariant,
+					event_type: 'start',
+					device_type:
+						window.innerWidth < 768 ? 'mobile' : 'desktop',
+				});
+			}
+
 			formStartFiredRef.current = true;
 		}
-	}, [isDirty]);
+	}, [isDirty, splitTestVariant]);
 
 	// Track first successful save to trigger form_submit
 	useEffect(() => {

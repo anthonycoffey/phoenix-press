@@ -1,4 +1,4 @@
-What are you or excessions bringing in I love you I love you I have a fluttering that uses an icon microservice powered by Google Vision and Gemini API that scares captured or upward probes for price data and extracts the price and inverse description of the chance is dated to weather app wire clutter climbing simply keeps her running entirely at all scary prices and you can save the list s september was calculated. I went to the grocery store and I did in the Philadelphia so I'm not going to be able to get a lot of money. i'm going to be a little bit more. i'm going to go to the bathroom.. Face book login face book Good morning my love I love you Don't call me around Anyway I'll be right back Clean Weenie Baby Bailey keeping baby Any page in a in Canada baking in a day all right I don't think I'm gay All right so how do you do it   ># Progress
+# Progress
 
 * **Current Status:** The project exists with a basic structure, build system, and dependencies defined. Version 1.3.0 according to `package.json`. Core PHP classes for API, Assets, Meta, Plugin, and Settings are present. React components for various form elements exist. The Memory Bank has just been initialized and populated with baseline information.
 * **What Works:** 
@@ -45,6 +45,7 @@ What are you or excessions bringing in I love you I love you I have a fluttering
     * `ServiceSelect.jsx` (used in `ConversationalForm`) now formats its output data as an array of objects `[{value: ..., id: ...}]` before passing it up via `onInputChange`, aligning its data structure with `EmbedForm/Services.jsx`.
     * Embed form (`EmbedForm.jsx`) success message display refactored to use MUI `Alert` within a styled `Box` for better vertical presence, replacing the previous `Prompt` component implementation. Uses `html-react-parser` for rendering `LOCALIZED.SUBMISSION_MESSAGE`.
     * Embed form (`EmbedForm.jsx`) now smoothly scrolls to the success message (`#submission-success`) upon successful submission using a `useEffect` hook.
+    * `StepperForm.jsx` refactored: extracted internal components (`CustomerInfoStep`, `VehicleInfoStep`, `QuoteStep`, `PaymentStep`, `ConfirmationStep`) into separate files within `src/components/StepperForm/` for better organization.
 * **What's Left:**
     * Full implementation details of backend logic (API interactions, settings handling, processing new 'email' field).
     * Complete implementation and integration of frontend React components (ensuring 'email' field renders correctly).
@@ -77,4 +78,5 @@ What are you or excessions bringing in I love you I love you I have a fluttering
     * **2025-04-08:** Modified `ServiceSelect.jsx` to format its output data as `[{value: ..., id: ...}]` before calling `onInputChange`, aligning its data structure with `EmbedForm/Services.jsx`.
     * **2025-04-08:** Refactored `ConversationalForm.jsx` navigation UX: Replaced `Alert` component for loading/Turnstile states with inline `Typography` messages. Updated Next/Submit button `disabled` logic to include `loading` and `!turnstileToken` checks. Removed `navigationWarning` state.
     * **2025-04-09:** Refactored the success message display in `EmbedForm.jsx` to use MUI `Alert` and `Box` components instead of the `Prompt` component, aiming for a more standard UI and better vertical space utilization. Utilized `html-react-parser` for rendering the HTML message content.
-    * **2025-04-09:** Implemented smooth scrolling to the success message (`#submission-success`) in `EmbedForm.jsx` upon submission using a `useEffect` hook.
+    * **2025-04-09:** Implemented smooth scrolling to the success message (`#submission-success`) in `EmbedForm.jsx` using a `useEffect` hook triggered by the `submitted` state.
+    * **2026-01-16:** Refactored `StepperForm.jsx` by extracting its internal component definitions into separate files in `src/components/StepperForm/` to improve code maintainability and organization.

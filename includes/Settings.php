@@ -2,11 +2,20 @@
 
 namespace Phoenix\Press;
 
+use Phoenix\Press\Database;
+
 class Settings {
     public static function init() {
         add_action( 'admin_menu', [ __CLASS__, 'add_settings_page' ] );
         add_action( 'admin_init', [ __CLASS__, 'register_settings' ] );
         add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_media_library' ] );
+
+        if ( isset( $_POST['phoenix_reset_stats'] ) && check_admin_referer( 'phoenix_reset_stats_action', 'phoenix_reset_stats_nonce' ) ) {
+            Database::reset_stats();
+            add_action('admin_notices', function() {
+                echo '<div class="notice notice-success is-dismissible"><p>Split test statistics reset.</p></div>';
+            });
+        }
     }
 
     public static function enqueue_media_library( $hook ) {
@@ -33,6 +42,43 @@ class Settings {
         do_settings_sections( 'phoenix-press' );
         submit_button();
         echo '</form>';
+        
+        // Render Stats
+        if ( get_option( 'phoenix_split_test_enabled' ) ) {
+            echo '<h2>Split Test Statistics</h2>';
+            $stats = Database::get_stats();
+            
+            echo '<table class="widefat fixed" cellspacing="0">';
+            echo '<thead><tr><th>Variant</th><th>Views</th><th>Starts</th><th>Submissions</th><th>Conversion Rate</th></tr></thead>';
+            echo '<tbody>';
+            
+            $variants = array_unique(array_merge(['A', 'B'], array_keys($stats)));
+            sort($variants);
+            
+            foreach ($variants as $variant) {
+                $data = isset($stats[$variant]) ? $stats[$variant] : ['view' => 0, 'start' => 0, 'submission' => 0];
+                $views = $data['view'] ?? 0;
+                $submissions = $data['submission'] ?? 0;
+                $rate = $views > 0 ? round(($submissions / $views) * 100, 2) . '%' : '0%';
+                
+                echo "<tr>";
+                echo "<td>Variant $variant</td>";
+                echo "<td>$views</td>";
+                echo "<td>{$data['start']}</td>";
+                echo "<td>$submissions</td>";
+                echo "<td>$rate</td>";
+                echo "</tr>";
+            }
+            
+            echo '</tbody></table>';
+            
+            echo '<form method="post" style="margin-top: 20px;">';
+            wp_nonce_field( 'phoenix_reset_stats_action', 'phoenix_reset_stats_nonce' );
+            echo '<input type="hidden" name="phoenix_reset_stats" value="1">';
+            submit_button( 'Reset Statistics', 'secondary', 'submit', false );
+            echo '</form>';
+        }
+
         echo '</div>';
 
         self::render_media_library_script();
@@ -79,6 +125,18 @@ class Settings {
             'phoenix_submission_message' => [
                 'label' => 'Submission Confirmation Message',
                 'type' => 'textarea',
+            ],
+            'phoenix_split_test_enabled' => [
+                'label' => 'Enable Split Testing',
+                'type' => 'checkbox',
+            ],
+            'phoenix_split_test_variant_a' => [
+                'label' => 'Variant A Shortcode',
+                'type' => 'text',
+            ],
+            'phoenix_split_test_variant_b' => [
+                'label' => 'Variant B Shortcode',
+                'type' => 'text',
             ],
             'phoenix_auth_net_api_login_id' => [
                 'label' => 'Authorize.Net API Login ID',

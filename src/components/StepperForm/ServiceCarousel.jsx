@@ -1,9 +1,13 @@
 import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation } from 'swiper/modules';
 import 'swiper/css';
+import 'swiper/css/navigation';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+import Stack from '@mui/material/Stack';
 
 export default function ServiceCarousel({
   services,
@@ -11,12 +15,53 @@ export default function ServiceCarousel({
   onServiceSelect,
 }) {
   return (
-    <Box sx={{ my: 2 }}>
+    <Box
+      sx={{
+        my: 2,
+        // Custom styling for Swiper navigation buttons to match MUI theme
+        '& .swiper-button-next, & .swiper-button-prev': {
+          color: 'primary.main',
+          bgcolor: 'background.paper',
+          width: 36,
+          height: 36,
+          borderRadius: '50%',
+          boxShadow: 2,
+          '&:after': {
+            fontSize: '1.2rem',
+            fontWeight: 'bold',
+          },
+          '&:hover': {
+            bgcolor: 'action.hover',
+          },
+        },
+        '& .swiper-button-disabled': {
+          opacity: 0.35,
+          cursor: 'not-allowed',
+        },
+      }}
+    >
+      {selectedServices.length > 0 && (
+        <Stack direction='row' spacing={1} flexWrap='wrap' sx={{ mb: 2 }}>
+          {selectedServices.map((service) => (
+            <Chip
+              key={service.id}
+              label={service.text}
+              onDelete={() => onServiceSelect(service)}
+              color='primary'
+              variant='filled'
+            />
+          ))}
+        </Stack>
+      )}
+
       <Swiper
+        modules={[Navigation]}
+        navigation={true}
         spaceBetween={16}
         slidesPerView={'auto'}
         freeMode={true}
         grabCursor={true}
+        style={{ padding: '4px' }}
       >
         {services.map((service) => (
           <SwiperSlide key={service.id} style={{ width: 'auto' }}>
@@ -46,6 +91,8 @@ export default function ServiceCarousel({
                   alignItems: 'center',
                   justifyContent: 'center',
                   textAlign: 'center',
+                  p: 1,
+                  '&:last-child': { pb: 1 },
                 }}
               >
                 {service.icon}

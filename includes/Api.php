@@ -2,6 +2,8 @@
 
 namespace Phoenix\Press;
 
+use Phoenix\Press\Database;
+
 class Api {
     private const TOKEN_CACHE_DURATION = 300; // 5 minutes
     private const TOKEN_CACHE_GROUP = 'phoenix_tokens';
@@ -53,6 +55,28 @@ public static function register_rest_routes() {
         'callback' => [ __CLASS__, 'create_booking' ],
         'permission_callback' => '__return_true',
     ] );
+
+    register_rest_route( 'phoenix-press/v1', '/track-split-test', [
+        'methods' => 'POST',
+        'callback' => [ __CLASS__, 'track_split_test' ],
+        'permission_callback' => '__return_true',
+    ] );
+}
+
+public static function track_split_test( $request ) {
+    $params = $request->get_json_params();
+    
+    $variant = isset($params['variant']) ? $params['variant'] : null;
+    $event_type = isset($params['event_type']) ? $params['event_type'] : null;
+    $device_type = isset($params['device_type']) ? $params['device_type'] : 'desktop';
+
+    if ( ! $variant || ! $event_type ) {
+        return new \WP_REST_Response( [ 'error' => 'Missing required parameters' ], 400 );
+    }
+
+    Database::record_event( $variant, $event_type, $device_type );
+
+    return new \WP_REST_Response( [ 'success' => true ], 200 );
 }
 
 public static function submit_lead( $request )

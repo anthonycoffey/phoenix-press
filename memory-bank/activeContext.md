@@ -1,7 +1,11 @@
 # Active Context
 
-* **Current Focus:** Optimizing form components for performance.
+* **Current Focus:** Improving UX for `StepperForm` components, specifically `ServiceCarousel`.
 * **Recent Changes:**
+    * Updated `src/components/StepperForm/ServiceCarousel.jsx`:
+        * Added a chips section above the carousel to display selected services.
+        * Enabled Swiper Navigation module to show arrows for better scroll affordance.
+        * Styled navigation arrows using MUI theme tokens (`primary.main`, `background.paper`) to ensure visibility in dark/light modes.
     * Updated both form components (`EmbedForm.jsx` and `ConversationalForm.jsx`) to use `gtag()` instead of `dataLayer` for analytics tracking (form_start and form_submit events).
     * Modified `src/utils/form-data.js` to add a new optional 'email' step after the 'phone' step in the conversational form. (Previous task)
     * Modified `src/utils/embed-form-data.js` to add a new optional 'email' field after the 'phone' field in the embed form. (Previous task)
@@ -59,8 +63,20 @@
     * Refactored `src/components/ConversationalForm.jsx` navigation UX: Replaced the `Alert` component for loading/Turnstile states with inline `Typography` messages ("Saving...", "Securing..."). Updated the Next/Submit button's `disabled` state to include `loading` and `!turnstileToken` checks. Removed the `navigationWarning` state and associated logic.
     * Modified `src/components/EmbedForm.jsx` success message display: Replaced the `<Prompt>` component with a styled MUI `<Alert>` component within a `<Box>` to provide more vertical space and a standard success UI, while still parsing HTML from `LOCALIZED.SUBMISSION_MESSAGE` using `html-react-parser`.
     * Modified `src/components/EmbedForm.jsx` to add a `useEffect` hook that scrolls the page smoothly to the `#submission-success` element upon successful submission.
-* **Next Steps:** Update `progress.md`.
+    * Refactored `src/components/StepperForm.jsx` by extracting its internal component definitions (`CustomerInfoStep`, `VehicleInfoStep`, `QuoteStep`, `PaymentStep`, `ConfirmationStep`) into separate files within `src/components/StepperForm/`.
+    * Modified `src/components/StepperForm/QuoteStep.jsx` to restructure the quote breakdown display:
+        * Filtered "Additional Fees" to only include "Luxury Uplift" and "Time Surcharge".
+        * Identified "Specialty Services" as any breakdown item not matching the surcharge list (e.g., New Key, Tire Replacement).
+        * Calculated "Base Price" by subtracting Surcharges and Specialty Services from the total Quote.
+        * Updated the table to display "Base Price" first, followed by itemized Specialty Services, then Additional Fees.
+        * Added a conditional disclaimer below the table when Specialty Services are present.
+* **Next Steps:** Verify UX improvements in `ServiceCarousel`.
 * **Active Decisions:**
+    * Restructured `QuoteStep` pricing display to align with invoice format: "Base Price" covers core services, "Specialty Services" are itemized individually, and "Additional Fees" are strictly for surcharges (Luxury, Time).
+    * Added a disclaimer for Specialty Services to clarify deposit requirements and final cost approval.
+    * Used MUI `Stack` and `Chip` for displaying selected services to keep UI clean and consistent.
+    * Used Swiper `Navigation` module for carousel arrows as it's a standard pattern for horizontal scrolling lists.
+    * Styled Swiper navigation arrows using `sx` and theme values to ensure they are visible and fit the design system (especially in dark mode).
     * Added an optional 'email' field to both form types. (Previous task)
     * Implemented Google Analytics Enhanced Conversions tracking (`gtag('set', 'user_data', ...)`) in both `ConversationalForm.jsx` and `EmbedForm.jsx`, triggering before the `form_submit` event. User data (email, phone) is extracted from the form submission state. Phone numbers are attempted to be formatted to E.164. The `gtag` call is conditional on the presence of an email address and uses a `useRef` flag to ensure it only executes once per component instance during submission.
     * Standardized analytics tracking to use `gtag()` exclusively instead of mixing with `dataLayer`. Updated all form interaction events (form_start, form_submit) to use `gtag('event', ...)` syntax.
@@ -89,6 +105,7 @@
     * Aligned the data structure passed up by `ServiceSelect.jsx` (used in `ConversationalForm`) to match the structure used by `EmbedForm/Services.jsx`. The `ServiceSelect` component now formats the selected services into an array of objects `[{value: ..., id: ...}]` within its `handleCheckboxChange` function before calling the `onInputChange` prop.
     * Replaced the success message implementation in `EmbedForm.jsx` from using the custom `Prompt` component to using standard MUI components (`Box`, `Alert`, `AlertTitle`, `CheckCircleOutlineIcon`, `Typography`) for a more conventional and vertically substantial success display, utilizing `html-react-parser` to render the `LOCALIZED.SUBMISSION_MESSAGE`.
     * Implemented smooth scrolling to the success message (`#submission-success`) in `EmbedForm.jsx` using a `useEffect` hook triggered by the `submitted` state.
+    * Refactored `src/components/StepperForm.jsx` by extracting its internal component definitions (`CustomerInfoStep`, `VehicleInfoStep`, `QuoteStep`, `PaymentStep`, `ConfirmationStep`) into separate files within `src/components/StepperForm/`.
 * **Key Patterns/Preferences:**
     * WordPress plugin structure.
     * PHP for backend/WordPress integration.
