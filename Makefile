@@ -1,4 +1,4 @@
-# Phoenix Press WordPress Plugin Makefile
+# PhoenixPress WordPress Plugin Makefile
 # =======================================
 
 .PHONY: help install build start clean reset format release
@@ -13,7 +13,7 @@ BLUE := \033[34m
 RESET := \033[0m
 
 help: ## Show this help message
-	@echo "$(BLUE)Phoenix Press WordPress Plugin$(RESET)"
+	@echo "$(BLUE)PhoenixPress WordPress Plugin$(RESET)"
 	@echo "================================"
 	@echo ""
 	@echo "$(YELLOW)Available commands:$(RESET)"
@@ -65,7 +65,7 @@ prod-build: clean install build ## Full production build (clean, install, build)
 
 # Quick status check
 status: ## Show project status
-	@echo "$(BLUE)Phoenix Press Project Status$(RESET)"
+	@echo "$(BLUE)PhoenixPress Project Status$(RESET)"
 	@echo "============================="
 	@echo ""
 	@echo "$(YELLOW)Node.js version:$(RESET)"

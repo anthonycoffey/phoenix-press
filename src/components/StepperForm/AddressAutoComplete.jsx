@@ -23,11 +23,7 @@ export default function AddressAutoComplete({
     libraries,
   });
 
-  console.log(
-    'Google Maps API Loaded:',
-    isLoaded,
-    window.LOCALIZED?.GMAPS_API_KEY
-  );
+  console.log('Google Maps API Loaded:', isLoaded);
 
   const [autocomplete, setAutocomplete] = useState(null);
 
@@ -95,7 +91,9 @@ export default function AddressAutoComplete({
             <InputAdornment position='end'>
               {value ? (
                 <IconButton
-                  onClick={() => onChange({ target: { name: 'location', value: '' } })}
+                  onClick={() =>
+                    onChange({ target: { name: 'location', value: '' } })
+                  }
                   aria-label='clear location'
                 >
                   <ClearIcon />

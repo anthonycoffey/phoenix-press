@@ -3,6 +3,8 @@
 namespace Phoenix\Press;
 
 class SplitTest {
+    private static $variant = null;
+
     public static function init() {
         add_action('init', [__CLASS__, 'assign_variant']);
         add_shortcode('phoenix_split_test', [__CLASS__, 'render_shortcode']);
@@ -13,22 +15,8 @@ class SplitTest {
             return;
         }
 
-        if (!isset($_COOKIE['phoenix_split_test_variant'])) {
-            // Randomly assign A or B
-            $variant = (rand(0, 1) === 0) ? 'A' : 'B';
-            
-            // Set cookie for 30 days
-            setcookie(
-                'phoenix_split_test_variant', 
-                $variant, 
-                time() + 30 * DAY_IN_SECONDS, 
-                COOKIEPATH, 
-                COOKIE_DOMAIN
-            );
-            
-            // Make available for current request
-            $_COOKIE['phoenix_split_test_variant'] = $variant;
-        }
+        // Randomly assign A or B for this request only
+        self::$variant = (rand(0, 1) === 0) ? 'A' : 'B';
     }
 
     public static function render_shortcode($atts) {
@@ -36,7 +24,8 @@ class SplitTest {
             return '';
         }
 
-        $variant = isset($_COOKIE['phoenix_split_test_variant']) ? $_COOKIE['phoenix_split_test_variant'] : 'A';
+        // Default to A if not set (e.g. if assign_variant didn't run for some reason)
+        $variant = self::$variant ? self::$variant : 'A';
         
         // Sanitize variant
         if (!in_array($variant, ['A', 'B'])) {

@@ -256,7 +256,7 @@ const ConversationalForm = ({ splitTestVariant }) => {
 			}
 		} catch (error) {
 			setSubmitted(false);
-			console.log(error);
+			console.error(error);
 		} finally {
 			setSubmitted(true);
 			setLoading(false);
@@ -311,7 +311,7 @@ const ConversationalForm = ({ splitTestVariant }) => {
 				}
 			}
 		} catch (error) {
-			console.log(error);
+			console.error(error);
 		} finally {
 			setLoading(false);
 		}

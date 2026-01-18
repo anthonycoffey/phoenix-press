@@ -39,6 +39,7 @@ const InputField = ({
 			return (
 				<PhoneField
 					input={input}
+					handleTextChange={handleTextChange}
 					setValidPhoneNumber={setValidPhoneNumber}
 					handleBlur={handleBlur}
 				/>

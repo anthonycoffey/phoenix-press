@@ -47,24 +47,24 @@ const QuoteStep = ({
   const breakdown = quoteData?.breakdown || [];
 
   const surchargeItems = breakdown.filter((item) =>
-    SURCHARGE_LABELS.some((label) => item.label?.toLowerCase().includes(label))
+    SURCHARGE_LABELS.some((label) => item.label?.toLowerCase().includes(label)),
   );
 
   const specialtyItems = breakdown.filter(
     (item) =>
       !SURCHARGE_LABELS.some((label) =>
-        item.label?.toLowerCase().includes(label)
-      )
+        item.label?.toLowerCase().includes(label),
+      ),
   );
 
   const totalSurcharges = surchargeItems.reduce(
     (acc, item) => acc + item.amount,
-    0
+    0,
   );
 
   const totalSpecialty = specialtyItems.reduce(
     (acc, item) => acc + item.amount,
-    0
+    0,
   );
 
   const basePrice = quoteData
@@ -102,11 +102,13 @@ const QuoteStep = ({
             subheader={
               <>
                 <Typography component='span' variant='h6' sx={{ mb: 1 }}>
+                  {formData.location}
+                </Typography>
+                <Typography variant='subtitle1'>
                   {new Date(formData.service_time)
                     .toLocaleString()
                     .replace(', ', ' @ ')}
                 </Typography>
-                <Typography variant='h6'>{formData.location}</Typography>
                 <Typography variant='body2' sx={{ fontWeight: 'bold' }}>
                   {`${formData.car_make} ${formData.car_model} ${formData.car_year}`}
                 </Typography>
@@ -132,14 +134,6 @@ const QuoteStep = ({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {/* Base Price */}
-                <TableRow>
-                  <TableCell component='th' scope='row'>
-                    Base Price
-                  </TableCell>
-                  <TableCell align='right'>${basePrice.toFixed(2)}</TableCell>
-                </TableRow>
-
                 {/* Specialty Services */}
                 {specialtyItems.map((item, index) => (
                   <TableRow key={`specialty-${index}`}>

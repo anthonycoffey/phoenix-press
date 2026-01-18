@@ -5,6 +5,7 @@ namespace Phoenix\Press;
 class Database {
 
     private static $table_name;
+    private static $db_version = '1.0.1';
 
     public static function init() {
         global $wpdb;
@@ -19,8 +20,11 @@ class Database {
     public static function maybe_create_table() {
         global $wpdb;
         
-        if ( $wpdb->get_var( "SHOW TABLES LIKE '" . self::$table_name . "'" ) != self::$table_name ) {
+        $installed_ver = get_option( 'phoenix_press_db_version' );
+
+        if ( $installed_ver != self::$db_version ) {
             self::create_table();
+            update_option( 'phoenix_press_db_version', self::$db_version );
         }
     }
 
@@ -31,9 +35,9 @@ class Database {
 
         $sql = "CREATE TABLE " . self::$table_name . " (
             id mediumint(9) NOT NULL AUTO_INCREMENT,
-            time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-            variant varchar(10) NOT NULL,
-            event_type varchar(20) NOT NULL,
+            time datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            variant varchar(50) NOT NULL,
+            event_type varchar(50) NOT NULL,
             device_type varchar(20) DEFAULT 'desktop',
             PRIMARY KEY  (id),
             KEY variant (variant),
@@ -47,7 +51,7 @@ class Database {
     public static function record_event( $variant, $event_type, $device_type = 'desktop' ) {
         global $wpdb;
 
-        $wpdb->insert(
+        $result = $wpdb->insert(
             self::$table_name,
             [
                 'time' => \current_time( 'mysql' ),
@@ -56,6 +60,10 @@ class Database {
                 'device_type' => \sanitize_text_field( $device_type ),
             ]
         );
+
+        if ( false === $result ) {
+            error_log( 'PhoenixPress DB Error: ' . $wpdb->last_error );
+        }
     }
 
     public static function get_stats() {

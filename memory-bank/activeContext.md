@@ -1,7 +1,14 @@
 # Active Context
 
-* **Current Focus:** Improving UX for `StepperForm` components, specifically `ServiceCarousel`.
+* **Current Focus:** Fixing a crash and validation issue in `EmbedForm`'s `PhoneField`.
 * **Recent Changes:**
+    * **Split Testing Mechanics Updated:**
+        * Removed 30-day cookie persistence for split testing in `includes/SplitTest.php`.
+        * Implemented a pure random assignment strategy per request (no cookies used).
+        * Updated `includes/Settings.php` analytics description to reflect the "no cookie" approach.
+    * Fixed `Uncaught TypeError` in `src/components/EmbedForm/PhoneField.jsx` by passing `handleTextChange` prop from `src/components/InputField.jsx`.
+    * Implemented phone number validation in `src/components/EmbedForm/PhoneField.jsx` by using the `setValidPhoneNumber` prop and checking for 10-digit input.
+    * Implemented local state management (`useState`, `useEffect`) in `src/components/EmbedForm/PhoneField.jsx` to resolve typing responsiveness issues caused by the parent `EmbedForm`'s mutation-based state management pattern (which prevented immediate re-renders).
     * Updated `src/components/StepperForm/ServiceCarousel.jsx`:
         * Added a chips section above the carousel to display selected services.
         * Enabled Swiper Navigation module to show arrows for better scroll affordance.
@@ -70,8 +77,26 @@
         * Calculated "Base Price" by subtracting Surcharges and Specialty Services from the total Quote.
         * Updated the table to display "Base Price" first, followed by itemized Specialty Services, then Additional Fees.
         * Added a conditional disclaimer below the table when Specialty Services are present.
-* **Next Steps:** Verify UX improvements in `ServiceCarousel`.
+    * Fixed `includes/Database.php` table creation issue where `DEFAULT '0000-00-00 00:00:00'` caused failures in MySQL with `NO_ZERO_DATE` mode. Updated to use `DEFAULT CURRENT_TIMESTAMP`.
+    * Added error logging to `Database::record_event` to capture future database insertion errors.
+    * Enhanced `includes/Settings.php` to implement a "HubSpot-style" reporting dashboard:
+        * Added an info box explaining split testing mechanics.
+        * Separated statistics for the "Conversational Form" into a dedicated section.
+        * Integrated **Highcharts** via CDN for data visualization.
+        * Implemented Summary Metric Cards (Views, Submissions, Rate).
+        * Added Column Charts for Conversion Rate comparison and Engagement Volume (Views vs Starts vs Submissions).
+        * Added a Funnel Chart for Conversational Form performance.
+    * Refactored `includes/Settings.php` to improve admin UI/UX:
+        * Moved plugin menu from "Settings" submenu to a top-level "Phoenix Press" menu.
+        * Created two distinct subpages: "Settings" (for configuration) and "Analytics" (for the dashboard).
+        * Implemented a native WordPress tabbed interface within the "Settings" page with three sections: **API Settings**, **Form Settings**, and **A/B Testing**.
+        * Styled the Settings page form with a cleaner, card-based layout (`.phoenix-settings-card`) to match the dashboard aesthetics.
+        * Optimized asset loading to enqueue Highcharts only on the Analytics page and Media scripts only on the Settings page.
+* **Next Steps:** Verify the phone field fix and ensure form submission works correctly.
 * **Active Decisions:**
+    * **Split Testing:** Switched to a "no cookie" approach as requested. Variants are assigned randomly on every request. This prioritizes equal traffic distribution and user privacy/simplicity over persistence.
+    * Used local state in `EmbedForm/PhoneField` to handle input updates. This decouples the input's visual state from the parent form's state management (which relies on mutation and delayed re-renders), ensuring a smooth typing experience.
+    * Implemented validation in `EmbedForm/PhoneField` by checking for 10-digit input and updating the parent's validation state, ensuring the form cannot be submitted with an incomplete phone number.
     * Restructured `QuoteStep` pricing display to align with invoice format: "Base Price" covers core services, "Specialty Services" are itemized individually, and "Additional Fees" are strictly for surcharges (Luxury, Time).
     * Added a disclaimer for Specialty Services to clarify deposit requirements and final cost approval.
     * Used MUI `Stack` and `Chip` for displaying selected services to keep UI clean and consistent.
@@ -97,7 +122,7 @@
     * Refactored `PhoneField`, `AddressAutoComplete`, and `ServiceSelect` to align with the parent-controlled state pattern, removing context dependencies.
     * Set default value for `datetime` inputs to current time upon initialization.
     * Improved email validation immediacy by updating `validateInputObject`.
-    * Corrected phone number validation logic in `validateInputObject`.
+    * Corrected phone number validation in `validateInputObject`.
     * Separated validation logic into a `useEffect` hook in `ConversationalForm`.
     * Restored Turnstile integration.
     * Styled the conversational form (`ConversationalForm.jsx`) to behave like a chatbox (min/max width, shrink-wrap content) using inline styles (`sx` prop) on the main `<Card>` component, ensuring styles do not affect the embed form.
