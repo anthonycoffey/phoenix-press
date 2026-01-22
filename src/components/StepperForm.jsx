@@ -156,6 +156,7 @@ export default function StepperForm({ splitTestVariant }) {
           source,
           completed: submitted,
           submitted,
+          skipGhlTrigger: isBookingFlow,
         });
       } else {
         const result = await PhoenixApi.submitLead({
@@ -163,6 +164,7 @@ export default function StepperForm({ splitTestVariant }) {
           source,
           completed: submitted,
           submitted,
+          skipGhlTrigger: isBookingFlow,
         });
         if (result && result.id) {
           setSubmissionId(result.id);

@@ -49,6 +49,7 @@ export default function ServiceCarousel({
               onDelete={() => onServiceSelect(service)}
               color='primary'
               variant='filled'
+              sx={{my: 1}}
             />
           ))}
         </Stack>
