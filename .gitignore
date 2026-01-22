@@ -16,3 +16,4 @@ package-lock.json
 .prettierrc
 
 build/
+phoenix-press-with-api.code-workspace
