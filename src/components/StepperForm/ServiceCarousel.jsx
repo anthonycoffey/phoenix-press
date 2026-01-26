@@ -41,7 +41,7 @@ export default function ServiceCarousel({
       }}
     >
       {selectedServices.length > 0 && (
-        <Stack direction='row' spacing={1} flexWrap='wrap' sx={{ mb: 2 }}>
+        <Stack direction='row' spacing={1} flexWrap='wrap' useFlexGap sx={{ mb: 1 }}>
           {selectedServices.map((service) => (
             <Chip
               key={service.id}
@@ -49,7 +49,6 @@ export default function ServiceCarousel({
               onDelete={() => onServiceSelect(service)}
               color='primary'
               variant='filled'
-              sx={{my: 1}}
             />
           ))}
         </Stack>

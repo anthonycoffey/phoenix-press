@@ -180,7 +180,7 @@ export default function StepperForm({ splitTestVariant }) {
 
   const handleNext = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // window.scrollTo({ top: 0, behavior: 'smooth' });
 
     if (!validateStep()) return;
 
@@ -233,7 +233,7 @@ export default function StepperForm({ splitTestVariant }) {
 
   const handleBack = (e) => {
     if (e && e.preventDefault) e.preventDefault();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // window.scrollTo({ top: 0, behavior: 'smooth' });
     setActiveStep((prev) => prev - 1);
   };
 
