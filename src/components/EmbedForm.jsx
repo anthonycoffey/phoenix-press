@@ -14,7 +14,7 @@ import AlertTitle from '@mui/material/AlertTitle';
 import CheckCircleOutlineTwoTone from '@mui/icons-material/CheckCircleOutlineTwoTone';
 import Disclaimer from './Disclaimer';
 import questionData from '../utils/embed-form-data.js';
-import { requiredFields, isSubmissionComplete } from '../utils/validation';
+import { validateInputObject } from '../utils/validation';
 import Alert from '@mui/material/Alert';
 import PhoenixApi from '../utils/PhoenixApi';
 
@@ -111,10 +111,13 @@ export default function EmbedForm({ splitTestVariant }) {
 					window.location.origin.replace(/^https?:\/\//, '') +
 					window.location.pathname.replace(/\/$/, '');
 
-				const completed = isSubmissionComplete(
-					submission,
-					requiredFields
+				const isComplete = questions.every((question) =>
+					question.inputs.every(
+						(input) => !validateInputObject(input)
+					)
 				);
+
+				const completed = isComplete;
 
 				if (formSubmissionId) {
 					await fetch(
