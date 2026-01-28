@@ -14,9 +14,10 @@
     * Implemented phone number validation in `src/components/EmbedForm/PhoneField.jsx` by using the `setValidPhoneNumber` prop and checking for 10-digit input.
     * Implemented local state management (`useState`, `useEffect`) in `src/components/EmbedForm/PhoneField.jsx` to resolve typing responsiveness issues caused by the parent `EmbedForm`'s mutation-based state management pattern (which prevented immediate re-renders).
     * Updated `src/components/StepperForm/ServiceCarousel.jsx`:
+        * Fixed vertical spacing issue for wrapped chips on mobile by adding `useFlexGap` to the `Stack` component and removing manual margins from `Chip`s.
+        * Refactored pagination arrows to use custom `IconButton` components positioned below the carousel.
+        * Styled pagination buttons with a muted black background (`grey.900`), `primary.main` border, and reduced icon size (`0.6rem`) as requested.
         * Added a chips section above the carousel to display selected services.
-        * Enabled Swiper Navigation module to show arrows for better scroll affordance.
-        * Styled navigation arrows using MUI theme tokens (`primary.main`, `background.paper`) to ensure visibility in dark/light modes.
     * Updated both form components (`EmbedForm.jsx` and `ConversationalForm.jsx`) to use `gtag()` instead of `dataLayer` for analytics tracking (form_start and form_submit events).
     * Modified `src/utils/form-data.js` to add a new optional 'email' step after the 'phone' step in the conversational form. (Previous task)
     * Modified `src/utils/embed-form-data.js` to add a new optional 'email' field after the 'phone' field in the embed form. (Previous task)
@@ -75,6 +76,7 @@
     * Modified `src/components/EmbedForm.jsx` success message display: Replaced the `<Prompt>` component with a styled MUI `<Alert>` component within a `<Box>` to provide more vertical space and a standard success UI, while still parsing HTML from `LOCALIZED.SUBMISSION_MESSAGE` using `html-react-parser`.
     * Modified `src/components/EmbedForm.jsx` to add a `useEffect` hook that scrolls the page smoothly to the `#submission-success` element upon successful submission.
     * Refactored `src/components/StepperForm.jsx` by extracting its internal component definitions (`CustomerInfoStep`, `VehicleInfoStep`, `QuoteStep`, `PaymentStep`, `ConfirmationStep`) into separate files within `src/components/StepperForm/`.
+    * Disabled auto-scroll to top in `StepperForm.jsx` navigation handlers (`handleNext`, `handleBack`) by commenting out `window.scrollTo`, ensuring the user's scroll position is maintained between steps.
     * Modified `src/components/StepperForm/QuoteStep.jsx` to restructure the quote breakdown display:
         * Filtered "Additional Fees" to only include "Luxury Uplift" and "Time Surcharge".
         * Identified "Specialty Services" as any breakdown item not matching the surcharge list (e.g., New Key, Tire Replacement).

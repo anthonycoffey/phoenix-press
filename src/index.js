@@ -11,17 +11,17 @@ const ConversationalForm = lazy(
 const StepperForm = lazy(() => import('./components/StepperForm'));
 
 document.addEventListener('DOMContentLoaded', () => {
-	const chat = document.getElementById('phoenix-form-root');
-	if (chat) {
-		const root = createRoot(chat);
-		root.render(
-			<GlobalStateProvider>
-				<Suspense fallback={<LinearProgress />}>
-					<ConversationalForm splitTestVariant="conversational" />
-				</Suspense>
-			</GlobalStateProvider>
-		);
-	}
+	// const chat = document.getElementById('phoenix-form-root');
+	// if (chat) {
+	// 	const root = createRoot(chat);
+	// 	root.render(
+	// 		<GlobalStateProvider>
+	// 			<Suspense fallback={<LinearProgress />}>
+	// 				<ConversationalForm splitTestVariant="conversational" />
+	// 			</Suspense>
+	// 		</GlobalStateProvider>
+	// 	);
+	// }
 
 	const roots = document.querySelectorAll('.phoenix-form-embed-root');
 	roots.forEach((el) => {

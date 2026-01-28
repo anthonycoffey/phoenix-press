@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
 import 'swiper/css';
@@ -8,40 +9,48 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
+import IconButton from '@mui/material/IconButton';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 export default function ServiceCarousel({
   services,
   selectedServices,
   onServiceSelect,
 }) {
+  const [prevEl, setPrevEl] = useState(null);
+  const [nextEl, setNextEl] = useState(null);
+
+  const navBtnStyle = {
+    color: 'primary.main',
+    bgcolor: 'grey.900',
+    border: '2px solid',
+    borderColor: 'primary.main',
+    width: 36,
+    height: 36,
+    borderRadius: '50%',
+    padding: 0, // Ensure icon centering isn't affected by padding
+    '&:hover': {
+      bgcolor: 'grey.800',
+    },
+    '&.swiper-button-disabled': {
+      opacity: 0.35,
+      cursor: 'not-allowed',
+      borderColor: 'action.disabled',
+      color: 'action.disabled',
+    },
+  };
+
   return (
-    <Box
-      sx={{
-        my: 2,
-        // Custom styling for Swiper navigation buttons to match MUI theme
-        '& .swiper-button-next, & .swiper-button-prev': {
-          color: 'primary.main',
-          bgcolor: 'background.paper',
-          width: 36,
-          height: 36,
-          borderRadius: '50%',
-          boxShadow: 2,
-          '&:after': {
-            fontSize: '1.2rem',
-            fontWeight: 'bold',
-          },
-          '&:hover': {
-            bgcolor: 'action.hover',
-          },
-        },
-        '& .swiper-button-disabled': {
-          opacity: 0.35,
-          cursor: 'not-allowed',
-        },
-      }}
-    >
+    <Box sx={{ my: 2 }}>
       {selectedServices.length > 0 && (
-        <Stack direction='row' spacing={1} flexWrap='wrap' useFlexGap sx={{ mb: 1 }}>
+        <Stack
+          direction='row'
+          spacing={1}
+          flexWrap='wrap'
+          useFlexGap
+          sx={{ mb: 1 }}
+        >
           {selectedServices.map((service) => (
             <Chip
               key={service.id}
@@ -56,7 +65,10 @@ export default function ServiceCarousel({
 
       <Swiper
         modules={[Navigation]}
-        navigation={true}
+        navigation={{
+          prevEl,
+          nextEl,
+        }}
         spaceBetween={16}
         slidesPerView={'auto'}
         freeMode={true}
@@ -80,8 +92,8 @@ export default function ServiceCarousel({
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                height: 120,
-                width: 120,
+                height: 100,
+                width: 100,
               }}
             >
               <CardContent
@@ -92,11 +104,12 @@ export default function ServiceCarousel({
                   justifyContent: 'center',
                   textAlign: 'center',
                   p: 1,
-                  '&:last-child': { pb: 1 },
+                  fontSize: '0.5rem',
+                  // '&:last-child': { pb: 1 },
                 }}
               >
                 {service.icon}
-                <Typography variant='body2' sx={{ mt: 1 }}>
+                <Typography variant='body1' sx={{ mt: 1, fontSize: '0.75rem' }}>
                   {service.text}
                 </Typography>
               </CardContent>
@@ -104,6 +117,16 @@ export default function ServiceCarousel({
           </SwiperSlide>
         ))}
       </Swiper>
+
+      {/* Custom Navigation Controls */}
+      <Stack direction='row' spacing={2} justifyContent='center' sx={{ mt: 1 }}>
+        <IconButton ref={setPrevEl} sx={navBtnStyle} aria-label='Previous'>
+          <ChevronLeftIcon />
+        </IconButton>
+        <IconButton ref={setNextEl} sx={navBtnStyle} aria-label='Next'>
+          <ChevronRightIcon />
+        </IconButton>
+      </Stack>
     </Box>
   );
 }

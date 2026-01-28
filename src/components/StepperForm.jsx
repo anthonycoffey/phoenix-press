@@ -553,45 +553,63 @@ export default function StepperForm({ splitTestVariant }) {
               ))}
             </Stepper>
           )}
-          <Box>
-            {activeStep === currentSteps.length ? (
-              <ConfirmationStep isBookingFlow={isBookingFlow} />
-            ) : (
-              getStepContent(activeStep)
-            )}
-          </Box>
-          {activeStep < currentSteps.length && (
-            <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
-              <Button
-                color='inherit'
-                disabled={activeStep === 0 || loading}
-                onClick={handleBack}
-                sx={{ mr: 1 }}
-              >
-                Back
-              </Button>
-              <Box sx={{ flex: '1 1 auto' }} />
-              <Button
-                onClick={handleNext}
-                variant='contained'
-                disabled={
-                  loading ||
-                  (activeStep === currentSteps.length - 1 &&
-                    isBookingFlow &&
-                    !payLater &&
-                    !isPaymentDataValid())
-                }
-              >
-                {loading ? (
-                  <CircularProgress size={24} color='inherit' />
-                ) : activeStep === currentSteps.length - 1 ? (
-                  'Book Now'
-                ) : (
-                  'Next'
-                )}
-              </Button>
+          {loading && activeStep === 1 && isBookingFlow ? (
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                py: 6,
+              }}
+            >
+              <CircularProgress size={60} />
+              <Typography variant='h6' sx={{ mt: 2, textAlign: 'center' }}>
+                Your quote is being processed, please wait...
+              </Typography>
+            </Box>
+          ) : (
+            <Box>
+              {activeStep === currentSteps.length ? (
+                <ConfirmationStep isBookingFlow={isBookingFlow} />
+              ) : (
+                getStepContent(activeStep)
+              )}
             </Box>
           )}
+          {activeStep < currentSteps.length &&
+            !(loading && activeStep === 1 && isBookingFlow) && (
+              <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
+                <Button
+                  color='inherit'
+                  disabled={activeStep === 0 || loading}
+                  onClick={handleBack}
+                  sx={{ mr: 1 }}
+                >
+                  Back
+                </Button>
+                <Box sx={{ flex: '1 1 auto' }} />
+                <Button
+                  onClick={handleNext}
+                  variant='contained'
+                  disabled={
+                    loading ||
+                    (activeStep === currentSteps.length - 1 &&
+                      isBookingFlow &&
+                      !payLater &&
+                      !isPaymentDataValid())
+                  }
+                >
+                  {loading ? (
+                    <CircularProgress size={24} color='inherit' />
+                  ) : activeStep === currentSteps.length - 1 ? (
+                    'Book Now'
+                  ) : (
+                    'Next'
+                  )}
+                </Button>
+              </Box>
+            )}
         </CardContent>
       </Card>
     </ThemeProvider>

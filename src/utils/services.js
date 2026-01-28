@@ -17,13 +17,13 @@ const services = [
 
   // Key Services
   {
-    text: 'Key Programming',
+    text: 'Key Programming*',
     value: 'Key Programming',
     id: 25,
     icon: <VpnKey fontSize='large' color='primary' />,
   },
   {
-    text: 'New Key',
+    text: 'New Key*',
     value: 'New Key',
     id: 16,
     icon: <VpnKey fontSize='large' color='primary' />,
@@ -37,13 +37,13 @@ const services = [
     icon: <TireRepair fontSize='large' color='primary' />,
   },
   {
-    text: 'Tire Repair',
+    text: 'Tire Repair*',
     value: 'Tire Repair',
     id: 27,
     icon: <TireRepair fontSize='large' color='primary' />,
   },
   {
-    text: 'Tire Replacement',
+    text: 'Tire Replacement*',
     value: 'Tire Replacement',
     id: 32,
     icon: <TireRepair fontSize='large' color='primary' />,
@@ -63,20 +63,20 @@ const services = [
     icon: <BatteryChargingFull fontSize='large' color='primary' />,
   },
   {
-    text: 'Vehicle Battery Replacement',
+    text: 'Vehicle Battery Replacement*',
     value: 'Vehicle Battery Replacement',
     id: 6,
     icon: <BatteryChargingFull fontSize='large' color='primary' />,
   },
   {
-    text: 'Car Battery Install',
+    text: 'Car Battery Install*',
     value: 'Car Battery Install',
     id: 12,
     icon: <BatteryChargingFull fontSize='large' color='primary' />,
   },
   {
-    text: 'Battery, Starter, & Alternator Testing',
-    value: 'Battery, Starter, & Alternator Testing',
+    text: 'Battery/Starter Testing',
+    value: 'Battery/Starter Testing',
     id: 5,
     icon: <BatteryChargingFull fontSize='large' color='primary' />,
   },
@@ -91,13 +91,13 @@ const services = [
 
   // Towing Services
   {
-    text: 'Towing',
+    text: 'Towing*',
     value: 'Towing',
     id: 11,
     icon: <CarCrash fontSize='large' color='primary' />,
   },
   {
-    text: 'Other',
+    text: 'Other*',
     value: 'Other',
     id: 35,
     icon: <HelpOutline fontSize='large' color='primary' />,
