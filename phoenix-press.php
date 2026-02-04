@@ -3,7 +3,7 @@
  * Plugin Name: PhoenixPress
  * Plugin URI: https://github.com/anthonycoffey/phoenix-press
  * Description: WordPress plugin for Phoenix CRM.
- * Version: 1.3.12
+ * Version: 1.3.13
  * Author: Anthony Coffey
  * Author URI: https://coffey.codes/
  *
@@ -14,14 +14,14 @@
 use Phoenix\Press\Plugin;
 
 // Exit if accessed directly.
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
   exit();
 }
 
 add_action(
   'plugins_loaded',
   function () {
-    if (file_exists(__DIR__ . '/vendor/autoload.php')) {
+    if ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
       include __DIR__ . '/vendor/autoload.php';
     }
 

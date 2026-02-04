@@ -224,7 +224,9 @@ public static function create_booking( $request ) {
         return new \WP_REST_Response( [ 'error' => 'Failed to create booking' ], 500 );
     }
 
-    return new \WP_REST_Response( json_decode( wp_remote_retrieve_body( $response ) ), 200 );
+    $status_code = wp_remote_retrieve_response_code( $response );
+
+    return new \WP_REST_Response( json_decode( wp_remote_retrieve_body( $response ) ), $status_code );
 }
 
 public static function verify_turnstile_token( $request )

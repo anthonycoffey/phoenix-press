@@ -12,6 +12,7 @@ import Stack from '@mui/material/Stack';
 import IconButton from '@mui/material/IconButton';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import Alert from '@mui/material/Alert';
 
 export default function ServiceCarousel({
   services,
@@ -126,6 +127,13 @@ export default function ServiceCarousel({
         <IconButton ref={setNextEl} sx={navBtnStyle} aria-label='Next'>
           <ChevronRightIcon />
         </IconButton>
+      </Stack>
+      <Stack>
+        <Alert severity='info' sx={{mt: 1}}>
+          Services marked with an asterisk (*) are specialty services, and
+          require deposits. Actual costs may vary based on specific service
+          requirements.
+        </Alert>
       </Stack>
     </Box>
   );

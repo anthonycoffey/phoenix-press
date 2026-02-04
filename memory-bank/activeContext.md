@@ -1,7 +1,11 @@
 # Active Context
 
-* **Current Focus:** Fixed "Unknown step" error in `StepperForm` during payment processing.
+* **Current Focus:** Implemented loading spinner for quote processing in `StepperForm`.
 * **Recent Changes:**
+    * **Implemented Quote Processing UI in `StepperForm.jsx`:**
+        * Added a conditional rendering block in `StepperForm.jsx` to detect when the quote is being fetched (`loading && activeStep === 1 && isBookingFlow`).
+        * Displays a large `CircularProgress` spinner and the message "Your quote is being processed, please wait..." during this phase.
+        * Hides the form content and navigation buttons during the quote fetch to prevent user interruption and provide clear feedback during the potential 8-10 second LLM processing time.
     * **Fixed `StepperForm.jsx` "Unknown step" error:**
         * Guarded `setActiveStep` in `handleFinalSubmit` to ensure the step index never exceeds `currentSteps.length` (using `Math.min`).
         * Prevented double-clicks on the "Book Now" button in the payment flow by explicitly setting `loading(true)` in `handleNext` before triggering the payment submission.
@@ -98,8 +102,9 @@
         * Implemented a native WordPress tabbed interface within the "Settings" page with three sections: **API Settings**, **Form Settings**, and **A/B Testing**.
         * Styled the Settings page form with a cleaner, card-based layout (`.phoenix-settings-card`) to match the dashboard aesthetics.
         * Optimized asset loading to enqueue Highcharts only on the Analytics page and Media scripts only on the Settings page.
-* **Next Steps:** Verify the `StepperForm` fix and ensure form submission works correctly.
+* **Next Steps:** Verify the quote loading spinner appears as expected.
 * **Active Decisions:**
+    * **Blocking UI during Quote Fetch:** Chosen to block the form content and navigation during the quote fetch (which can take 8-10 seconds) to provide clear feedback ("Your quote is being processed...") and prevent users from navigating back or attempting to resubmit while the complex calculation/LLM request is pending.
     * **Guard Clauses for State:** Implemented defensive programming in `StepperForm` (`Math.min` for step increment) to prevent undefined state errors, even in edge cases like double-submissions.
     * **Split Testing:** Switched to a "no cookie" approach as requested. Variants are assigned randomly on every request. This prioritizes equal traffic distribution and user privacy/simplicity over persistence.
     * Used local state in `EmbedForm/PhoneField` to handle input updates. This decouples the input's visual state from the parent form's state management (which relies on mutation and delayed re-renders), ensuring a smooth typing experience.
@@ -138,10 +143,3 @@
     * Replaced the success message implementation in `EmbedForm.jsx` from using the custom `Prompt` component to using standard MUI components (`Box`, `Alert`, `AlertTitle`, `CheckCircleOutlineIcon`, `Typography`) for a more conventional and vertically substantial success display, utilizing `html-react-parser` for rendering the `LOCALIZED.SUBMISSION_MESSAGE`.
     * Implemented smooth scrolling to the success message (`#submission-success`) in `EmbedForm.jsx` using a `useEffect` hook triggered by the `submitted` state.
     * Refactored `src/components/StepperForm.jsx` by extracting its internal component definitions (`CustomerInfoStep`, `VehicleInfoStep`, `QuoteStep`, `PaymentStep`, `ConfirmationStep`) into separate files within `src/components/StepperForm/`.
-* **Key Patterns/Preferences:**
-    * WordPress plugin structure.
-    * PHP for backend/WordPress integration.
-    * React (with MUI) for frontend components.
-    * `@wordpress/scripts` for build tooling.
-    * `Makefile` for orchestrating development tasks (install, start, build).
-* **Learnings/Insights:** Gained initial understanding of the project's purpose, core technologies, and development setup from `README.md` and `package.json`.

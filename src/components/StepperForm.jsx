@@ -564,7 +564,7 @@ export default function StepperForm({ splitTestVariant }) {
               }}
             >
               <CircularProgress size={60} />
-              <Typography variant='h6' sx={{ mt: 2, textAlign: 'center' }}>
+              <Typography variant='h4' sx={{ mt: 2, textAlign: 'center' }}>
                 Your quote is being processed, please wait...
               </Typography>
             </Box>

@@ -54,6 +54,8 @@
     * `pricingService.js` (backend) updated to provide the specific `Core Service Name` and `ServiceId` in the quote breakdown, replacing the generic "Base price" label.
     * `StepperForm.jsx` updated to prioritize the `ServiceId` provided by the API breakdown, ensuring accurate invoice line item creation without fallback to "Other".
     * `StepperForm.jsx` updated to fix "Unknown step" error by guarding step increments (`Math.min`), preventing double-clicks on payment submission (loading state), and correctly resetting loading state on payment errors.
+    * `StepperForm.jsx` updated to include a prominent loading spinner and message ("Your quote is being processed...") during the quote fetching phase (`activeStep === 1`), hiding the form and buttons to improve UX during potential delays.
+    * Added a "Help" tab to the Phoenix Press settings page (`includes/Settings.php`), providing a list of available shortcodes and instructions for using the split testing feature.
 * **What's Left:**
     * Full implementation details of backend logic (API interactions, settings handling, processing new 'email' field).
     * Complete implementation and integration of frontend React components (ensuring 'email' field renders correctly).
@@ -93,3 +95,4 @@
     * **2026-01-18:** Overhauled `StepperForm.jsx` line item generation to use the quote breakdown directly, ensuring accurate pricing for all services (including base services) and fixing the 0.00 price issue.
     * **2026-01-18:** Fixed critical "Unknown step" error in `StepperForm.jsx` by adding guard clauses to `setActiveStep`, implementing double-click prevention (locking UI via `loading` state) during payment, and correctly handling loading state resets on payment errors.
     * **2026-01-18:** Added a "Help" tab to the Phoenix Press settings page (`includes/Settings.php`), providing a list of available shortcodes and instructions for using the split testing feature.
+    * **2026-01-26:** Implemented a specific loading spinner UI in `StepperForm.jsx` to be displayed while fetching quotes (step 1), replacing the form content and buttons with a centered spinner and the text "Your quote is being processed, please wait...".

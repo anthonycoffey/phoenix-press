@@ -67,9 +67,13 @@ const QuoteStep = ({
     0,
   );
 
-  const basePrice = quoteData
-    ? quoteData.quote - totalSurcharges - totalSpecialty
-    : 0;
+
+  
+  const isSpecialty = (item) => {
+    console.log({item})
+    const ALLOWED_SERVICE_IDS = [1,2, 3, 4, 5];
+    return item.ServiceId && !ALLOWED_SERVICE_IDS.includes(item.ServiceId) ? '*' : '';
+  }
 
   return (
     <Stack spacing={2}>
@@ -134,11 +138,11 @@ const QuoteStep = ({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {/* Specialty Services */}
+                {/* Services */}
                 {specialtyItems.map((item, index) => (
                   <TableRow key={`specialty-${index}`}>
                     <TableCell component='th' scope='row'>
-                      {item.label}
+                      {item.label} {isSpecialty(item)}
                     </TableCell>
                     <TableCell align='right'>
                       ${item.amount.toFixed(2)}
@@ -238,7 +242,7 @@ const QuoteStep = ({
 
           {specialtyItems.length > 0 && (
             <Typography variant='caption' color='text.secondary' sx={{ px: 1 }}>
-              *Core services are flat-rate. Specialty Services require a
+              *Core services are flat-rate. Specialty Services marked with an asterisk (*) require a
               deposit. The listed Specialty Service amount applies toward the
               final cost, which will be disclosed and approved before services are rendered.
             </Typography>
